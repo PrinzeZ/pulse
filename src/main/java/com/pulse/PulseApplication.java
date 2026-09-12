@@ -1,4 +1,4 @@
-package com.pulse.pulse;
+package com.pulse;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
