@@ -1,0 +1,199 @@
+/* ═══════════════════════════════════════════════════════════
+   PULSE — staff.css  (Staff Dashboard Styles)
+   ═══════════════════════════════════════════════════════════ */
+
+body.staff-page {
+    align-items: flex-start;
+    padding: 16px;
+}
+
+body.staff-page .win95-window {
+    max-width: 1200px;
+}
+
+/* ─── Staff Nav Sidebar (optional) ────────────────────────── */
+.staff-layout {
+    display: flex;
+    gap: 0;
+    min-height: 500px;
+}
+
+.staff-sidebar {
+    width: 180px;
+    min-width: 180px;
+    background: #C0C0C0;
+    border-right: 2px solid #808080;
+    padding: 8px 0;
+}
+
+.staff-sidebar a {
+    display: block;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: #000;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-bottom: 1px solid #A0A0A0;
+}
+
+.staff-sidebar a:hover {
+    background: #0040C0;
+    color: #FFFFFF;
+}
+
+.staff-sidebar a.active {
+    background: #0040C0;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+.staff-sidebar .sidebar-header {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: #808080;
+    padding: 8px 12px 4px;
+    border-bottom: 1px solid #808080;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.staff-content {
+    flex: 1;
+    padding: 16px 20px;
+    background: #FFFFFF;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #DFDFDF;
+    border-bottom: 2px solid #DFDFDF;
+    margin: 8px;
+}
+
+/* ─── Dashboard Stats ──────────────────────────────────────── */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #F0F0F0;
+    border-top: 2px solid #DFDFDF;
+    border-left: 2px solid #DFDFDF;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    padding: 14px;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.stat-card .stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #0040C0;
+    display: block;
+}
+
+.stat-card .stat-label {
+    font-size: 11px;
+    color: #606060;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.stat-card.danger .stat-value { color: #800000; }
+.stat-card.warning .stat-value { color: #806000; }
+.stat-card.success .stat-value { color: #006000; }
+
+/* ─── Section Headers ──────────────────────────────────────── */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #0040C0;
+}
+
+.section-header h2 {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 15px;
+    font-weight: bold;
+    color: #0040C0;
+}
+
+/* ─── Toolbar (above table) ────────────────────────────────── */
+.toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.toolbar input[type="text"] {
+    width: 220px;
+}
+
+.toolbar select {
+    width: 160px;
+}
+
+/* ─── Staff Form ───────────────────────────────────────────── */
+.staff-form {
+    max-width: 560px;
+}
+
+.staff-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #C0C0C0;
+}
+
+/* ─── Low Stock Row Highlight ──────────────────────────────── */
+tr.low-stock td { background: #FFF8C0 !important; }
+tr.out-of-stock td { background: #FFD0D0 !important; }
+
+/* ─── Quick Action Buttons ─────────────────────────────────── */
+.quick-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    text-decoration: none;
+    color: #000;
+    background: #C0C0C0;
+    border-top: 2px solid #FFFFFF;
+    border-left: 2px solid #FFFFFF;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    min-width: 100px;
+    text-align: center;
+}
+
+.quick-action-btn:hover {
+    background: #D0D0D0;
+}
+
+.quick-action-btn .icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
