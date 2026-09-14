@@ -2,7 +2,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
-// 1. StockStatus class (replacement for enum)
+// 1. StockStatus class
 class StockStatus {
     public static final String RED = "RED";
     public static final String YELLOW = "YELLOW";
@@ -42,7 +42,7 @@ class StockNotFoundException extends RuntimeException {
 }
 
 // 3. SearchService class
-java
+
 @Service
 class SearchService {
 
