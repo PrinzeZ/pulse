@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>P.U.L.S.E — Essential Medicine Availability</title>
+
+    <link rel="stylesheet"
+          th:href="@{/css/pulse.css}">
+
+    <link rel="stylesheet"
+          th:href="@{/css/landing.css}">
+</head>
+
+<body class="landing-page">
+
+<div class="win95-window">
+
+    <!-- TITLE BAR -->
+    <div class="title-bar">
+
+        <div class="title-bar-text">
+            P.U.L.S.E — Pharmacy Utility & Logistics System
+        </div>
+
+        <div class="title-bar-controls">
+            <button type="button">_</button>
+            <button type="button">□</button>
+            <button type="button">×</button>
+        </div>
+
+    </div>
+
+
+    <!-- NAVIGATION -->
+    <nav class="menu-bar">
+
+        <a href="/" class="active">
+            Home
+        </a>
+
+        <a th:href="@{/search}">
+            Search Medicine
+        </a>
+
+        <a href="#about">
+            About
+        </a>
+
+        <a th:href="@{/login}">
+            Login
+        </a>
+
+        <span class="team-info">
+            P.U.L.S.E
+        </span>
+
+    </nav>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="landing-body">
+
+        <!-- HERO -->
+        <section class="hero-section">
+
+            <div class="hero-small-title">
+                PHARMACY UTILITY & LOGISTICS SYSTEM
+            </div>
+
+            <h1>P.U.L.S.E</h1>
+
+            <div class="hero-subtitle">
+                FOR ESSENTIAL MEDICINES
+            </div>
+
+            <p class="hero-description">
+                Check medicine availability across
+                government hospitals before you travel.
+            </p>
+
+            <a th:href="@{/search}"
+               class="btn btn-primary hero-button">
+
+                CHECK MEDICINE AVAILABILITY
+
+            </a>
+
+            <div class="public-note">
+                No login required for public search.
+            </div>
+
+        </section>
+
+
+        <!-- STATUS LEGEND -->
+        <section class="status-section">
+
+            <div class="section-title">
+                MEDICINE AVAILABILITY STATUS
+            </div>
+
+            <div class="status-grid">
+
+                <div class="status-item">
+
+                    <span class="status-light green"></span>
+
+                    <div>
+                        <strong>AVAILABLE</strong>
+                        <small>Stock available</small>
+                    </div>
+
+                </div>
+
+
+                <div class="status-item">
+
+                    <span class="status-light yellow"></span>
+
+                    <div>
+                        <strong>LIMITED</strong>
+                        <small>Low stock</small>
+                    </div>
+
+                </div>
+
+
+                <div class="status-item">
+
+                    <span class="status-light red"></span>
+
+                    <div>
+                        <strong>OUT OF STOCK</strong>
+                        <small>Currently unavailable</small>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- THREE ROLES -->
+        <section class="roles-section"
+                 id="about">
+
+            <div class="section-title">
+                P.U.L.S.E USER PORTALS
+            </div>
+
+
+            <div class="role-grid">
+
+
+                <!-- PUBLIC -->
+                <div class="role-card">
+
+                    <div class="role-icon">
+                        🔎
+                    </div>
+
+                    <h2>PUBLIC USER</h2>
+
+                    <p>
+                        Search medicine availability
+                        at government hospitals.
+                    </p>
+
+                    <a th:href="@{/search}"
+                       class="btn">
+
+                        SEARCH MEDICINE
+
+                    </a>
+
+                </div>
+
+
+                <!-- STAFF -->
+                <div class="role-card">
+
+                    <div class="role-icon">
+                        💊
+                    </div>
+
+                    <h2>PHARMACY STAFF</h2>
+
+                    <p>
+                        Update daily medicine stock
+                        and monitor inventory.
+                    </p>
+
+                    <a th:href="@{/login}"
+                       class="btn">
+
+                        STAFF LOGIN
+
+                    </a>
+
+                </div>
+
+
+                <!-- ADMIN -->
+                <div class="role-card">
+
+                    <div class="role-icon">
+                        ⚙
+                    </div>
+
+                    <h2>ADMIN</h2>
+
+                    <p>
+                        Monitor alerts, stock status
+                        and generate reports.
+                    </p>
+
+                    <a th:href="@{/login}"
+                       class="btn">
+
+                        ADMIN LOGIN
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- PURPOSE -->
+        <section class="purpose-box">
+
+            <strong>WHY P.U.L.S.E?</strong>
+
+            <p>
+                Patients should be able to check medicine
+                availability before travelling to a hospital.
+                P.U.L.S.E provides a public-facing view of
+                essential medicine stock while helping
+                pharmacy staff and administrators monitor
+                shortages.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+
+        <div class="status-bar-field">
+            P.U.L.S.E System
+        </div>
+
+        <div class="status-bar-field">
+            Public Access
+        </div>
+
+        <div class="status-bar-field">
+            v1.0
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
