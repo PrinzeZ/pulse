@@ -24,15 +24,14 @@ public class logincontroller {
     }
 
     @PostMapping("/login")
-    public String doLogin(@RequestParam String username,
-                           @RequestParam String password,
-                           Model model,
-                           HttpSession session) {
+    public String doLogin(@RequestParam String username,@RequestParam String password, Model model, HttpSession session)
+{
 
-        String role = loginService.authenticate(username, password);
+       String role = loginService.authenticate(username, password);
 
-        if (role == null) {
-            model.addAttribute("error", "Invalid username or password");
+        if (role == null) 
+{
+          model.addAttribute("error","Invalid username or password");
             return "login";
         }
 
