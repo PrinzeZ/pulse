@@ -4,7 +4,7 @@ public class SearchResult {
     private String hospital;
     private String medicine;
     private int quantity;
-    private String status; // "GREEN" / "YELLOW" / "RED" — matches StockStatus.name()
+    private String status; 
 
     public SearchResult(String hospital, String medicine, int quantity, String status) {
         this.hospital = hospital;
