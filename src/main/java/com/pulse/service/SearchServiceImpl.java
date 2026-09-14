@@ -27,12 +27,11 @@ public class SearchServiceImpl implements SearchService {
             String rowDistrict = (String) row[1];
             String medicineName = (String) row[2];
 
-            // Native queries return generic Object types — .intValue() works
-            // regardless of whether the driver hands back Integer, Long, or BigDecimal.
+            // Native queries return generic Object types — safely handle numbers
             int quantity = ((Number) row[3]).intValue();
             int threshold = ((Number) row[4]).intValue();
 
-            // The repository query doesn't filter by district itself, so we do it here.
+            // Filter by district if provided
             if (district != null && !district.isBlank() && !district.equalsIgnoreCase(rowDistrict)) {
                 continue;
             }
