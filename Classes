@@ -1,0 +1,73 @@
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.*;
+
+// 1. StockStatus class (replacement for enum)
+class StockStatus {
+    public static final String RED = "RED";
+    public static final String YELLOW = "YELLOW";
+    public static final String GREEN = "GREEN";
+
+    public static String from(int quantity, int threshold) {
+        if (quantity == 0) {
+            return RED;
+        }
+        if (quantity < threshold) {
+            return YELLOW;
+        }
+        return GREEN;
+    }
+}
+
+// 2. SearchResult class
+class SearchResult {
+    public String hospitalName;
+    public String district;
+    public int quantity;
+    public String status;
+
+    public SearchResult(String hospitalName, String district, int quantity, String status) {
+        this.hospitalName = hospitalName;
+        this.district = district;
+        this.quantity = quantity;
+        this.status = status;
+    }
+}
+
+// Exception class
+class StockNotFoundException extends RuntimeException {
+    public StockNotFoundException(String msg) {
+        super(msg);
+    }
+}
+
+// 3. SearchService class
+java
+@Service
+class SearchService {
+
+    @Autowired StockRepository stockRepository;
+    @Autowired HospitalRepository hospitalRepository;
+    @Autowired MedicineRepository medicineRepository;
+
+    public List<SearchResult> search(String district, String medicineName) {
+        Medicine med = medicineRepository.findByNameContainingIgnoreCase(medicineName);
+        if (med == null) throw new StockNotFoundException("Medicine not found");
+
+        List<SearchResult> results = new ArrayList<>();
+
+        for (StockEntry entry : stockRepository.findByDistrictAndMedicine(district, med.getId())) {
+            String status = StockStatus.from(entry.getQuantity(), med.getThreshold());
+            String hospital = hospitalRepository.findById(entry.getHospitalId()).get().getName();
+
+            results.add(new SearchResult(hospital, district, entry.getQuantity(), status));
+        }
+
+        // RED first, then YELLOW, then GREEN
+        results.sort(Comparator.comparingInt(r -> 
+            r.status.equals("RED") ? 1 : r.status.equals("YELLOW") ? 2 : 3
+        ));
+
+        return results;
+    }
+}
