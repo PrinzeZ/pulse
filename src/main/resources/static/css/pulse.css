@@ -3,7 +3,6 @@
    Pharmacy Utility & Logistics System for Essential Medicines
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── Reset & Base ─────────────────────────────────────────── */
 *, *::before, *::after {
     box-sizing: border-box;
     margin: 0;
@@ -20,7 +19,6 @@ body {
     padding: 20px;
 }
 
-/* ─── Window Container ─────────────────────────────────────── */
 .win95-window {
     background: #C0C0C0;
     border-top: 2px solid #FFFFFF;
@@ -29,11 +27,11 @@ body {
     border-bottom: 2px solid #404040;
     box-shadow: 2px 2px 0 #000000;
     width: 100%;
-    max-width: 1000px;
+    max-width: 1100px;
     min-height: 500px;
+    padding: 10px; /* <--- This creates the gap between the outer window frame and your content */
 }
 
-/* ─── Title Bar ────────────────────────────────────────────── */
 .title-bar {
     background: #0040C0;
     color: #FFFFFF;
@@ -82,7 +80,6 @@ body {
     border-bottom: 2px solid #FFFFFF;
 }
 
-/* ─── Menu / Nav Bar ───────────────────────────────────────── */
 .menu-bar {
     background: #C0C0C0;
     border-bottom: 1px solid #808080;
@@ -124,7 +121,6 @@ body {
     color: #404040;
 }
 
-/* ─── Window Body (Content Area) ───────────────────────────── */
 .window-body {
     margin: 8px;
     background: #FFFFFF;
@@ -136,7 +132,6 @@ body {
     min-height: 400px;
 }
 
-/* ─── Status Bar ───────────────────────────────────────────── */
 .status-bar {
     display: flex;
     align-items: center;
@@ -157,7 +152,6 @@ body {
     flex: 1;
 }
 
-/* ─── Buttons ──────────────────────────────────────────────── */
 .btn {
     font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
@@ -202,23 +196,6 @@ body {
     color: #FFFFFF;
 }
 
-.btn-danger {
-    background: #C0C0C0;
-    color: #800000;
-    font-weight: bold;
-}
-
-.btn-danger:hover {
-    background: #800000;
-    color: #FFFFFF;
-}
-
-.btn-small {
-    padding: 2px 10px;
-    font-size: 12px;
-}
-
-/* ─── Form Elements ────────────────────────────────────────── */
 input[type="text"],
 input[type="password"],
 input[type="number"],
@@ -238,14 +215,6 @@ textarea {
     width: 100%;
 }
 
-input[type="text"]:focus,
-input[type="password"]:focus,
-input[type="number"]:focus,
-select:focus,
-textarea:focus {
-    outline: 1px dotted #000;
-}
-
 label {
     font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
@@ -257,7 +226,6 @@ label {
     margin-bottom: 16px;
 }
 
-/* ─── Tables ───────────────────────────────────────────────── */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -294,7 +262,6 @@ tbody td {
     border: 1px solid #C0C0C0;
 }
 
-/* ─── Alert / Info Boxes ───────────────────────────────────── */
 .alert {
     font-family: 'Courier New', Courier, monospace;
     font-size: 13px;
@@ -315,19 +282,6 @@ tbody td {
     color: #005000;
 }
 
-.alert-info {
-    background: #C0C8FF;
-    border-color: #0040C0;
-    color: #001880;
-}
-
-.alert-warning {
-    background: #FFFFC0;
-    border-color: #808000;
-    color: #404000;
-}
-
-/* ─── Badges ───────────────────────────────────────────────── */
 .badge {
     font-size: 11px;
     font-family: 'Courier New', Courier, monospace;
@@ -339,17 +293,7 @@ tbody td {
 .badge-warning { background: #C08000; color: #FFFFFF; }
 .badge-danger  { background: #800000; color: #FFFFFF; }
 
-/* ─── Utilities ────────────────────────────────────────────── */
 .text-center { text-align: center; }
-.text-blue   { color: #0040C0; }
-.mt-8  { margin-top: 8px; }
 .mt-16 { margin-top: 16px; }
-.mt-24 { margin-top: 24px; }
-.mb-8  { margin-bottom: 8px; }
 .mb-16 { margin-bottom: 16px; }
-.flex  { display: flex; }
-.gap-8 { gap: 8px; }
-.gap-16 { gap: 16px; }
-.align-center { align-items: center; }
-.justify-between { justify-content: space-between; }
 .w-full { width: 100%; }

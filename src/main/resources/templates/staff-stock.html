@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>P.U.L.S.E — Staff Stock Management</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+</head>
+<body class="user-page">
+<div class="win95-window">
+    <div class="title-bar">
+        <div class="title-bar-text">P.U.L.S.E — Staff Inventory Panel</div>
+        <div class="title-bar-controls"><button>×</button></div>
+    </div>
+    <nav class="menu-bar">
+        <a class="active">Stock Management</a>
+        <a th:href="@{/logout}">Logout</a>
+        <span class="team-info">STAFF MODE</span>
+    </nav>
+    <main class="user-body" style="padding: 24px;">
+        <h2 style="color: #0040C0;">LOCAL HOSPITAL INVENTORY</h2>
+        <p style="font-size: 12px; margin-bottom: 16px;">Manage local medicine counts and supplies.</p>
+        <table>
+            <thead>
+            <tr><th>Medicine</th><th>Category</th><th>Available Quantity</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+            <tr><td>Paracetamol 500mg</td><td>Analgesic</td><td>1,200 units</td><td><button class="btn">Update Stock</button></td></tr>
+            </tbody>
+        </table>
+    </main>
+    <div class="status-bar"><div class="status-bar-field">Status: Staff Logged In</div></div>
+</div>
+</body>
+</html>

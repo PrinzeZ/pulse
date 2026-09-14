@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   PULSE — user.css  (User Dashboard Styles)
+   PULSE — user.css  (User Dashboard Styles - Clean Alignment Fix)
    ═══════════════════════════════════════════════════════════ */
 
 body.user-page {
@@ -9,9 +9,183 @@ body.user-page {
 
 body.user-page .win95-window {
     max-width: 1100px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* ─── Search Bar ───────────────────────────────────────────── */
+.landing-body,
+.user-body {
+    padding: 24px 32px !important;
+    background: #FFFFFF;
+    margin-top: 8px;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #DFDFDF;
+    border-bottom: 2px solid #DFDFDF;
+}
+
+.hero-section {
+    text-align: center;
+    padding: 30px 20px;
+    margin-bottom: 24px;
+    background: #F8F8F8;
+    border-top: 2px solid #DFDFDF;
+    border-left: 2px solid #DFDFDF;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+}
+
+.hero-small-title {
+    font-size: 12px;
+    color: #606060;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+}
+
+.hero-section h1 {
+    font-size: 36px;
+    font-weight: bold;
+    color: #0040C0;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+}
+
+.hero-subtitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+.hero-description {
+    font-size: 13px;
+    color: #404040;
+    margin-bottom: 20px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.public-note {
+    font-size: 11px;
+    color: #707070;
+    margin-top: 10px;
+}
+
+.status-section {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #0040C0;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #0040C0;
+    padding-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #F0F0F0;
+    padding: 12px;
+    border-top: 2px solid #DFDFDF;
+    border-left: 2px solid #DFDFDF;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+}
+
+.status-light {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid #404040;
+}
+
+.status-light.green { background: #00A000; }
+.status-light.yellow { background: #D0C000; }
+.status-light.red { background: #C00000; }
+
+.roles-section {
+    margin-bottom: 24px;
+}
+
+.role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.role-card {
+    background: #F8F8F8;
+    border-top: 2px solid #DFDFDF;
+    border-left: 2px solid #DFDFDF;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.role-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+}
+
+.role-card h2 {
+    font-size: 14px;
+    font-weight: bold;
+    color: #0040C0;
+    margin-bottom: 8px;
+}
+
+.role-card p {
+    font-size: 12px;
+    color: #404040;
+    margin-bottom: 16px;
+    flex: 1;
+    line-height: 1.4;
+}
+
+.purpose-box {
+    background: #F0F0F0;
+    border-top: 2px solid #DFDFDF;
+    border-left: 2px solid #DFDFDF;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    padding: 16px 20px;
+    margin-top: 24px;
+}
+
+.purpose-box strong {
+    display: block;
+    color: #0040C0;
+    font-size: 13px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.purpose-box p {
+    font-size: 12px;
+    color: #333;
+    line-height: 1.5;
+}
+
 .search-bar-container {
     display: flex;
     gap: 8px;
@@ -25,7 +199,6 @@ body.user-page .win95-window {
     padding: 5px 8px;
 }
 
-/* ─── Filter Row ───────────────────────────────────────────── */
 .filter-row {
     display: flex;
     gap: 12px;
@@ -45,11 +218,10 @@ body.user-page .win95-window {
     min-width: 140px;
 }
 
-/* ─── Medicine Cards Grid ──────────────────────────────────── */
 .medicine-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 12px;
+    gap: 16px;
     margin-top: 16px;
 }
 
@@ -63,7 +235,6 @@ body.user-page .win95-window {
 }
 
 .medicine-card h3 {
-    font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
     font-weight: bold;
     color: #0040C0;
@@ -76,7 +247,6 @@ body.user-page .win95-window {
     display: flex;
     justify-content: space-between;
     font-size: 12px;
-    font-family: 'Courier New', Courier, monospace;
     margin-bottom: 4px;
     color: #404040;
 }
@@ -90,23 +260,6 @@ body.user-page .win95-window {
     text-align: center;
 }
 
-/* ─── View Toggle ──────────────────────────────────────────── */
-.view-toggle {
-    display: flex;
-    gap: 4px;
-    margin-left: auto;
-}
-
-/* ─── No Results ───────────────────────────────────────────── */
-.no-results {
-    text-align: center;
-    padding: 40px;
-    color: #808080;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 14px;
-}
-
-/* ─── Stats Row ────────────────────────────────────────────── */
 .stats-row {
     display: flex;
     gap: 8px;
@@ -121,7 +274,6 @@ body.user-page .win95-window {
     border-right: 2px solid #808080;
     border-bottom: 2px solid #808080;
     padding: 8px 16px;
-    font-family: 'Courier New', Courier, monospace;
     font-size: 12px;
     text-align: center;
 }

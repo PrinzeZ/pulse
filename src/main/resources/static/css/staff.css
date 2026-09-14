@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   PULSE — staff.css  (Staff Dashboard Styles)
+   PULSE — staff.css  (Staff Dashboard Styles - Clean Alignment Fix)
    ═══════════════════════════════════════════════════════════ */
 
 body.staff-page {
@@ -9,18 +9,21 @@ body.staff-page {
 
 body.staff-page .win95-window {
     max-width: 1200px;
+    display: flex;
+    flex-direction: column;
 }
 
-/* ─── Staff Nav Sidebar (optional) ────────────────────────── */
 .staff-layout {
     display: flex;
-    gap: 0;
-    min-height: 500px;
+    flex-direction: row;
+    flex: 1;
+    align-items: stretch;
+    min-height: 480px;
 }
 
 .staff-sidebar {
-    width: 180px;
-    min-width: 180px;
+    width: 200px;
+    min-width: 200px;
     background: #C0C0C0;
     border-right: 2px solid #808080;
     padding: 8px 0;
@@ -32,7 +35,7 @@ body.staff-page .win95-window {
     font-size: 13px;
     color: #000;
     text-decoration: none;
-    padding: 6px 12px;
+    padding: 8px 12px;
     border-bottom: 1px solid #A0A0A0;
 }
 
@@ -59,20 +62,20 @@ body.staff-page .win95-window {
 
 .staff-content {
     flex: 1;
-    padding: 16px 20px;
+    padding: 20px 24px;
     background: #FFFFFF;
+    margin: 8px;
     border-top: 2px solid #808080;
     border-left: 2px solid #808080;
     border-right: 2px solid #DFDFDF;
     border-bottom: 2px solid #DFDFDF;
-    margin: 8px;
+    overflow-x: auto;
 }
 
-/* ─── Dashboard Stats ──────────────────────────────────────── */
 .dashboard-stats {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
     margin-bottom: 24px;
 }
 
@@ -82,13 +85,13 @@ body.staff-page .win95-window {
     border-left: 2px solid #DFDFDF;
     border-right: 2px solid #808080;
     border-bottom: 2px solid #808080;
-    padding: 14px;
+    padding: 16px;
     text-align: center;
     font-family: 'Courier New', Courier, monospace;
 }
 
 .stat-card .stat-value {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: bold;
     color: #0040C0;
     display: block;
@@ -97,7 +100,7 @@ body.staff-page .win95-window {
 .stat-card .stat-label {
     font-size: 11px;
     color: #606060;
-    margin-top: 4px;
+    margin-top: 6px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -106,12 +109,11 @@ body.staff-page .win95-window {
 .stat-card.warning .stat-value { color: #806000; }
 .stat-card.success .stat-value { color: #006000; }
 
-/* ─── Section Headers ──────────────────────────────────────── */
 .section-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     padding-bottom: 6px;
     border-bottom: 2px solid #0040C0;
 }
@@ -123,26 +125,24 @@ body.staff-page .win95-window {
     color: #0040C0;
 }
 
-/* ─── Toolbar (above table) ────────────────────────────────── */
 .toolbar {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
 }
 
 .toolbar input[type="text"] {
-    width: 220px;
+    width: 240px;
 }
 
 .toolbar select {
     width: 160px;
 }
 
-/* ─── Staff Form ───────────────────────────────────────────── */
 .staff-form {
-    max-width: 560px;
+    max-width: 600px;
 }
 
 .staff-form .form-row {
@@ -153,29 +153,28 @@ body.staff-page .win95-window {
 
 .form-actions {
     display: flex;
-    gap: 8px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 24px;
     padding-top: 16px;
     border-top: 1px solid #C0C0C0;
 }
 
-/* ─── Low Stock Row Highlight ──────────────────────────────── */
 tr.low-stock td { background: #FFF8C0 !important; }
 tr.out-of-stock td { background: #FFD0D0 !important; }
 
-/* ─── Quick Action Buttons ─────────────────────────────────── */
 .quick-actions {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
 
 .quick-action-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 12px 20px;
+    justify-content: center;
+    padding: 14px 20px;
     font-family: 'Courier New', Courier, monospace;
     font-size: 12px;
     text-decoration: none;
@@ -185,7 +184,7 @@ tr.out-of-stock td { background: #FFD0D0 !important; }
     border-left: 2px solid #FFFFFF;
     border-right: 2px solid #404040;
     border-bottom: 2px solid #404040;
-    min-width: 100px;
+    min-width: 110px;
     text-align: center;
 }
 
@@ -194,6 +193,6 @@ tr.out-of-stock td { background: #FFD0D0 !important; }
 }
 
 .quick-action-btn .icon {
-    font-size: 22px;
-    margin-bottom: 4px;
+    font-size: 20px;
+    margin-bottom: 6px;
 }
