@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>P.U.L.S.E — Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+</head>
+<body class="user-page">
+<div class="win95-window">
+    <div class="title-bar">
+        <div class="title-bar-text">P.U.L.S.E — Administrator Control Panel</div>
+        <div class="title-bar-controls"><button>×</button></div>
+    </div>
+    <nav class="menu-bar">
+        <a class="active">Alerts & Reports</a>
+        <a th:href="@{/logout}">Logout</a>
+        <span class="team-info">ADMIN MODE</span>
+    </nav>
+    <main class="user-body" style="padding: 24px;">
+        <h2 style="color: #0040C0;">SYSTEM ALERTS & AUDIT LOGS</h2>
+        <p style="font-size: 12px; margin-bottom: 16px;">Restricted overview for hospital network administrators.</p>
+        <table>
+            <thead>
+            <tr><th>Alert ID</th><th>Severity</th><th>Message</th><th>Timestamp</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="alert : ${alerts}">
+                <td th:text="'#ALV-' + ${alert.alertId}">#ALV-902</td>
+                <td><span class="badge badge-warning">HIGH</span></td>
+                <td th:text="${alert.message}">Low stock alert: Insulin Regular</td>
+                <td th:text="${alert.createdAt != null ? #temporals.format(alert.createdAt, 'yyyy-MM-dd HH:mm') : 'Just now'}">2026-09-14 16:00</td>
+            </tr>
+            <tr th:if="${alerts == null or #lists.isEmpty(alerts)}">
+                <td colspan="4" style="text-align: center; color: #2e7d32; padding: 16px;">No active alerts. All medicine inventories are within safe thresholds.</td>
+            </tr>
+            </tbody>
+        </table>
+    </main>
+    <div class="status-bar"><div class="status-bar-field">Status: Admin Logged In</div></div>
+</div>
+</body>
+</html>

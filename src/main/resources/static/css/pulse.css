@@ -1,0 +1,299 @@
+/* ═══════════════════════════════════════════════════════════
+   PULSE — pulse.css  (Shared Windows 95/98 Retro Theme)
+   Pharmacy Utility & Logistics System for Essential Medicines
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Courier New', Courier, monospace;
+    background-color: #C0C0C0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.win95-window {
+    background: #C0C0C0;
+    border-top: 2px solid #FFFFFF;
+    border-left: 2px solid #FFFFFF;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    box-shadow: 2px 2px 0 #000000;
+    width: 100%;
+    max-width: 1100px;
+    min-height: 500px;
+    padding: 10px; /* <--- This creates the gap between the outer window frame and your content */
+}
+
+.title-bar {
+    background: #0040C0;
+    color: #FFFFFF;
+    padding: 4px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+}
+
+.title-bar-text {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.title-bar-controls {
+    display: flex;
+    gap: 2px;
+}
+
+.title-bar-controls button {
+    width: 22px;
+    height: 20px;
+    background: #C0C0C0;
+    border-top: 2px solid #FFFFFF;
+    border-left: 2px solid #FFFFFF;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    color: #000;
+}
+
+.title-bar-controls button:active {
+    border-top: 2px solid #404040;
+    border-left: 2px solid #404040;
+    border-right: 2px solid #FFFFFF;
+    border-bottom: 2px solid #FFFFFF;
+}
+
+.menu-bar {
+    background: #C0C0C0;
+    border-bottom: 1px solid #808080;
+    padding: 3px 8px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+}
+
+.menu-bar a,
+.menu-bar span {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    color: #000;
+    text-decoration: none;
+    padding: 2px 10px;
+    white-space: nowrap;
+}
+
+.menu-bar a:hover {
+    background: #0040C0;
+    color: #FFFFFF;
+}
+
+.menu-bar a.active,
+.menu-bar .active {
+    font-weight: bold;
+}
+
+.menu-bar .separator {
+    color: #808080;
+    padding: 0 4px;
+}
+
+.menu-bar .team-info {
+    margin-left: auto;
+    font-size: 12px;
+    color: #404040;
+}
+
+.window-body {
+    margin: 8px;
+    background: #FFFFFF;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #DFDFDF;
+    border-bottom: 2px solid #DFDFDF;
+    padding: 32px 40px;
+    min-height: 400px;
+}
+
+.status-bar {
+    display: flex;
+    align-items: center;
+    background: #C0C0C0;
+    border-top: 1px solid #808080;
+    padding: 3px 8px;
+    gap: 2px;
+}
+
+.status-bar-field {
+    font-size: 12px;
+    font-family: 'Courier New', Courier, monospace;
+    border-top: 1px solid #808080;
+    border-left: 1px solid #808080;
+    border-right: 1px solid #FFFFFF;
+    border-bottom: 1px solid #FFFFFF;
+    padding: 1px 8px;
+    flex: 1;
+}
+
+.btn {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    background: #C0C0C0;
+    color: #000;
+    border-top: 2px solid #FFFFFF;
+    border-left: 2px solid #FFFFFF;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    padding: 5px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.btn:hover {
+    background: #D0D0D0;
+}
+
+.btn:active {
+    border-top: 2px solid #404040;
+    border-left: 2px solid #404040;
+    border-right: 2px solid #FFFFFF;
+    border-bottom: 2px solid #FFFFFF;
+}
+
+.btn-primary {
+    background: #0040C0;
+    color: #FFFFFF;
+    border-top: 2px solid #4070E0;
+    border-left: 2px solid #4070E0;
+    border-right: 2px solid #001880;
+    border-bottom: 2px solid #001880;
+    padding: 6px 24px;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background: #0050D0;
+    color: #FFFFFF;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+select,
+textarea {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    background: #FFFFFF;
+    border-top: 2px solid #808080;
+    border-left: 2px solid #808080;
+    border-right: 2px solid #DFDFDF;
+    border-bottom: 2px solid #DFDFDF;
+    padding: 4px 6px;
+    outline: none;
+    width: 100%;
+}
+
+label {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+}
+
+thead tr {
+    background: #0040C0;
+    color: #FFFFFF;
+}
+
+thead th {
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: bold;
+    border: 1px solid #001880;
+}
+
+tbody tr {
+    background: #FFFFFF;
+}
+
+tbody tr:nth-child(even) {
+    background: #F0F0F0;
+}
+
+tbody tr:hover {
+    background: #C8D8F8;
+}
+
+tbody td {
+    padding: 5px 10px;
+    border: 1px solid #C0C0C0;
+}
+
+.alert {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    border: 1px solid #808080;
+}
+
+.alert-error {
+    background: #FFC0C0;
+    border-color: #800000;
+    color: #800000;
+}
+
+.alert-success {
+    background: #C0FFC0;
+    border-color: #008000;
+    color: #005000;
+}
+
+.badge {
+    font-size: 11px;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 1px 6px;
+    font-weight: bold;
+}
+
+.badge-success { background: #008000; color: #FFFFFF; }
+.badge-warning { background: #C08000; color: #FFFFFF; }
+.badge-danger  { background: #800000; color: #FFFFFF; }
+
+.text-center { text-align: center; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.w-full { width: 100%; }

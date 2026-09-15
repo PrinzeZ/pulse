@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Search Medicine</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+</head>
+<body class="user-page">
+
+<div class="win95-window">
+    <div class="title-bar">
+        <div class="title-bar-text">P.U.L.S.E — Medicine Search Inventory</div>
+        <div class="title-bar-controls">
+            <button type="button">_</button>
+            <button type="button">□</button>
+            <button type="button">×</button>
+        </div>
+    </div>
+
+    <nav class="menu-bar">
+        <a th:href="@{/}">Home</a>
+        <a th:href="@{/search}" class="active">Search Medicine</a>
+        <a th:href="@{/login}" th:unless="${#authorization.expression('isAuthenticated()')}">Login</a>
+        <span th:if="${#authorization.expression('isAuthenticated()')}">Role: Authenticated</span>
+        <span class="team-info">P.U.L.S.E</span>
+    </nav>
+
+    <main class="user-body" style="padding: 24px 32px;">
+        <h2 style="color: #0040C0; margin-bottom: 12px;">ESSENTIAL MEDICINE DIRECTORY</h2>
+        <p style="font-size: 12px; margin-bottom: 16px;">Search live stock across regional government hospitals.</p>
+
+        <form th:action="@{/search}" method="get" class="search-bar-container">
+            <input type="text" name="query" th:value="${query}" placeholder="Enter medicine name (e.g., Paracetamol, Insulin)..." required>
+            <button type="submit" class="btn btn-primary">SEARCH</button>
+        </form>
+
+        <div class="table-responsive" style="margin-top: 20px;">
+            <table>
+                <thead>
+                <tr>
+                    <th>Medicine Name</th>
+                    <th>Hospital / Location</th>
+                    <th>Stock Count</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${results != null}" th:each="res : ${results}">
+                    <td th:text="${res.medicineName}">Paracetamol</td>
+                    <td th:text="${res.hospitalName + (res.district != null ? ' (' + res.district + ')' : '')}">District General Hospital</td>
+                    <td th:text="${res.quantity} + ' units'">1,200 units</td>
+                    <td>
+                        <span th:class="'badge ' + (${res.status} == 'GREEN' ? 'badge-success' : (${res.status} == 'YELLOW' ? 'badge-warning' : 'badge-danger'))"
+                              th:text="${res.status == 'GREEN' ? 'AVAILABLE' : (res.status == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">AVAILABLE</span>
+                    </td>
+                </tr>
+                <tr th:if="${results != null and #lists.isEmpty(results)}">
+                    <td colspan="4" style="text-align: center; color: #666; padding: 16px;">No medicines found matching your search query.</td>
+                </tr>
+                <tr th:if="${results == null}">
+                    <td colspan="4" style="text-align: center; color: #666; padding: 16px;">Enter a medicine or hospital name above to check live stock availability.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div class="status-bar">
+        <div class="status-bar-field">Database Connected</div>
+        <div class="status-bar-field">Ready</div>
+        <div class="status-bar-field">P.U.L.S.E v1.0</div>
+    </div>
+</div>
+
+</body>
+</html>
