@@ -25,15 +25,7 @@
             <tr><th>Alert ID</th><th>Severity</th><th>Message</th><th>Timestamp</th></tr>
             </thead>
             <tbody>
-            <tr th:each="alert : ${alerts}">
-                <td th:text="'#ALV-' + ${alert.alertId}">#ALV-902</td>
-                <td><span class="badge badge-warning">HIGH</span></td>
-                <td th:text="${alert.message}">Low stock alert: Insulin Regular</td>
-                <td th:text="${alert.createdAt != null ? #temporals.format(alert.createdAt, 'yyyy-MM-dd HH:mm') : 'Just now'}">2026-09-14 16:00</td>
-            </tr>
-            <tr th:if="${alerts == null or #lists.isEmpty(alerts)}">
-                <td colspan="4" style="text-align: center; color: #2e7d32; padding: 16px;">No active alerts. All medicine inventories are within safe thresholds.</td>
-            </tr>
+            <tr><td>#ALV-902</td><td><span class="badge badge-warning">HIGH</span></td><td>Low stock alert: Insulin Regular (Ernakulam)</td><td>2026-09-14 16:00</td></tr>
             </tbody>
         </table>
     </main>

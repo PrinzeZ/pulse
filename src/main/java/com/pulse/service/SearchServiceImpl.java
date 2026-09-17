@@ -37,7 +37,7 @@ public class SearchServiceImpl implements SearchService {
             }
 
             StockStatus status = StockStatus.from(quantity, threshold);
-            results.add(new SearchResult(hospitalName, rowDistrict, medicineName, status.name(), quantity, threshold));
+            results.add(new SearchResult(hospitalName, medicineName, status.name(), quantity,threshold ));
         }
 
         return results;

@@ -2,47 +2,24 @@ package com.pulse.service;
 
 import com.pulse.model.Medicine;
 import com.pulse.model.StockEntry;
-import com.pulse.repository.MedicineRepository;
-import com.pulse.repository.StockEntryRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.Optional;
-
+// this is basically telling the sprinjg container to detect the class during class path scanning and register it as a bean 
 @Service
 public class StaffService {
 
-    @Autowired
+    @Autowired // Spring to automatically inject a collaborating bean/object into a class constructor, field and like u dont need to create objects using new keyword hehe
+    // Spring ginds the matching container and wires it autooooo matically
     private AlertService alertService;
-
-    @Autowired
-    private StockEntryRepository stockRepository;
-
-    @Autowired
-    private MedicineRepository medicineRepository;
-
-    public void updateStock(Long hospitalId, Long medicineId, int quantity) {
-        Medicine medicine = medicineRepository.findById(medicineId)
-                .orElseThrow(() -> new RuntimeException("Medicine not found with ID: " + medicineId));
-        updateStock(hospitalId, medicineId, quantity, medicine);
-    }
-
-    // THE PIPELINE — this is the «include» chain from the Use Case Diagram
+   
+    // THE PIPELINE — this is your «include» chain from the Use Case Diagram
     public void updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine) {
-        // Step 1: Find existing stock or create a new entry
-        Optional<StockEntry> existing = stockRepository.findByHospitalIdAndMedId(hospitalId, medicineId);
-        StockEntry entry;
-        if (existing.isPresent()) {
-            entry = existing.get();
-            entry.setQuantity(quantity);
-            entry.setLastUpdated(LocalDate.now());
-        } else {
-            entry = new StockEntry(null, hospitalId, medicineId, quantity);
-        }
+        // Step 1: Create the stock entry
+        StockEntry entry = new StockEntry(null, hospitalId, medicineId, quantity);
 
-        // Step 2: Save to DB
-        stockRepository.save(entry);
+        // Step 2: Save to DB (Sanu's StockRepository plugs in here)
+        // stockRepository.save(entry);  ← sanu needs to uncomment when ur repo is ready
 
         // Step 3: MANDATORY threshold check — the «include»
         boolean isLow = entry.checkThreshold(medicine);
@@ -51,5 +28,8 @@ public class StaffService {
         if (isLow) {
             alertService.sendAlert(hospitalId, medicineId, medicine.getName(), quantity);
         }
-    }
+
+        // Step 5: Audit log ( GGGGouri's AuditLogger plugs in here)
+        // auditLogger.log("UPDATE_STOCK", username, medicine.getName() + " qty=" + quantity);
+    }// slthough i used ai in this file to help me with the code its still messy i need to fix it after yall put ur stuff in 
 }

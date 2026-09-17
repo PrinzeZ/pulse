@@ -1,10 +1,11 @@
 package com.pulse.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.pulse.exception.InvalidLoginException;
 import com.pulse.model.User;
 import com.pulse.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
 
 @Service
 public class LoginService {

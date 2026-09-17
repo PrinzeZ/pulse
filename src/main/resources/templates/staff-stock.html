@@ -1,53 +1,173 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
+
     <title>P.U.L.S.E — Staff Stock Management</title>
+
     <link rel="stylesheet" th:href="@{/css/pulse.css}">
     <link rel="stylesheet" th:href="@{/css/user.css}">
 </head>
+
 <body class="user-page">
-<div class="win95-window">
-    <div class="title-bar">
-        <div class="title-bar-text">P.U.L.S.E — Staff Inventory Panel</div>
-        <div class="title-bar-controls"><button>×</button></div>
-    </div>
-    <nav class="menu-bar">
-        <a class="active">Stock Management</a>
-        <a th:href="@{/logout}">Logout</a>
-        <span class="team-info">STAFF MODE</span>
-    </nav>
-    <main class="user-body" style="padding: 24px;">
-        <h2 style="color: #0040C0;">LOCAL HOSPITAL INVENTORY</h2>
-        <p style="font-size: 12px; margin-bottom: 16px;">Manage local medicine counts and supplies.</p>
-        <div th:if="${param.success}" style="background: #c0dfc0; border: 2px inset #808080; padding: 6px 10px; margin-bottom: 14px; font-weight: bold; color: #006000;">
-            ✓ Stock updated successfully!
+
+    <div class="win95-window">
+
+        <!-- TITLE BAR -->
+        <div class="title-bar">
+
+            <div class="title-bar-text">
+                P.U.L.S.E — Staff Inventory Panel
+            </div>
+
+            <div class="title-bar-controls">
+                <button>×</button>
+            </div>
+
         </div>
-        <table>
-            <thead>
-            <tr><th>Medicine</th><th>Category</th><th>Threshold</th><th>Current Quantity</th><th>Update Stock</th></tr>
-            </thead>
-            <tbody>
-            <tr th:each="item : ${inventory}">
-                <td th:text="${item.name}">Paracetamol 500mg</td>
-                <td th:text="${item.category}">Analgesic</td>
-                <td th:text="${item.threshold} + ' units'">50 units</td>
-                <td>
-                    <span th:text="${item.quantity} + ' units'">1,200 units</span>
-                    <span class="badge badge-warning" th:if="${item.isLow}" style="margin-left: 6px;">LOW</span>
-                </td>
-                <td>
-                    <form th:action="@{/staff/stock/update}" method="post" style="display: flex; gap: 6px; align-items: center;">
-                        <input type="hidden" name="medicineId" th:value="${item.medicineId}">
-                        <input type="number" name="quantity" th:value="${item.quantity}" min="0" style="width: 75px; padding: 2px;" required>
-                        <button type="submit" class="btn">Save</button>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </main>
-    <div class="status-bar"><div class="status-bar-field">Status: Staff Logged In</div></div>
-</div>
+
+
+        <!-- MENU BAR -->
+        <nav class="menu-bar">
+
+            <a class="active">
+                Stock Management
+            </a>
+
+            <a th:href="@{/logout}">
+                Logout
+            </a>
+
+            <span class="team-info">
+                STAFF MODE
+            </span>
+
+        </nav>
+
+
+        <!-- MAIN CONTENT -->
+        <main class="user-body" style="padding: 24px;">
+
+            <h2 style="color: #0040C0;">
+                LOCAL HOSPITAL INVENTORY
+            </h2>
+
+            <p style="font-size: 12px; margin-bottom: 16px;">
+                Manage local medicine counts and supplies.
+            </p>
+
+
+            <!-- STOCK TABLE -->
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Medicine
+                        </th>
+
+                        <th>
+                            Category
+                        </th>
+
+                        <th>
+                            Available Quantity
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    <!--
+                This row is repeated for every stock entry
+                received from the database.
+            -->
+                    <tr th:each="stock : ${stockEntries}">
+
+                        <!-- MEDICINE NAME -->
+                        <td th:text="${medicines[stock.medId].name}">
+                            Medicine Name
+                        </td>
+
+
+                        <!-- MEDICINE CATEGORY -->
+                        <td th:text="${medicines[stock.medId].cat}">
+                            Category
+                        </td>
+
+
+                        <!-- UPDATE STOCK FORM -->
+                        <td>
+
+                            <form th:action="@{/staff/stock/update}" method="post">
+
+                                <input type="hidden" name="entryId" th:value="${stock.entryId}">
+
+                                <input type="number" name="quantity" th:value="${stock.quantity}" min="0" required
+                                    style="width: 80px;">
+
+                                <span>
+                                    units
+                                </span>
+
+                        </td>
+
+
+                        <!-- UPDATE BUTTON -->
+                        <td>
+
+                            <button type="submit" class="btn">
+                                Update Stock
+                            </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+
+                    <!-- EMPTY STOCK MESSAGE -->
+                    <tr th:if="${#lists.isEmpty(stockEntries)}">
+
+                        <td colspan="4">
+
+                            No stock entries found.
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </main>
+
+
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+
+            <div class="status-bar-field">
+
+                Status: Staff Logged In
+
+            </div>
+
+        </div>
+
+    </div>
+
 </body>
+
 </html>
