@@ -1,35 +1,94 @@
 package com.pulse.service;
 
+import com.pulse.model.Hospital;
 import com.pulse.model.Medicine;
 import com.pulse.model.StockEntry;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pulse.model.StockStatus;
+import com.pulse.repository.HospitalRepository;
+import com.pulse.repository.MedicineRepository;
+import com.pulse.repository.StockEntryRepository;
 import org.springframework.stereotype.Service;
-// this is basically telling the sprinjg container to detect the class during class path scanning and register it as a bean 
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Service
 public class StaffService {
 
-    @Autowired // Spring to automatically inject a collaborating bean/object into a class constructor, field and like u dont need to create objects using new keyword hehe
-    // Spring ginds the matching container and wires it autooooo matically
-    private AlertService alertService;
-   
-    // THE PIPELINE — this is your «include» chain from the Use Case Diagram
-    public void updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine) {
-        // Step 1: Create the stock entry
-        StockEntry entry = new StockEntry(null, hospitalId, medicineId, quantity);
+    private final AlertService alertService;
+    private final HospitalRepository hospitalRepository;
+    private final MedicineRepository medicineRepository;
+    private final StockEntryRepository stockEntryRepository;
 
-        // Step 2: Save to DB (Sanu's StockRepository plugs in here)
-        // stockRepository.save(entry);  ← sanu needs to uncomment when ur repo is ready
+    public StaffService(AlertService alertService,
+                        HospitalRepository hospitalRepository,
+                        MedicineRepository medicineRepository,
+                        StockEntryRepository stockEntryRepository) {
+        this.alertService = alertService;
+        this.hospitalRepository = hospitalRepository;
+        this.medicineRepository = medicineRepository;
+        this.stockEntryRepository = stockEntryRepository;
+    }
 
-        // Step 3: MANDATORY threshold check — the «include»
-        boolean isLow = entry.checkThreshold(medicine);
-
-        // Step 4: Auto-alert if low — the System actor fires
-        if (isLow) {
-            alertService.sendAlert(hospitalId, medicineId, medicine.getName(), quantity);
+    public StaffInventory getInventory(Long hospitalId) {
+        Hospital hospital = hospitalRepository.findById(hospitalId).orElse(null);
+        if (hospital == null) {
+            return null;
         }
 
-        // Step 5: Audit log ( GGGGouri's AuditLogger plugs in here)
-        // auditLogger.log("UPDATE_STOCK", username, medicine.getName() + " qty=" + quantity);
-    }// slthough i used ai in this file to help me with the code its still messy i need to fix it after yall put ur stuff in 
+        List<Medicine> medicines = medicineRepository.findAll();
+        Map<Long, StockEntry> stockByMedicine = stockEntryRepository.findByHospitalId(hospitalId)
+                .stream()
+                .collect(Collectors.toMap(StockEntry::getMedId, stock -> stock));
+        List<StaffInventoryRow> inventory = new ArrayList<>();
+        for (Medicine medicine : medicines) {
+            StockEntry stock = stockByMedicine.get(medicine.getMedId());
+            if (stock == null) {
+                stock = new StockEntry(null, hospitalId, medicine.getMedId(), 0);
+            }
+            inventory.add(new StaffInventoryRow(
+                    medicine,
+                    stock,
+                    StockStatus.from(stock.getQuantity(), medicine.getThreshold())));
+        }
+        inventory.sort(Comparator.comparing(row -> row.medicine().getName()));
+
+        List<StaffInventoryRow> thresholdAlerts = inventory.stream()
+                .filter(row -> row.stock().getQuantity() < row.medicine().getThreshold())
+                .toList();
+
+        return new StaffInventory(hospital, inventory, thresholdAlerts);
+    }
+
+    public StockEntry updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
+        if (medicine == null) {
+            throw new IllegalArgumentException("Medicine is required");
+        }
+
+        StockEntry entry = stockEntryRepository.findByHospitalIdAndMedId(hospitalId, medicineId)
+                .orElseGet(() -> new StockEntry(null, hospitalId, medicineId, 0));
+        entry.setQuantity(quantity);
+        entry.setLastUpdated(LocalDate.now());
+        stockEntryRepository.save(entry);
+
+        if (entry.checkThreshold(medicine)) {
+            alertService.sendAlert(hospitalId, medicineId, medicine.getName(), quantity);
+        }
+        return entry;
+    }
+
+    public record StaffInventory(Hospital hospital,
+                                 List<StaffInventoryRow> inventory,
+                                 List<StaffInventoryRow> thresholdAlerts) {
+    }
+
+    public record StaffInventoryRow(Medicine medicine, StockEntry stock, StockStatus status) {
+    }
 }

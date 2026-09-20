@@ -1,5 +1,7 @@
 package com.pulse.model;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
@@ -18,7 +20,8 @@ public class Medicine {
 
     private String name;
     private String category;
-    private int threshold; // Per medicine for each the threshold - redesign cheyyendivarum
+    private int threshold;
+    private LocalDate expiryDate; // Expiry date of the medicine
 
     public Medicine() {}
 
@@ -36,4 +39,7 @@ public class Medicine {
     public void setCat(String category) {this.category= category;}
     public int getThreshold() { return threshold;}
     public void setThreshold(int threshold) { this.threshold = threshold; }
+
+    public LocalDate getExpiryDate() { return expiryDate; }
+    public void setExpiryDate(LocalDate expiryDate) { this.expiryDate = expiryDate; }
 }

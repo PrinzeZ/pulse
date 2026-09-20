@@ -1,120 +1,105 @@
 package com.pulse.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-
-import com.pulse.model.Medicine;
+import com.pulse.SessionSecurity;
+import com.pulse.model.PharmacyStaff;
 import com.pulse.model.StockEntry;
 import com.pulse.repository.MedicineRepository;
 import com.pulse.repository.StockEntryRepository;
-
+import com.pulse.service.AdminDashboardService;
+import com.pulse.service.AlertService;
+import com.pulse.service.StaffService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class RoleViewController {
 
+    private final SessionSecurity sessionSecurity;
+    private final AdminDashboardService adminDashboardService;
+    private final StaffService staffService;
+    private final AlertService alertService;
     private final StockEntryRepository stockEntryRepository;
     private final MedicineRepository medicineRepository;
 
-    public RoleViewController(StockEntryRepository stockEntryRepository,
+    public RoleViewController(SessionSecurity sessionSecurity,
+                              AdminDashboardService adminDashboardService,
+                              StaffService staffService,
+                              AlertService alertService,
+                              StockEntryRepository stockEntryRepository,
                               MedicineRepository medicineRepository) {
-
+        this.sessionSecurity = sessionSecurity;
+        this.adminDashboardService = adminDashboardService;
+        this.staffService = staffService;
+        this.alertService = alertService;
         this.stockEntryRepository = stockEntryRepository;
         this.medicineRepository = medicineRepository;
     }
 
+
+
     @GetMapping("/admin/alerts")
-    public String adminAlertsPage(HttpSession session) {
-
-        String role = (String) session.getAttribute("role");
-
-        if (!"ADMIN".equals(role)) {
-            return "redirect:/login";
-        }
-
+    public String adminAlertsPage(Model model) {
+        model.addAttribute("activeAlerts", alertService.getActiveAlerts());
         return "admin-alerts";
     }
 
+    @GetMapping("/staff/dashboard")
+    public String staffDashboard(HttpSession session, Model model) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) {
+            return "redirect:/login";
+        }
+        StaffService.StaffInventory inventory = staffService.getInventory(staff.getHospitalId());
+        if (inventory == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("inventory", inventory);
+        return "staff_dashboard";
+    }
 
     @GetMapping("/staff/stock")
     public String staffStockPage(HttpSession session, Model model) {
-
-        String role = (String) session.getAttribute("role");
-
-        if (!"STAFF".equals(role) && !"ADMIN".equals(role)) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) {
             return "redirect:/login";
         }
-
-        String username = (String) session.getAttribute("username");
-
-        Long hospitalId = null;
-
-        if ("staff_kozhikode".equals(username)) {
-            hospitalId = 1L;
-
-        } else if ("staff_ernakulam".equals(username)) {
-            hospitalId = 3L;
-        }
-
-        if (hospitalId == null) {
+        StaffService.StaffInventory inventory = staffService.getInventory(staff.getHospitalId());
+        if (inventory == null) {
             return "redirect:/login";
         }
-
-
-        // Get ALL 10 medicines
-        List<Medicine> allMedicines = medicineRepository.findAll();
-
-
-        // Get existing stock entries for this hospital
-        List<StockEntry> existingStock =
-                stockEntryRepository.findByHospitalId(hospitalId);
-
-
-        // Put existing stock into a map using medicine ID
-        Map<Long, StockEntry> stockMap = existingStock.stream()
-                .collect(Collectors.toMap(
-                        StockEntry::getMedId,
-                        stock -> stock
-                ));
-
-
-        // Create a stock entry for every medicine
-        List<StockEntry> stockEntries = new ArrayList<>();
-
-        for (Medicine medicine : allMedicines) {
-
-            StockEntry stock = stockMap.get(medicine.getMedId());
-
-            if (stock == null) {
-
-                stock = new StockEntry();
-
-                stock.setHospitalId(hospitalId);
-                stock.setMedId(medicine.getMedId());
-                stock.setQuantity(0);
-
-            }
-
-            stockEntries.add(stock);
-        }
-
-
-        // Send data to Thymeleaf
-        Map<Long, Medicine> medicines = allMedicines.stream()
-                .collect(Collectors.toMap(
-                        Medicine::getMedId,
-                        medicine -> medicine
-                ));
-
-        model.addAttribute("stockEntries", stockEntries);
-        model.addAttribute("medicines", medicines);
-
+        model.addAttribute("inventory", inventory);
         return "staff-stock";
+    }
+
+    @PostMapping("/staff/stock/update")
+    public String updateStock(HttpSession session,
+                              @RequestParam(required = false) Long entryId,
+                              @RequestParam Long medicineId,
+                              @RequestParam int quantity,
+                              RedirectAttributes redirectAttributes) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            if (entryId != null) {
+                StockEntry existing = stockEntryRepository.findById(entryId).orElse(null);
+                if (existing == null || !staff.getHospitalId().equals(existing.getHospitalId())) {
+                    return "redirect:/staff/stock?error=true";
+                }
+            }
+            staffService.updateStock(staff.getHospitalId(), medicineId, quantity,
+                    medicineRepository.findById(medicineId).orElse(null));
+            redirectAttributes.addFlashAttribute("success", "Stock updated successfully.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", "Unable to update stock.");
+        }
+        return "redirect:/staff/stock";
     }
 }

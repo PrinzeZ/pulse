@@ -1,24 +1,30 @@
 package com.pulse.dto;
 
 public class SearchResult {
-    private String hospitalName;
-    private String district;
-    private String medicineName;
-    private int quantity;
-    private int threshold;
+    private final String hospitalName;
+    private final String district;
+    private final String medicineName;
+    private final String category;
+    private final int quantity;
+    private final int threshold;
+    private final String status;
 
-    // Constructor, getters, and setters
-    public SearchResult(String hospitalName, String district, String medicineName, int quantity, int threshold) {
+    public SearchResult(String hospitalName, String district, String medicineName, String category,
+                        int quantity, int threshold, String status) {
         this.hospitalName = hospitalName;
         this.district = district;
         this.medicineName = medicineName;
+        this.category = category;
         this.quantity = quantity;
         this.threshold = threshold;
+        this.status = status;
     }
 
     public String getHospitalName() { return hospitalName; }
     public String getDistrict() { return district; }
     public String getMedicineName() { return medicineName; }
+    public String getCategory() { return category; }
     public int getQuantity() { return quantity; }
     public int getThreshold() { return threshold; }
+    public String getStatus() { return status; }
 }

@@ -1,217 +1,61 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org">
-
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>P.U.L.S.E — Login</title>
-
-    <link rel="stylesheet"
-          th:href="@{/css/pulse.css}">
-
-    <link rel="stylesheet"
-          th:href="@{/css/login.css}">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Secure Access</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
 </head>
-
-
 <body class="login-page">
-
-
-<div class="win95-window">
-
-
-    <!-- TITLE BAR -->
-
-    <div class="title-bar">
-
-        <div class="title-bar-text">
-            P.U.L.S.E — Login
-        </div>
-
-        <div class="title-bar-controls">
-
-            <button type="button">_</button>
-
-            <button type="button">□</button>
-
-            <button type="button">×</button>
-
-        </div>
-
-    </div>
-
-
-    <!-- NAVIGATION -->
-
-    <nav class="menu-bar">
-        <a th:href="@{/}" class="active">Home</a>
-        <a th:href="@{/search}">Search Medicine</a>
-        <a href="#about">About</a>
-        <a th:href="@{/login}">Login</a>
-        <span class="team-info">P.U.L.S.E</span>
-    </nav>
-
-
-    <!-- LOGIN BODY -->
-
-    <main class="login-body">
-
-
-        <div class="login-panel">
-
-
-            <!-- Logo -->
-
-            <div class="login-logo">
-
-                <div class="login-logo-main">
-                    P.U.L.S.E
+<div class="login-layout">
+    <section class="login-brand-panel">
+        <div>
+            <div class="brand">
+                <div class="brand-mark">P</div>
+                <div>
+                    <div class="brand-name">P.U.L.S.E</div>
+                    <div class="brand-subtitle">Medicine Availability &amp; Inventory</div>
                 </div>
-
-                <div class="login-logo-sub">
-                    ESSENTIAL MEDICINE SYSTEM
-                </div>
-
             </div>
-
-
-            <div class="login-divider"></div>
-
-
-            <h1>
-                SYSTEM LOGIN
-            </h1>
-
-
-            <p class="login-description">
-
-                Authorized access for Pharmacy Staff
-                and Administrators.
-
-            </p>
-
-
-            <!-- ERROR -->
-
-            <div th:if="${param.error}"
-                 class="alert alert-error">
-
-                Invalid username or password.
-
-            </div>
-
-
-            <!-- LOGIN FORM -->
-
-            <form th:action="@{/login}"
-                  method="post"
-                  class="login-form">
-
-
-                <div class="form-group">
-
-                    <label for="username">
-                        Username:
-                    </label>
-
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        autocomplete="username"
-                        required>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label for="password">
-                        Password:
-                    </label>
-
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        autocomplete="current-password"
-                        required>
-
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="btn btn-primary login-button">
-
-                    LOGIN
-
-                </button>
-
-
-            </form>
-
-
-            <div class="role-note">
-
-                <strong>ROLE AUTO-DETECTED</strong>
-
-                <br>
-
-                Staff → Stock Management
-
-                <br>
-
-                Admin → Alerts & Reports
-
-            </div>
-
-
-            <div class="public-access">
-
-                <span>
-                    Public user?
-                </span>
-
-                <a th:href="@{/search}">
-                    Search medicine without login →
-                </a>
-
-            </div>
-
-
         </div>
 
-    </main>
-
-
-    <!-- STATUS BAR -->
-
-    <div class="status-bar">
-
-        <div class="status-bar-field">
-            Authentication
+        <div class="login-brand-copy">
+            <div class="eyebrow">Clinical inventory platform</div>
+            <h1>Essential medicine, visible when it matters.</h1>
+            <p>Secure access for hospital administrators and pharmacy staff managing medicine availability and stock.</p>
         </div>
 
-        <div class="status-bar-field">
-            Authorized Personnel
+        <div class="login-feature-list">
+            <div class="login-feature">Hospital-level inventory visibility</div>
+            <div class="login-feature">Threshold-based stock monitoring</div>
+            <div class="login-feature">Public medicine availability search</div>
         </div>
+    </section>
 
-        <div class="status-bar-field">
-            P.U.L.S.E v1.0
+    <section class="login-form-panel">
+        <h2>Sign in to P.U.L.S.E</h2>
+        <p>Use your authorized account to access the management system.</p>
+
+        <div th:if="${param.error}" class="alert alert-error">Invalid username or password.</div>
+        <div th:if="${param.logout}" class="alert alert-success" style="margin-top:10px;">You have been signed out securely.</div>
+
+        <form th:action="@{/login}" method="post" class="login-form" style="margin-top:18px;">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Sign in</button>
+        </form>
+
+        <div class="login-note">
+            Public access does not require an account.<br>
+            <a th:href="@{/search}">Search medicine availability →</a>
         </div>
-
-    </div>
-
-
+    </section>
 </div>
-
-
 </body>
 </html>
