@@ -48,7 +48,7 @@
                         <div class="card-body" th:if="${activeAlerts != null and activeAlerts.size() > 0}">
                             <div class="list">
                                 <div class="list-item callout-warning" th:each="alert : ${activeAlerts}">
-                                    <div class="list-main"><div class="list-title" th:text="${alert.message}">Low stock alert</div><div class="list-meta">Hospital <span th:text="${alert.hospitalId}">0</span> · Medicine <span th:text="${alert.medId}">0</span> · <span th:text="${#temporals.format(alert.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span></div></div>
+                                    <div class="list-main"><div class="list-title" th:text="${alert.message}">Low stock alert</div><div class="list-meta">Hospital <span th:text="${alert.hospitalId}">0</span> · Medicine <span th:text="${alert.getmedId()}">0</span> · <span th:text="${#temporals.format(alert.createdAt, 'dd MMM yyyy, HH:mm')}">Date</span></div></div>
                                     <span class="badge badge-warning">ACTION</span>
                                 </div>
                             </div>
