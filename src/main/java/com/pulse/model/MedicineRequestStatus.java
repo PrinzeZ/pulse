@@ -1,0 +1,13 @@
+package com.pulse.model;
+
+public enum MedicineRequestStatus {
+    PENDING_DISTRICT,
+    UNDER_REVIEW,
+    APPROVED,
+    PARTIALLY_FULFILLED,
+    REJECTED,
+    ESCALATED_TO_STATE,
+    STATE_APPROVED,
+    STATE_PARTIALLY_FULFILLED,
+    FULFILLED
+}

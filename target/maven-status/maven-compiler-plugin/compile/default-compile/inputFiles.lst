@@ -21,7 +21,9 @@ C:\Projects\pulse\src\main\java\com\pulse\dto\SearchResult.java
 C:\Projects\pulse\src\main\java\com\pulse\exception\InsufficientStockException.java
 C:\Projects\pulse\src\main\java\com\pulse\exception\InvalidLoginException.java
 C:\Projects\pulse\src\main\java\com\pulse\exception\StockNotFoundException.java
+C:\Projects\pulse\src\main\java\com\pulse\local\model\LocalMedicineRequest.java
 C:\Projects\pulse\src\main\java\com\pulse\local\model\LocalStockEntry.java
+C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalMedicineRequestRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalStockEntryRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\LocalOfflineStore.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\LocalSyncScheduler.java
@@ -35,6 +37,8 @@ C:\Projects\pulse\src\main\java\com\pulse\model\HospitalAdminActivation.java
 C:\Projects\pulse\src\main\java\com\pulse\model\HospitalRegistration.java
 C:\Projects\pulse\src\main\java\com\pulse\model\HospitalRegistrationStatus.java
 C:\Projects\pulse\src\main\java\com\pulse\model\Medicine.java
+C:\Projects\pulse\src\main\java\com\pulse\model\MedicineRequest.java
+C:\Projects\pulse\src\main\java\com\pulse\model\MedicineRequestStatus.java
 C:\Projects\pulse\src\main\java\com\pulse\model\PharmacyStaff.java
 C:\Projects\pulse\src\main\java\com\pulse\model\PublicUser.java
 C:\Projects\pulse\src\main\java\com\pulse\model\State.java
@@ -49,6 +53,7 @@ C:\Projects\pulse\src\main\java\com\pulse\repository\HospitalAdminActivationRepo
 C:\Projects\pulse\src\main\java\com\pulse\repository\HospitalRegistrationRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\HospitalRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\MedicineRepository.java
+C:\Projects\pulse\src\main\java\com\pulse\repository\MedicineRequestRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\StateRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\StockEntryRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\UserRepository.java
@@ -58,6 +63,8 @@ C:\Projects\pulse\src\main\java\com\pulse\service\HierarchyDashboardService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\HospitalEmailService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\HospitalProvisioningService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\LoginService.java
+C:\Projects\pulse\src\main\java\com\pulse\service\MedicineRequestSchemaService.java
+C:\Projects\pulse\src\main\java\com\pulse\service\MedicineRequestService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\Notifiable.java
 C:\Projects\pulse\src\main\java\com\pulse\service\SearchService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\SearchServiceImpl.java
