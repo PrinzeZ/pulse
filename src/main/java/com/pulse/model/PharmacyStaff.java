@@ -2,14 +2,11 @@ package com.pulse.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Column;
 
 @Entity
 @DiscriminatorValue("STAFF")
 public class PharmacyStaff extends User {
 
-    @Column(name = "hospital_id")
-    private Long hospitalId;
 
     public PharmacyStaff() {}
 
@@ -18,6 +15,4 @@ public class PharmacyStaff extends User {
         this.hospitalId = hospitalId;
     }
 
-    public Long getHospitalId() { return hospitalId; }
-    public void setHospitalId( Long hospitalId ) { this.hospitalId = hospitalId; }
 }

@@ -3,6 +3,8 @@ package com.pulse.controller;
 import com.pulse.SessionSecurity;
 import com.pulse.model.Admin;
 import com.pulse.model.PharmacyStaff;
+import com.pulse.model.StateAdmin;
+import com.pulse.model.DistrictAdmin;
 import com.pulse.model.User;
 import com.pulse.service.LoginService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +27,14 @@ public class LoginController {
 
     @GetMapping("/login")
     public String loginPage(HttpSession session) {
+        // Check new roles first
+        if (sessionSecurity.hasRole(session, "STATE_ADMIN")) {
+            return "redirect:/state-admin/dashboard";
+        }
+        if (sessionSecurity.hasRole(session, "DISTRICT_ADMIN")) {
+            return "redirect:/district-admin/dashboard";
+        }
+        // Existing role checks
         if (sessionSecurity.hasRole(session, "ADMIN")) {
             return "redirect:/admin/dashboard";
         }
@@ -49,18 +59,46 @@ public class LoginController {
         try {
             User user = loginService.authenticate(username, password);
             newSession.setAttribute(SessionSecurity.LOGGED_IN_USER, user);
-            if (user instanceof Admin) {
-                newSession.setAttribute(SessionSecurity.ROLE, "ADMIN");
-                return "redirect:/admin/dashboard";
-            }
-            if (user instanceof PharmacyStaff) {
-                newSession.setAttribute(SessionSecurity.ROLE, "STAFF");
-                return "redirect:/staff/dashboard";
-            }
+            newSession.setAttribute("stateId", user.getStateId());
+            newSession.setAttribute("districtId", user.getDistrictId());
+            newSession.setAttribute("hospitalId", user.getHospitalId());
+            String role = determineRole(user);
+            newSession.setAttribute(SessionSecurity.ROLE, role);
+            return redirectToDashboard(role);
         } catch (RuntimeException e) {
             return "redirect:/login?error=true";
         }
-        return "redirect:/login?error=true";
+    }
+
+    private String determineRole(User user) {
+        if (user instanceof StateAdmin) {
+            return "STATE_ADMIN";
+        }
+        if (user instanceof DistrictAdmin) {
+            return "DISTRICT_ADMIN";
+        }
+        if (user instanceof Admin) {
+            return "ADMIN";
+        }
+        if (user instanceof PharmacyStaff) {
+            return "STAFF";
+        }
+        return "";
+    }
+
+    private String redirectToDashboard(String role) {
+        switch (role) {
+            case "STATE_ADMIN":
+                return "redirect:/state-admin/dashboard";
+            case "DISTRICT_ADMIN":
+                return "redirect:/district-admin/dashboard";
+            case "ADMIN":
+                return "redirect:/admin/dashboard";
+            case "STAFF":
+                return "redirect:/staff/dashboard";
+            default:
+                return "redirect:/login?error=true";
+        }
     }
 
     @GetMapping("/menu")
@@ -69,13 +107,18 @@ public class LoginController {
             return "redirect:/login";
         }
         String role = (String) session.getAttribute(SessionSecurity.ROLE);
-        if ("ADMIN".equals(role)) {
-            return "redirect:/admin/dashboard";
+        switch (role) {
+            case "STATE_ADMIN":
+                return "redirect:/state-admin/dashboard";
+            case "DISTRICT_ADMIN":
+                return "redirect:/district-admin/dashboard";
+            case "ADMIN":
+                return "redirect:/admin/dashboard";
+            case "STAFF":
+                return "redirect:/staff/dashboard";
+            default:
+                return "redirect:/";
         }
-        if ("STAFF".equals(role)) {
-            return "redirect:/staff/dashboard";
-        }
-        return "redirect:/";
     }
 
     @GetMapping("/logout")
