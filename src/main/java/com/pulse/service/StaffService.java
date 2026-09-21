@@ -1,9 +1,8 @@
 package com.pulse.service;
 
-import jakarta.transaction.Transactional;
-
 import com.pulse.local.model.LocalStockEntry;
 import com.pulse.local.repository.LocalStockEntryRepository;
+import com.pulse.local.service.LocalOfflineStore;
 import com.pulse.model.Hospital;
 import com.pulse.model.Medicine;
 import com.pulse.model.StockEntry;
@@ -29,40 +28,76 @@ public class StaffService {
     private final MedicineRepository medicineRepository;
     private final StockEntryRepository stockEntryRepository;
     private final ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider;
+    private final ObjectProvider<LocalOfflineStore> localStoreProvider;
 
     public StaffService(AlertService alertService,
                         HospitalRepository hospitalRepository,
                         MedicineRepository medicineRepository,
                         StockEntryRepository stockEntryRepository,
-                        ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider) {
+                        ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider,
+                        ObjectProvider<LocalOfflineStore> localStoreProvider) {
         this.alertService = alertService;
         this.hospitalRepository = hospitalRepository;
         this.medicineRepository = medicineRepository;
         this.stockEntryRepository = stockEntryRepository;
         this.localStockRepositoryProvider = localStockRepositoryProvider;
+        this.localStoreProvider = localStoreProvider;
     }
 
+    /**
+     * Build the staff inventory from the local H2 node whenever the local profile
+     * is active. The cloud database is only used when the application is running
+     * without the local profile.
+     */
     public StaffInventory getInventory(Long hospitalId) {
+        LocalOfflineStore localStore = localStoreProvider.getIfAvailable();
+        LocalStockEntryRepository localRepository = localStockRepositoryProvider.getIfAvailable();
+
+        if (localStore != null && localRepository != null) {
+            Hospital hospital = localStore.findHospital(hospitalId).orElse(null);
+            if (hospital == null) {
+                return null;
+            }
+
+            List<Medicine> medicines = localStore.medicines();
+            Map<Long, LocalStockEntry> localStockByMedicine = localRepository.findByHospitalId(hospitalId)
+                    .stream()
+                    .collect(Collectors.toMap(
+                            LocalStockEntry::getMedicineId,
+                            entry -> entry,
+                            (first, second) -> second));
+
+            List<StaffInventoryRow> inventory = new ArrayList<>();
+            for (Medicine medicine : medicines) {
+                LocalStockEntry local = localStockByMedicine.get(medicine.getMedId());
+                StockEntry stock = local == null
+                        ? new StockEntry(null, hospitalId, medicine.getMedId(), 0)
+                        : toCloudView(local);
+
+                inventory.add(new StaffInventoryRow(
+                        medicine,
+                        stock,
+                        StockStatus.from(stock.getQuantity(), medicine.getThreshold())));
+            }
+
+            inventory.sort(Comparator.comparing(row -> row.medicine().getName()));
+            List<StaffInventoryRow> thresholdAlerts = inventory.stream()
+                    .filter(row -> row.stock().getQuantity() < row.medicine().getThreshold())
+                    .toList();
+
+            return new StaffInventory(hospital, inventory, thresholdAlerts);
+        }
+
         Hospital hospital = hospitalRepository.findById(hospitalId).orElse(null);
         if (hospital == null) {
             return null;
         }
 
         List<Medicine> medicines = medicineRepository.findAll();
-        Map<Long, StockEntry> stockByMedicine;
-        LocalStockEntryRepository localRepository = localStockRepositoryProvider.getIfAvailable();
-        if (localRepository != null) {
-            stockByMedicine = localRepository.findByHospitalId(hospitalId).stream()
-                    .collect(Collectors.toMap(
-                            LocalStockEntry::getMedicineId,
-                            local -> new StockEntry(local.getCloudEntryId(), local.getHospitalId(),
-                                    local.getMedicineId(), local.getQuantity()),
-                            (a, b) -> b));
-        } else {
-            stockByMedicine = stockEntryRepository.findByHospitalId(hospitalId)
-                    .stream()
-                    .collect(Collectors.toMap(StockEntry::getMedId, stock -> stock));
-        }
+        Map<Long, StockEntry> stockByMedicine = stockEntryRepository.findByHospitalId(hospitalId)
+                .stream()
+                .collect(Collectors.toMap(StockEntry::getMedId, stock -> stock, (first, second) -> second));
+
         List<StaffInventoryRow> inventory = new ArrayList<>();
         for (Medicine medicine : medicines) {
             StockEntry stock = stockByMedicine.get(medicine.getMedId());
@@ -74,8 +109,8 @@ public class StaffService {
                     stock,
                     StockStatus.from(stock.getQuantity(), medicine.getThreshold())));
         }
-        inventory.sort(Comparator.comparing(row -> row.medicine().getName()));
 
+        inventory.sort(Comparator.comparing(row -> row.medicine().getName()));
         List<StaffInventoryRow> thresholdAlerts = inventory.stream()
                 .filter(row -> row.stock().getQuantity() < row.medicine().getThreshold())
                 .toList();
@@ -83,8 +118,17 @@ public class StaffService {
         return new StaffInventory(hospital, inventory, thresholdAlerts);
     }
 
-    @Transactional
-    public StockEntry updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine) {
+    /**
+     * Staff stock writes are local-first.
+     *
+     * In local mode, the only database operation performed by this method is the
+     * LocalStockEntryRepository save. Spring Data gives that repository its local
+     * H2 transaction manager through LocalJpaConfig. No PostgreSQL repository is
+     * touched, so loss of Internet cannot roll back the local write.
+     *
+     * In non-local mode, the original PostgreSQL write path is retained.
+     */
+    public boolean updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine) {
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantity cannot be negative");
         }
@@ -92,29 +136,54 @@ public class StaffService {
             throw new IllegalArgumentException("Medicine is required");
         }
 
+        LocalOfflineStore localStore = localStoreProvider.getIfAvailable();
         LocalStockEntryRepository localRepository = localStockRepositoryProvider.getIfAvailable();
-        if (localRepository != null) {
+
+        if (localStore != null && localRepository != null) {
             LocalStockEntry local = localRepository.findByHospitalIdAndMedicineId(hospitalId, medicineId)
                     .orElseGet(LocalStockEntry::new);
+
             local.setHospitalId(hospitalId);
             local.setMedicineId(medicineId);
             local.setQuantity(quantity);
             local.setLastUpdated(LocalDate.now().toString());
             local.setSynced(false);
-            LocalStockEntry saved = localRepository.save(local);
-            return new StockEntry(saved.getCloudEntryId(), hospitalId, medicineId, quantity);
+
+            localRepository.saveAndFlush(local);
+
+            // Alerts in local mode are derived from local stock by AlertService.
+            // Do not call the cloud alert path here; it would reintroduce a
+            // PostgreSQL dependency into the offline write request.
+            return true;
         }
 
         StockEntry entry = stockEntryRepository.findByHospitalIdAndMedId(hospitalId, medicineId)
                 .orElseGet(() -> new StockEntry(null, hospitalId, medicineId, 0));
         entry.setQuantity(quantity);
         entry.setLastUpdated(LocalDate.now());
-        stockEntryRepository.save(entry);
+        stockEntryRepository.saveAndFlush(entry);
 
         if (entry.checkThreshold(medicine)) {
             alertService.sendAlert(hospitalId, medicineId, medicine.getName(), quantity);
         }
-        return entry;
+        return true;
+    }
+
+    private StockEntry toCloudView(LocalStockEntry local) {
+        StockEntry stock = new StockEntry(
+                local.getCloudEntryId(),
+                local.getHospitalId(),
+                local.getMedicineId(),
+                local.getQuantity());
+
+        if (local.getLastUpdated() != null) {
+            try {
+                stock.setLastUpdated(LocalDate.parse(local.getLastUpdated()));
+            } catch (RuntimeException ignored) {
+                // Keep the constructor's current-date fallback.
+            }
+        }
+        return stock;
     }
 
     public record StaffInventory(Hospital hospital,

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Medicine Availability</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+    <link rel="stylesheet" th:href="@{/css/user.css}">
+</head>
+<body>
+<div class="app-shell user-content">
+    <header class="topbar">
+        <a class="brand" th:href="@{/}">
+            <div class="brand-mark">P</div>
+            <div>
+                <div class="brand-name">P.U.L.S.E</div>
+                <div class="brand-subtitle">Medicine Availability Network</div>
+            </div>
+        </a>
+        <div class="topbar-right">
+            <nav class="public-nav">
+                <a th:href="@{/}" class="active">Availability</a>
+                <a th:href="@{/login}">Staff Login</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="content-wrap">
+            <section class="hero hero-search">
+                <div class="hero-eyebrow">Public medicine availability</div>
+                <h1>Find essential medicine nearby.</h1>
+                <p>Check current reported stock across participating hospitals before you travel.</p>
+                <div class="search-panel">
+                    <form th:action="@{/search}" method="get" class="search-form">
+                        <input type="text" name="query" th:value="${query}" placeholder="Search by medicine name..." aria-label="Medicine name">
+                        <select name="district" aria-label="District">
+                            <option value="">All districts</option>
+                            <option th:each="availableDistrict : ${districts}"
+                                    th:value="${availableDistrict}"
+                                    th:text="${availableDistrict}"
+                                    th:selected="${availableDistrict == selectedDistrict}"></option>
+                        </select>
+                        <button type="submit" class="btn btn-primary">Search availability</button>
+                    </form>
+                </div>
+            </section>
+
+            <section class="grid grid-2" style="margin-top:18px;" th:if="${districtStatuses != null and districtStatuses.size() > 0}">
+                <div class="card">
+                    <div class="card-header">
+                        <div><h2>District availability</h2><p>Current status from matching inventory records</p></div>
+                    </div>
+                    <div class="card-body" style="padding-top:7px;">
+                        <div class="list">
+                            <div class="list-item" th:each="districtStatus : ${districtStatuses.entrySet()}">
+                                <div class="list-main">
+                                    <div class="list-title" th:text="${districtStatus.key}">District</div>
+                                    <div class="list-meta" th:text="${districtStatus.value == 'GREEN' ? 'Stock available across matching hospitals' : (districtStatus.value == 'YELLOW' ? 'At least one matching hospital is low on stock' : 'At least one matching hospital is out of stock')}">Status meaning</div>
+                                </div>
+                                <span th:class="${districtStatus.value == 'GREEN' ? 'badge badge-success' : (districtStatus.value == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}"
+                                      th:text="${districtStatus.value == 'GREEN' ? 'AVAILABLE' : (districtStatus.value == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><div><h2>How to read results</h2><p>Stock status is based on each medicine's configured threshold.</p></div></div>
+                    <div class="card-body">
+                        <div class="list">
+                            <div class="list-item"><div class="list-title">Available</div><span class="badge badge-success">GREEN</span></div>
+                            <div class="list-item"><div class="list-title">Limited stock</div><span class="badge badge-warning">YELLOW</span></div>
+                            <div class="list-item"><div class="list-title">Out of stock</div><span class="badge badge-danger">RED</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" style="margin-top:18px;">
+                <div class="card-header">
+                    <div><h2>Medicine availability</h2><p>Hospital-level results for your current search</p></div>
+                    <span class="result-count" th:if="${results != null}" th:text="${#lists.size(results)} + ' results'">0 results</span>
+                </div>
+                <div th:if="${results != null and results.size() > 0}" class="table-wrap">
+                    <table>
+                        <thead><tr><th>Medicine</th><th>Category</th><th>Hospital</th><th>District</th><th>Available</th><th>Threshold</th><th>Status</th></tr></thead>
+                        <tbody>
+                        <tr th:each="result : ${results}">
+                            <td class="result-name" th:text="${result.medicineName}">Medicine</td>
+                            <td th:text="${result.category}">Category</td>
+                            <td class="hospital-name" th:text="${result.hospitalName}">Hospital</td>
+                            <td th:text="${result.district}">District</td>
+                            <td th:text="${result.quantity} + ' units'">0 units</td>
+                            <td th:text="${result.threshold} + ' units'">0 units</td>
+                            <td><span th:class="${result.status == 'GREEN' ? 'badge badge-success' : (result.status == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}"
+                                      th:text="${result.status == 'GREEN' ? 'AVAILABLE' : (result.status == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="empty-state" th:if="${results == null or results.size() == 0}">
+                    <strong>No matching inventory found</strong>
+                    Try another medicine name or choose a different district.
+                </div>
+            </section>
+        </div>
+    </main>
+    <footer class="footer"><span>Public medicine availability</span><span>P.U.L.S.E v1.0</span></footer>
+</div>
+</body>
+</html>

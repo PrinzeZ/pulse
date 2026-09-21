@@ -11,6 +11,9 @@ import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.MedicineRepository;
 import com.pulse.repository.StockEntryRepository;
 import com.pulse.repository.UserRepository;
+import com.pulse.local.service.LocalOfflineStore;
+import com.pulse.local.model.LocalStockEntry;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -25,15 +28,19 @@ public class HierarchyDashboardService {
     private final MedicineRepository medicines;
     private final StockEntryRepository stock;
     private final UserRepository users;
+    private final ObjectProvider<LocalOfflineStore> localStoreProvider;
+    private final AlertService alertService;
 
     public HierarchyDashboardService(AlertRepository alerts, HospitalRepository hospitals,
                                      MedicineRepository medicines, StockEntryRepository stock,
-                                     UserRepository users) {
+                                     UserRepository users, ObjectProvider<LocalOfflineStore> localStoreProvider, AlertService alertService) {
         this.alerts = alerts;
         this.hospitals = hospitals;
         this.medicines = medicines;
         this.stock = stock;
         this.users = users;
+        this.localStoreProvider = localStoreProvider;
+        this.alertService = alertService;
     }
 
     public Snapshot snapshot(Collection<Hospital> scopeHospitals) {
@@ -41,6 +48,16 @@ public class HierarchyDashboardService {
     }
 
     public Snapshot snapshot(Collection<Hospital> scopeHospitals, ScopeLevel scopeLevel) {
+        try {
+            return cloudSnapshot(scopeHospitals, scopeLevel);
+        } catch (RuntimeException ex) {
+            LocalOfflineStore local = localStoreProvider.getIfAvailable();
+            if (local == null) throw ex;
+            return localSnapshot(scopeHospitals, scopeLevel, local);
+        }
+    }
+
+    private Snapshot cloudSnapshot(Collection<Hospital> scopeHospitals, ScopeLevel scopeLevel) {
         Set<Long> hospitalIds = scopeHospitals.stream()
                 .map(Hospital::getHospitalId)
                 .filter(Objects::nonNull)
@@ -147,12 +164,50 @@ public class HierarchyDashboardService {
         return signals.stream().limit(8).toList();
     }
 
-    public List<Hospital> allHospitals() { return hospitals.findAll(Sort.by("name")); }
+    public List<Hospital> allHospitals() {
+        try { return hospitals.findAll(Sort.by("name")); }
+        catch (RuntimeException ex) {
+            LocalOfflineStore local = localStoreProvider.getIfAvailable();
+            return local == null ? List.of() : local.hospitals();
+        }
+    }
 
     public List<Hospital> hospitalsInDistrict(String district) {
         return hospitals.findAll(Sort.by("name")).stream()
                 .filter(h -> h.getDistrict() != null && h.getDistrict().equalsIgnoreCase(district))
                 .toList();
+    }
+
+    private Snapshot localSnapshot(Collection<Hospital> requestedScope, ScopeLevel scopeLevel, LocalOfflineStore local) {
+        List<Hospital> localHospitals = local.hospitals();
+        Set<Long> ids = requestedScope.stream().map(Hospital::getHospitalId).filter(Objects::nonNull).collect(Collectors.toSet());
+        if (ids.isEmpty()) return new Snapshot(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(), 0, 0, 0, 0, 0, 0);
+
+        Map<Long, Hospital> hospitalMap = localHospitals.stream().collect(Collectors.toMap(Hospital::getHospitalId, h -> h));
+        Map<Long, Medicine> medicineMap = local.medicines().stream().collect(Collectors.toMap(Medicine::getMedId, m -> m));
+        List<Row> rows = new ArrayList<>();
+        List<StockEntry> recent = new ArrayList<>();
+        int units = 0, low = 0, out = 0;
+        Set<Long> medicineTypes = new HashSet<>();
+        for (Long hospitalId : ids) {
+            for (LocalStockEntry e : local.stockForHospital(hospitalId)) {
+                Hospital h = hospitalMap.get(hospitalId); Medicine m = medicineMap.get(e.getMedicineId());
+                if (h == null || m == null) continue;
+                StockStatus status = StockStatus.from(e.getQuantity(), m.getThreshold());
+                LocalDate date = null;
+                try { if (e.getLastUpdated() != null) date = LocalDate.parse(e.getLastUpdated()); } catch (RuntimeException ignored) {}
+                rows.add(new Row(hospitalId, h.getName(), h.getDistrict(), m.getName(), m.getCat(), e.getQuantity(), m.getThreshold(), status.name(), date));
+                StockEntry se = new StockEntry(e.getCloudEntryId(), hospitalId, e.getMedicineId(), e.getQuantity()); se.setLastUpdated(date); recent.add(se);
+                units += e.getQuantity(); medicineTypes.add(m.getMedId()); if (e.getQuantity() == 0) out++; if (e.getQuantity() <= m.getThreshold()) low++;
+            }
+        }
+        rows.sort(Comparator.comparing(Row::hospitalName).thenComparing(Row::medicineName));
+        recent.sort(Comparator.comparing(StockEntry::getLastUpdated, Comparator.nullsLast(Comparator.reverseOrder())));
+        if (recent.size() > 8) recent = new ArrayList<>(recent.subList(0, 8));
+        List<User> scopedUsers = ids.stream().flatMap(id -> local.staffForHospital(id).stream()).toList();
+        List<Alert> activeAlerts = alertService.getActiveAlerts().stream().filter(a -> ids.contains(a.getHospitalId())).toList();
+        List<Medicine> nearExpiry = local.medicines().stream().filter(m -> m.getExpiryDate() != null && m.getExpiryDate().isBefore(LocalDate.now().plusMonths(3))).toList();
+        return new Snapshot(rows, activeAlerts, List.of(), recent, nearExpiry, scopedUsers, units, medicineTypes.size(), ids.size(), activeAlerts.size(), low, out);
     }
 
     public enum ScopeLevel { HOSPITAL, DISTRICT, STATE }

@@ -26,6 +26,9 @@ public abstract class User {
     @Column(name = "hospital_id")
     protected Long hospitalId;
 
+    @Column(name = "enabled")
+    protected Boolean enabled = true;
+
     public User() {}
 
     public User(Long userId, String name, String username, String password){
@@ -58,4 +61,8 @@ public abstract class User {
     public void setDistrictId(Long districtId) { this.districtId = districtId; }
     public Long getHospitalId() { return hospitalId; }
     public void setHospitalId(Long hospitalId) { this.hospitalId = hospitalId; }
+
+    public Boolean getEnabled() { return enabled; }
+    public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+    public boolean isEnabled() { return enabled == null || enabled; }
 }

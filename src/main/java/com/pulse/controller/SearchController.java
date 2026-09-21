@@ -4,6 +4,8 @@ import com.pulse.dto.SearchResult;
 import com.pulse.model.StockStatus;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.service.SearchService;
+import com.pulse.local.service.LocalOfflineStore;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +20,12 @@ public class SearchController {
 
     private final SearchService searchService;
     private final HospitalRepository hospitalRepository;
+    private final ObjectProvider<LocalOfflineStore> localStoreProvider;
 
-    public SearchController(SearchService searchService, HospitalRepository hospitalRepository) {
+    public SearchController(SearchService searchService, HospitalRepository hospitalRepository, ObjectProvider<LocalOfflineStore> localStoreProvider) {
         this.searchService = searchService;
         this.hospitalRepository = hospitalRepository;
+        this.localStoreProvider = localStoreProvider;
     }
 
     @GetMapping("/search")
@@ -33,14 +37,19 @@ public class SearchController {
         model.addAttribute("query", query == null ? "" : query);
         model.addAttribute("selectedDistrict", district == null ? "" : district);
         model.addAttribute("district", district == null ? "" : district);
-        model.addAttribute("districts", hospitalRepository.findAll().stream()
-                .map(hospital -> hospital.getDistrict())
-                .distinct()
-                .sorted()
-                .toList());
+        model.addAttribute("districts", districts());
         model.addAttribute("districtStatuses", districtStatuses(results));
         model.addAttribute("searched", (query != null && !query.isBlank()) || (district != null && !district.isBlank()));
         return "search";
+    }
+
+    private List<String> districts() {
+        try {
+            return hospitalRepository.findAll().stream().map(hospital -> hospital.getDistrict()).distinct().sorted().toList();
+        } catch (RuntimeException ex) {
+            LocalOfflineStore local = localStoreProvider.getIfAvailable();
+            return local == null ? List.of() : local.districts();
+        }
     }
 
     private Map<String, String> districtStatuses(List<SearchResult> results) {

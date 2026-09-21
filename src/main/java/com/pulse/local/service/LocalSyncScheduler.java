@@ -9,14 +9,18 @@ import org.springframework.stereotype.Component;
 public class LocalSyncScheduler {
 
     private final StockSyncService stockSyncService;
+    private final LocalOfflineStore localOfflineStore;
 
-    public LocalSyncScheduler(StockSyncService stockSyncService) {
+    public LocalSyncScheduler(StockSyncService stockSyncService, LocalOfflineStore localOfflineStore) {
         this.stockSyncService = stockSyncService;
+        this.localOfflineStore = localOfflineStore;
     }
 
     /** Retry local-to-cloud and cloud-to-local stock synchronization every minute. */
     @Scheduled(fixedDelayString = "${pulse.sync.fixed-delay-ms:60000}", initialDelayString = "${pulse.sync.initial-delay-ms:15000}")
     public void syncKnownHospitals() {
+        localOfflineStore.syncPendingStaff();
+        localOfflineStore.refreshReferenceData();
         stockSyncService.syncKnownHospitals();
     }
 }

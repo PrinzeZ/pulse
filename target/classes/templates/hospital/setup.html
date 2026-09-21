@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Set Administrator Password</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+</head>
+<body class="login-page">
+<div class="login-form-panel" style="max-width:600px;margin:8vh auto;">
+    <h2>Set administrator password</h2>
+    <p>Create the password for the newly provisioned hospital administrator account.</p>
+
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <form th:action="@{/hospital/setup}" method="post" class="login-form">
+        <input type="hidden" name="token" th:value="${token}">
+        <div class="form-group">
+            <label for="password">New password</label>
+            <input id="password" name="password" type="password" minlength="8" required>
+        </div>
+        <div class="form-group">
+            <label for="confirmation">Confirm password</label>
+            <input id="confirmation" name="confirmation" type="password" minlength="8" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Activate account</button>
+    </form>
+</div>
+</body>
+</html>

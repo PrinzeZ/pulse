@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Check your email</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+</head>
+<body class="login-page">
+<div class="login-form-panel" style="max-width:700px;margin:8vh auto;">
+    <h2>Check your email</h2>
+    <p>
+        Your hospital registration has been submitted. We sent a verification email to
+        <strong th:text="${registration.hospitalEmail}">email</strong>.
+    </p>
+    <p><strong>If you submitted this registration, use the secure link in the email or the verification code provided there.</strong></p>
+    <p>After verification, your registration will be sent to the appropriate district administrator for approval.</p>
+    <p><strong>Hospital:</strong> <span th:text="${registration.hospitalName}">Hospital</span></p>
+    <p><a th:href="@{/login}">Return to login →</a></p>
+</div>
+</body>
+</html>

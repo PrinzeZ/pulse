@@ -11,12 +11,14 @@ import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import jakarta.persistence.EntityManagerFactory;
+import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @EnableJpaRepositories(
@@ -37,14 +39,24 @@ public class PostgresJpaConfig {
     @Primary
     public DataSource dataSource(
             @Qualifier("postgresDataSourceProperties") DataSourceProperties properties) {
-        return properties.initializeDataSourceBuilder().build();
+        DataSource dataSource = properties.initializeDataSourceBuilder().build();
+        if (dataSource instanceof HikariDataSource hikari) {
+            // PostgreSQL is optional in local/offline mode. Do not make startup depend
+            // on an Internet connection, and reconnect quickly when connectivity returns.
+            hikari.setInitializationFailTimeout(-1);
+            hikari.setConnectionTimeout(3000);
+            hikari.setValidationTimeout(1000);
+            hikari.setMaxLifetime(240000);
+        }
+        return dataSource;
     }
 
     @Bean(name = "postgresEntityManagerFactory")
     @Primary
     public LocalContainerEntityManagerFactoryBean postgresEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
-            @Qualifier("dataSource") DataSource dataSource) {
+            @Qualifier("dataSource") DataSource dataSource,
+            @Value("${pulse.cloud.ddl-auto:update}") String ddlAuto) {
 
         return builder
                 .dataSource(dataSource)
@@ -52,8 +64,9 @@ public class PostgresJpaConfig {
                 .persistenceUnit("postgres")
                 .properties(Map.of(
                         "hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect",
-                        "hibernate.hbm2ddl.auto", "update",
-                        "hibernate.show_sql", "true"
+                        "hibernate.hbm2ddl.auto", ddlAuto,
+                        "hibernate.show_sql", "true",
+                        "hibernate.boot.allow_jdbc_metadata_access", "false"
                 ))
                 .build();
     }

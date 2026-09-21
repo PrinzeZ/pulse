@@ -1,0 +1,4 @@
+.user-content .result-name { font-weight: 750; color: var(--pulse-navy-dark); }
+.user-content .hospital-name { font-weight: 650; color: #334b5e; }
+.user-content .hero-search { max-width: 980px; }
+.user-content .result-count { color: var(--pulse-muted); font-size: 12px; }

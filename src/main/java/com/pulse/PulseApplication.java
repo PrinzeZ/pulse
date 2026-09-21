@@ -9,6 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import com.pulse.config.Phase3AdminInitializer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.pulse.repository.UserRepository;
+import com.pulse.local.service.LocalOfflineStore;
+import org.springframework.beans.factory.ObjectProvider;
 
 @SpringBootApplication
 public class PulseApplication {
@@ -25,7 +27,7 @@ public class PulseApplication {
     @Profile("dev")
     @Bean
     @Order(1)
-    public CommandLineRunner phase3AdminInitializer(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
-        return new Phase3AdminInitializer(userRepository, passwordEncoder);
+    public CommandLineRunner phase3AdminInitializer(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder, ObjectProvider<LocalOfflineStore> localStoreProvider) {
+        return new Phase3AdminInitializer(userRepository, passwordEncoder, localStoreProvider);
     }
 }

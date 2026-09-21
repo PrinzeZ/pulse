@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Hospital Registration</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+</head>
+<body class="login-page">
+<div class="login-layout">
+    <section class="login-brand-panel">
+        <div class="brand">
+            <div class="brand-mark">P</div>
+            <div>
+                <div class="brand-name">P.U.L.S.E</div>
+                <div class="brand-subtitle">Medicine Availability &amp; Inventory</div>
+            </div>
+        </div>
+        <div class="login-brand-copy">
+            <div class="eyebrow">Hospital provisioning</div>
+            <h1>Register a hospital.</h1>
+            <p>Submit your hospital and administrator details for verification and district approval.</p>
+        </div>
+    </section>
+
+    <section class="login-form-panel">
+        <h2>Hospital registration</h2>
+        <p>Complete the details below. Email verification is required before district approval.</p>
+
+        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+        <form th:action="@{/hospital/register}" method="post" class="login-form">
+            <div class="form-group">
+                <label for="hospitalName">Hospital name</label>
+                <input id="hospitalName" name="hospitalName" type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label for="hospitalEmail">Hospital email</label>
+                <input id="hospitalEmail" name="hospitalEmail" type="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="adminName">Hospital administrator name</label>
+                <input id="adminName" name="adminName" type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label for="adminUsername">Administrator username</label>
+                <input id="adminUsername" name="adminUsername" type="text" required>
+            </div>
+
+            <div class="form-group">
+                <label for="stateId">State</label>
+                <select id="stateId" name="stateId" required>
+                    <option value="">Select state</option>
+                    <option th:each="state : ${states}"
+                            th:value="${state.stateId}"
+                            th:text="${state.name}"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="districtId">District</label>
+                <select id="districtId" name="districtId" required disabled>
+                    <option value="">Select state first</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit registration</button>
+        </form>
+
+        <div class="login-note">
+            Already have an account?
+            <a th:href="@{/login}">Sign in →</a>
+        </div>
+    </section>
+</div>
+
+<script>
+const state = document.getElementById('stateId');
+const district = document.getElementById('districtId');
+
+state.addEventListener('change', async () => {
+    district.innerHTML = '<option value="">Loading...</option>';
+    district.disabled = true;
+
+    if (!state.value) {
+        district.innerHTML = '<option value="">Select state first</option>';
+        return;
+    }
+
+    const response = await fetch('/hospital/districts?stateId=' + encodeURIComponent(state.value));
+    const items = await response.json();
+
+    district.innerHTML = '<option value="">Select district</option>';
+    items.forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.districtId;
+        option.textContent = item.name;
+        district.appendChild(option);
+    });
+
+    district.disabled = false;
+});
+</script>
+</body>
+</html>

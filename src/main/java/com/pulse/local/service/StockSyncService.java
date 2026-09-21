@@ -19,11 +19,14 @@ public class StockSyncService {
 
     private final StockEntryRepository cloudStock;
     private final LocalStockEntryRepository localStock;
+    private final LocalOfflineStore localOfflineStore;
 
     public StockSyncService(StockEntryRepository cloudStock,
-                            LocalStockEntryRepository localStock) {
+                            LocalStockEntryRepository localStock,
+                            LocalOfflineStore localOfflineStore) {
         this.cloudStock = cloudStock;
         this.localStock = localStock;
+        this.localOfflineStore = localOfflineStore;
     }
 
     /**
@@ -48,6 +51,9 @@ public class StockSyncService {
         Set<Long> hospitalIds = new HashSet<>();
         localStock.findAll().forEach(entry -> {
             if (entry.getHospitalId() != null) hospitalIds.add(entry.getHospitalId());
+        });
+        localOfflineStore.hospitals().forEach(hospital -> {
+            if (hospital.getHospitalId() != null) hospitalIds.add(hospital.getHospitalId());
         });
         return hospitalIds.stream().map(this::syncHospital).toList();
     }
