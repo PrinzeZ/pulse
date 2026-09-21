@@ -29,19 +29,22 @@ public class StaffService {
     private final StockEntryRepository stockEntryRepository;
     private final ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider;
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
+    private final StockLedgerService stockLedgerService;
 
     public StaffService(AlertService alertService,
                         HospitalRepository hospitalRepository,
                         MedicineRepository medicineRepository,
                         StockEntryRepository stockEntryRepository,
                         ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider,
-                        ObjectProvider<LocalOfflineStore> localStoreProvider) {
+                        ObjectProvider<LocalOfflineStore> localStoreProvider,
+                        StockLedgerService stockLedgerService) {
         this.alertService = alertService;
         this.hospitalRepository = hospitalRepository;
         this.medicineRepository = medicineRepository;
         this.stockEntryRepository = stockEntryRepository;
         this.localStockRepositoryProvider = localStockRepositoryProvider;
         this.localStoreProvider = localStoreProvider;
+        this.stockLedgerService = stockLedgerService;
     }
 
     /**
@@ -129,6 +132,10 @@ public class StaffService {
      * In non-local mode, the original PostgreSQL write path is retained.
      */
     public boolean updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine) {
+        return updateStock(hospitalId, medicineId, quantity, medicine, null);
+    }
+
+    public boolean updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine, String actor) {
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantity cannot be negative");
         }
@@ -143,6 +150,7 @@ public class StaffService {
             LocalStockEntry local = localRepository.findByHospitalIdAndMedicineId(hospitalId, medicineId)
                     .orElseGet(LocalStockEntry::new);
 
+            int previousQuantity = local.getQuantity();
             local.setHospitalId(hospitalId);
             local.setMedicineId(medicineId);
             local.setQuantity(quantity);
@@ -150,6 +158,8 @@ public class StaffService {
             local.setSynced(false);
 
             localRepository.saveAndFlush(local);
+            stockLedgerService.recordLocal(hospitalId, medicineId, quantity - previousQuantity,
+                    "MANUAL_ADJUSTMENT", "STOCK_ENTRY", local.getEntryId(), actor, "Staff stock quantity adjustment.");
 
             // Alerts in local mode are derived from local stock by AlertService.
             // Do not call the cloud alert path here; it would reintroduce a
@@ -159,9 +169,16 @@ public class StaffService {
 
         StockEntry entry = stockEntryRepository.findByHospitalIdAndMedId(hospitalId, medicineId)
                 .orElseGet(() -> new StockEntry(null, hospitalId, medicineId, 0));
+        int previousQuantity = entry.getQuantity();
         entry.setQuantity(quantity);
         entry.setLastUpdated(LocalDate.now());
         stockEntryRepository.saveAndFlush(entry);
+        try {
+            stockLedgerService.recordCloud(hospitalId, medicineId, quantity - previousQuantity,
+                    "MANUAL_ADJUSTMENT", "STOCK_ENTRY", entry.getEntryId(), actor, "Staff stock quantity adjustment.");
+        } catch (RuntimeException ignored) {
+            // Stock remains authoritative; the audit ledger can be retried separately.
+        }
 
         if (entry.checkThreshold(medicine)) {
             alertService.sendAlert(hospitalId, medicineId, medicine.getName(), quantity);

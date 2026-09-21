@@ -2,6 +2,7 @@ package com.pulse.controller;
 
 import com.pulse.service.HierarchyDashboardService;
 import com.pulse.service.StaffManagementService;
+import com.pulse.service.StockLedgerService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,10 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AdminController {
     private final HierarchyDashboardService dashboard;
     private final StaffManagementService staffManagement;
+    private final StockLedgerService ledgerService;
 
-    public AdminController(HierarchyDashboardService dashboard, StaffManagementService staffManagement) {
+    public AdminController(HierarchyDashboardService dashboard, StaffManagementService staffManagement, StockLedgerService ledgerService) {
         this.dashboard = dashboard;
         this.staffManagement = staffManagement;
+        this.ledgerService = ledgerService;
     }
 
     @GetMapping("/staff")
@@ -73,6 +76,17 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/staff";
+    }
+
+    @GetMapping("/audit")
+    public String audit(HttpSession session, Model model) {
+        if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
+        Long hospitalId = (Long) session.getAttribute("hospitalId");
+        if (hospitalId == null) return "redirect:/login";
+        model.addAttribute("hospitalId", hospitalId);
+        model.addAttribute("movements", ledgerService.localMovements(hospitalId));
+        model.addAttribute("verification", ledgerService.verifyLocal(hospitalId));
+        return "admin-audit";
     }
 
     @GetMapping("/dashboard")

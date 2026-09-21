@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>P.U.L.S.E — Audit Ledger</title><link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/staff.css}"></head>
+<body><div class="app-shell"><header class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button">☰</button><a class="brand" href="/admin/dashboard"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Tamper-evident stock ledger</div></div></a></div></header>
+<div class="dashboard-layout"><th:block th:replace="~{fragments/sidebars :: hospitalAdmin('audit')}"></th:block>
+<main class="main-content"><div class="content-wrap"><div class="page-heading"><div class="eyebrow">Phase 9</div><h1>Stock audit ledger</h1><p>Each local stock movement is linked to the previous event with SHA-256.</p></div>
+<section class="card section-gap"><div class="card-header"><div><h2>Verification</h2></div><span class="badge" th:text="${verification.valid ? 'CHAIN VALID' : 'CHAIN INVALID'}">CHAIN</span></div><div class="card-body"><strong th:text="${verification.message}">Verification</strong><span class="muted" th:text="${' · ' + verification.entries + ' entries'}"> · 0 entries</span></div></section>
+<section class="card"><div class="card-header"><div><h2>Movement history</h2></div></div><div class="table-wrap"><table class="inventory-table"><thead><tr><th>Time</th><th>Type</th><th>Medicine</th><th>Delta</th><th>Actor</th><th>Hash</th></tr></thead><tbody><tr th:each="m : ${movements}"><td th:text="${#temporals.format(m.occurredAt,'dd MMM yyyy HH:mm:ss')}">Date</td><td th:text="${m.movementType}">TYPE</td><td th:text="${m.medicineId}">0</td><td th:text="${m.deltaQuantity}">0</td><td th:text="${m.actorUsername != null ? m.actorUsername : '—'}">actor</td><td class="small" th:text="${m.hash}">hash</td></tr></tbody></table></div></section>
+</div></main></div></div><script th:src="@{/js/pulse-shell.js}"></script></body></html>

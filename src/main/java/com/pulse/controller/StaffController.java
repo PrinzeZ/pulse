@@ -9,6 +9,8 @@ import com.pulse.model.Medicine;
 import com.pulse.model.PharmacyStaff;
 import com.pulse.repository.MedicineRepository;
 import com.pulse.service.StaffService;
+import com.pulse.service.StockTransferService;
+import com.pulse.service.StockLedgerService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Controller;
@@ -29,19 +31,25 @@ public class StaffController {
     private final ObjectProvider<StockSyncService> stockSyncServiceProvider;
     private final ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider;
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
+    private final StockTransferService transferService;
+    private final StockLedgerService ledgerService;
 
     public StaffController(SessionSecurity sessionSecurity,
                            StaffService staffService,
                            MedicineRepository medicineRepository,
                            ObjectProvider<StockSyncService> stockSyncServiceProvider,
                            ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider,
-                           ObjectProvider<LocalOfflineStore> localStoreProvider) {
+                           ObjectProvider<LocalOfflineStore> localStoreProvider,
+                           StockTransferService transferService,
+                           StockLedgerService ledgerService) {
         this.sessionSecurity = sessionSecurity;
         this.staffService = staffService;
         this.medicineRepository = medicineRepository;
         this.stockSyncServiceProvider = stockSyncServiceProvider;
         this.localStockRepositoryProvider = localStockRepositoryProvider;
         this.localStoreProvider = localStoreProvider;
+        this.transferService = transferService;
+        this.ledgerService = ledgerService;
     }
 
     @GetMapping("/staff/dashboard")
@@ -104,7 +112,8 @@ public class StaffController {
                     staff.getHospitalId(),
                     medicineId,
                     quantity,
-                    medicine);
+                    medicine,
+                    staff.getUsername());
 
             if (localStockRepositoryProvider.getIfAvailable() != null) {
                 redirectAttributes.addFlashAttribute(
@@ -191,6 +200,59 @@ public class StaffController {
         model.addAttribute("pendingCount", pending);
         model.addAttribute("hospitalId", hospitalId);
         return "staff-local-stock";
+    }
+
+    @GetMapping("/staff/transfers")
+    public String transfers(HttpSession session, Model model) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
+        model.addAttribute("transfers", transferService.hospitalViews(staff.getHospitalId()));
+        model.addAttribute("hospitalId", staff.getHospitalId());
+        return "staff-transfers";
+    }
+
+    @PostMapping("/staff/transfers/{id}/dispatch")
+    public String dispatchTransfer(@org.springframework.web.bind.annotation.PathVariable Long id,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
+        try {
+            transferService.dispatch(id, staff.getHospitalId(), staff.getUsername());
+            redirectAttributes.addFlashAttribute("success", "Transfer dispatched. Source stock was reduced locally and queued for synchronization.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("error", "The transfer could not be dispatched.");
+        }
+        return "redirect:/staff/transfers";
+    }
+
+    @PostMapping("/staff/transfers/{id}/receive")
+    public String receiveTransfer(@org.springframework.web.bind.annotation.PathVariable Long id,
+                                  HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
+        try {
+            transferService.receive(id, staff.getHospitalId(), staff.getUsername());
+            redirectAttributes.addFlashAttribute("success", "Transfer received. Destination stock was increased locally and queued for synchronization.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("error", "The transfer could not be received.");
+        }
+        return "redirect:/staff/transfers";
+    }
+
+    @GetMapping("/staff/audit")
+    public String audit(HttpSession session, Model model) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
+        model.addAttribute("hospitalId", staff.getHospitalId());
+        model.addAttribute("movements", ledgerService.localMovements(staff.getHospitalId()));
+        model.addAttribute("verification", ledgerService.verifyLocal(staff.getHospitalId()));
+        return "staff-audit";
     }
 
     private Medicine findMedicineForStaff(Long medicineId) {

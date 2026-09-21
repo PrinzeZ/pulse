@@ -24,25 +24,9 @@
 </header>
 
 <div class="dashboard-layout">
-<aside class="sidebar">
-    <div class="sidebar-label" th:text="${tier + ' OPERATIONS'}">OPERATIONS</div>
-    <nav class="sidebar-nav">
-        <a th:href="${tier == 'STATE' ? '/state-admin/dashboard' : (tier == 'DISTRICT' ? '/district-admin/dashboard' : '/admin/dashboard')}">
-            <span class="nav-icon">▦</span><span>Overview</span>
-        </a>
-        <a class="active" th:href="${tier == 'STATE' ? '/state-admin/requests' : (tier == 'DISTRICT' ? '/district-admin/requests' : '/admin/requests')}">
-            <span class="nav-icon">↗</span><span>Requests</span>
-        </a>
-        <a th:if="${tier == 'DISTRICT'}" th:href="@{/district-admin/verifications}"><span class="nav-icon">✓</span><span>Verifications</span></a>
-        <a th:if="${tier == 'HOSPITAL'}" th:href="@{/admin/staff}"><span class="nav-icon">♙</span><span>Staff</span></a>
-        <a th:if="${tier == 'HOSPITAL'}" th:href="@{/admin/alerts}"><span class="nav-icon">!</span><span>Alerts</span></a>
-        <a th:href="@{/search}"><span class="nav-icon">⌕</span><span>Medicine Search</span></a>
-        <a th:if="${tier == 'HOSPITAL'}" th:href="@{/staff/stock}"><span class="nav-icon">▤</span><span>Stock</span></a>
-    </nav>
-    <div class="sidebar-spacer"></div><div class="sidebar-label">SYSTEM</div>
-    <nav class="sidebar-nav"><a th:href="@{/logout}"><span class="nav-icon">↪</span><span>Sign out</span></a></nav>
-    <div class="sidebar-footer">P.U.L.S.E v1.0<br><span th:text="${tier + '-level operations'}">Scoped operations</span></div>
-</aside>
+<th:block th:if="${tier == 'HOSPITAL'}"><th:block th:replace="~{fragments/sidebars :: hospitalAdmin('requests')}"></th:block></th:block>
+<th:block th:if="${tier == 'DISTRICT'}"><th:block th:replace="~{fragments/sidebars :: district('requests')}"></th:block></th:block>
+<th:block th:if="${tier == 'STATE'}"><th:block th:replace="~{fragments/sidebars :: state('requests')}"></th:block></th:block>
 
 <main class="main-content"><div class="content-wrap">
     <div class="page-heading">

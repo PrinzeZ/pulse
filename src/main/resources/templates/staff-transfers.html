@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>P.U.L.S.E — Staff Transfers</title>
+<link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/staff.css}">
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button">☰</button><a class="brand" href="/staff/dashboard"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Hospital Inventory Node</div></div></a></div><div class="topbar-right"><span class="system-status"><span class="status-dot"></span>Local node</span><span class="user-chip">PHARMACY STAFF</span></div></header>
+<div class="dashboard-layout">
+<th:block th:replace="~{fragments/sidebars :: staff('transfers')}"></th:block>
+<main class="main-content"><div class="content-wrap">
+<div class="page-heading"><div class="eyebrow">Hospital Operations</div><h1>Stock transfers</h1><p>Dispatch outgoing medicine or receive an approved incoming transfer.</p></div>
+<div th:if="${success}" class="alert alert-success section-gap" th:text="${success}"></div><div th:if="${error}" class="alert alert-error section-gap" th:text="${error}"></div>
+<section class="card section-gap"><div class="card-header"><div><h2>Transfer register</h2><p>Actions are written to local H2 first and synchronized when connectivity returns.</p></div><span class="badge badge-info" th:text="${#lists.size(transfers) + ' TRANSFER(S)'}">0</span></div>
+<div class="table-wrap" th:if="${!#lists.isEmpty(transfers)}"><table class="inventory-table"><thead><tr><th>Source</th><th>Destination</th><th>Medicine</th><th>Qty</th><th>Status</th><th>Action</th></tr></thead>
+<tbody><tr th:each="transfer : ${transfers}">
+<td th:text="${transfer.sourceHospital}">Source</td><td th:text="${transfer.destinationHospital}">Destination</td><td th:text="${transfer.medicineId}">Medicine</td><td th:text="${transfer.quantity}">0</td>
+<td><span class="badge request-status" th:text="${transfer.status}">STATUS</span><div th:if="${transfer.localPending}" class="small muted">Pending cloud sync</div></td>
+<td>
+<form th:if="${transfer.status == 'APPROVED' or transfer.status == 'CREATED'}" method="post" th:action="@{'/staff/transfers/' + ${transfer.id} + '/dispatch'}"><button class="btn btn-primary" type="submit">Dispatch</button></form>
+<form th:if="${transfer.status == 'IN_TRANSIT' or transfer.status == 'DISPATCHED'}" method="post" th:action="@{'/staff/transfers/' + ${transfer.id} + '/receive'}"><button class="btn btn-primary" type="submit">Receive</button></form>
+<span th:if="${transfer.status == 'RECEIVED'}" class="muted small">Completed</span>
+</td></tr></tbody></table></div>
+<div class="empty-state" th:if="${#lists.isEmpty(transfers)}"><strong>No transfers assigned</strong><span>Incoming and outgoing transfers will appear after synchronization.</span></div>
+</section>
+</div></main></div></div>
+<script th:src="@{/js/pulse-shell.js}"></script></body></html>

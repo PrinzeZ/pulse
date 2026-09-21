@@ -1,0 +1,17 @@
+# Build output
+target/
+*.class
+
+# Local runtime database
+data/
+*.mv.db
+*.trace.db
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

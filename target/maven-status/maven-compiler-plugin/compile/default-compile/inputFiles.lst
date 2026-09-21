@@ -23,10 +23,15 @@ C:\Projects\pulse\src\main\java\com\pulse\exception\InvalidLoginException.java
 C:\Projects\pulse\src\main\java\com\pulse\exception\StockNotFoundException.java
 C:\Projects\pulse\src\main\java\com\pulse\local\model\LocalMedicineRequest.java
 C:\Projects\pulse\src\main\java\com\pulse\local\model\LocalStockEntry.java
+C:\Projects\pulse\src\main\java\com\pulse\local\model\LocalStockMovement.java
+C:\Projects\pulse\src\main\java\com\pulse\local\model\LocalStockTransfer.java
 C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalMedicineRequestRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalStockEntryRepository.java
+C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalStockMovementRepository.java
+C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalStockTransferRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\LocalOfflineStore.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\LocalSyncScheduler.java
+C:\Projects\pulse\src\main\java\com\pulse\local\service\StockLedgerSyncService.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\StockSyncService.java
 C:\Projects\pulse\src\main\java\com\pulse\model\Admin.java
 C:\Projects\pulse\src\main\java\com\pulse\model\Alert.java
@@ -44,7 +49,10 @@ C:\Projects\pulse\src\main\java\com\pulse\model\PublicUser.java
 C:\Projects\pulse\src\main\java\com\pulse\model\State.java
 C:\Projects\pulse\src\main\java\com\pulse\model\StateAdmin.java
 C:\Projects\pulse\src\main\java\com\pulse\model\StockEntry.java
+C:\Projects\pulse\src\main\java\com\pulse\model\StockMovement.java
 C:\Projects\pulse\src\main\java\com\pulse\model\StockStatus.java
+C:\Projects\pulse\src\main\java\com\pulse\model\StockTransfer.java
+C:\Projects\pulse\src\main\java\com\pulse\model\StockTransferStatus.java
 C:\Projects\pulse\src\main\java\com\pulse\model\User.java
 C:\Projects\pulse\src\main\java\com\pulse\PulseApplication.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\AlertRepository.java
@@ -56,6 +64,8 @@ C:\Projects\pulse\src\main\java\com\pulse\repository\MedicineRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\MedicineRequestRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\StateRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\StockEntryRepository.java
+C:\Projects\pulse\src\main\java\com\pulse\repository\StockMovementRepository.java
+C:\Projects\pulse\src\main\java\com\pulse\repository\StockTransferRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\UserRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\service\AdminDashboardService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\AlertService.java
@@ -70,6 +80,9 @@ C:\Projects\pulse\src\main\java\com\pulse\service\SearchService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\SearchServiceImpl.java
 C:\Projects\pulse\src\main\java\com\pulse\service\StaffManagementService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\StaffService.java
+C:\Projects\pulse\src\main\java\com\pulse\service\StockLedgerService.java
+C:\Projects\pulse\src\main\java\com\pulse\service\StockTransferService.java
+C:\Projects\pulse\src\main\java\com\pulse\service\SupplyChainSchemaService.java
 C:\Projects\pulse\src\main\java\com\pulse\SessionAccessInterceptor.java
 C:\Projects\pulse\src\main\java\com\pulse\SessionSecurity.java
 C:\Projects\pulse\src\main\java\com\pulse\WebConfig.java

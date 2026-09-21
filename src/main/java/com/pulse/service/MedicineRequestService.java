@@ -145,8 +145,26 @@ public class MedicineRequestService {
         ));
     }
 
-    public MedicineRequest districtAction(Long districtId, Long requestId, String action,
-                                          Integer fulfilledQuantity, String note, String actor) {
+    public void districtAction(Long districtId, Long requestId, String action,
+                               Integer fulfilledQuantity, String note, String actor) {
+        LocalMedicineRequestRepository local = localRequestsProvider.getIfAvailable();
+        if (local != null) {
+            LocalMedicineRequest localRequest = local.findById(requestId).orElse(null);
+            if (localRequest == null) localRequest = local.findByCloudRequestId(requestId).orElse(null);
+            if (localRequest != null) {
+                if (!districtId.equals(localRequest.getDistrictId())) {
+                    throw new IllegalArgumentException("Request is outside your district.");
+                }
+                if (isClosed(localRequest.getStatus())) {
+                    throw new IllegalArgumentException("This request is already closed.");
+                }
+                applyDistrictAction(localRequest, action, fulfilledQuantity, note, actor);
+                localRequest.setPendingSync(true);
+                local.saveAndFlush(localRequest);
+                return;
+            }
+        }
+
         ensureCloud();
         MedicineRequest request = cloudRequests.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found."));
@@ -156,37 +174,30 @@ public class MedicineRequestService {
             throw new IllegalArgumentException("This request is already closed.");
         }
 
-        String normalized = normalizeAction(action);
-        switch (normalized) {
-            case "REVIEW" -> request.setStatus(MedicineRequestStatus.UNDER_REVIEW);
-            case "APPROVE" -> {
-                request.setStatus(MedicineRequestStatus.APPROVED);
-                request.setFulfilledQuantity(0);
-            }
-            case "PARTIAL" -> {
-                int qty = validateFulfilled(fulfilledQuantity, request.getRequestedQuantity());
-                request.setFulfilledQuantity(qty);
-                request.setStatus(qty >= request.getRequestedQuantity()
-                        ? MedicineRequestStatus.FULFILLED
-                        : MedicineRequestStatus.PARTIALLY_FULFILLED);
-            }
-            case "FULFILL" -> {
-                request.setFulfilledQuantity(request.getRequestedQuantity());
-                request.setStatus(MedicineRequestStatus.FULFILLED);
-            }
-            case "REJECT" -> request.setStatus(MedicineRequestStatus.REJECTED);
-            case "ESCALATE" -> request.setStatus(MedicineRequestStatus.ESCALATED_TO_STATE);
-            default -> throw new IllegalArgumentException("Unsupported district action.");
-        }
-
-        request.setDistrictNote(blankToNull(note));
-        request.setLastUpdatedByUsername(actor);
-        request.setUpdatedAt(LocalDateTime.now());
-        return cloudRequests.saveAndFlush(request);
+        applyDistrictAction(request, action, fulfilledQuantity, note, actor);
+        cloudRequests.saveAndFlush(request);
     }
 
-    public MedicineRequest stateAction(Long stateId, Long requestId, String action,
-                                       Integer fulfilledQuantity, String note, String actor) {
+    public void stateAction(Long stateId, Long requestId, String action,
+                            Integer fulfilledQuantity, String note, String actor) {
+        LocalMedicineRequestRepository local = localRequestsProvider.getIfAvailable();
+        if (local != null) {
+            LocalMedicineRequest localRequest = local.findById(requestId).orElse(null);
+            if (localRequest == null) localRequest = local.findByCloudRequestId(requestId).orElse(null);
+            if (localRequest != null) {
+                if (localRequest.getStateId() != null && !stateId.equals(localRequest.getStateId())) {
+                    throw new IllegalArgumentException("Request is outside your state scope.");
+                }
+                if (!isStateActionable(localRequest.getStatus())) {
+                    throw new IllegalArgumentException("This request is not awaiting state action.");
+                }
+                applyStateAction(localRequest, action, fulfilledQuantity, note, actor);
+                localRequest.setPendingSync(true);
+                local.saveAndFlush(localRequest);
+                return;
+            }
+        }
+
         ensureCloud();
         MedicineRequest request = cloudRequests.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found."));
@@ -199,28 +210,72 @@ public class MedicineRequestService {
             throw new IllegalArgumentException("This request is not awaiting state action.");
         }
 
+        applyStateAction(request, action, fulfilledQuantity, note, actor);
+        cloudRequests.saveAndFlush(request);
+    }
+
+    private void applyDistrictAction(LocalMedicineRequest request, String action,
+                                     Integer fulfilledQuantity, String note, String actor) {
         String normalized = normalizeAction(action);
         switch (normalized) {
-            case "REVIEW", "APPROVE" -> request.setStatus(MedicineRequestStatus.STATE_APPROVED);
+            case "REVIEW" -> request.setStatus(MedicineRequestStatus.UNDER_REVIEW.name());
+            case "APPROVE" -> {
+                request.setStatus(MedicineRequestStatus.APPROVED.name());
+                request.setFulfilledQuantity(0);
+            }
             case "PARTIAL" -> {
                 int qty = validateFulfilled(fulfilledQuantity, request.getRequestedQuantity());
                 request.setFulfilledQuantity(qty);
-                request.setStatus(qty >= request.getRequestedQuantity()
+                request.setStatus((qty >= request.getRequestedQuantity()
                         ? MedicineRequestStatus.FULFILLED
-                        : MedicineRequestStatus.STATE_PARTIALLY_FULFILLED);
+                        : MedicineRequestStatus.PARTIALLY_FULFILLED).name());
             }
             case "FULFILL" -> {
                 request.setFulfilledQuantity(request.getRequestedQuantity());
-                request.setStatus(MedicineRequestStatus.FULFILLED);
+                request.setStatus(MedicineRequestStatus.FULFILLED.name());
             }
-            case "REJECT" -> request.setStatus(MedicineRequestStatus.REJECTED);
+            case "REJECT" -> request.setStatus(MedicineRequestStatus.REJECTED.name());
+            case "ESCALATE" -> request.setStatus(MedicineRequestStatus.ESCALATED_TO_STATE.name());
+            default -> throw new IllegalArgumentException("Unsupported district action.");
+        }
+        request.setDistrictNote(blankToNull(note));
+        request.setLastUpdatedByUsername(actor);
+        request.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private void applyStateAction(LocalMedicineRequest request, String action,
+                                  Integer fulfilledQuantity, String note, String actor) {
+        String normalized = normalizeAction(action);
+        switch (normalized) {
+            case "REVIEW", "APPROVE" -> request.setStatus(MedicineRequestStatus.STATE_APPROVED.name());
+            case "PARTIAL" -> {
+                int qty = validateFulfilled(fulfilledQuantity, request.getRequestedQuantity());
+                request.setFulfilledQuantity(qty);
+                request.setStatus((qty >= request.getRequestedQuantity()
+                        ? MedicineRequestStatus.FULFILLED
+                        : MedicineRequestStatus.STATE_PARTIALLY_FULFILLED).name());
+            }
+            case "FULFILL" -> {
+                request.setFulfilledQuantity(request.getRequestedQuantity());
+                request.setStatus(MedicineRequestStatus.FULFILLED.name());
+            }
+            case "REJECT" -> request.setStatus(MedicineRequestStatus.REJECTED.name());
             default -> throw new IllegalArgumentException("Unsupported state action.");
         }
-
         request.setStateNote(blankToNull(note));
         request.setLastUpdatedByUsername(actor);
         request.setUpdatedAt(LocalDateTime.now());
-        return cloudRequests.saveAndFlush(request);
+    }
+
+    private static boolean isClosed(String status) {
+        return MedicineRequestStatus.REJECTED.name().equals(status)
+                || MedicineRequestStatus.FULFILLED.name().equals(status);
+    }
+
+    private static boolean isStateActionable(String status) {
+        return MedicineRequestStatus.ESCALATED_TO_STATE.name().equals(status)
+                || MedicineRequestStatus.STATE_APPROVED.name().equals(status)
+                || MedicineRequestStatus.STATE_PARTIALLY_FULFILLED.name().equals(status);
     }
 
     /**
@@ -332,18 +387,60 @@ public class MedicineRequestService {
     public List<RequestView> hospitalViews(Long hospitalId) {
         LocalMedicineRequestRepository local = localRequestsProvider.getIfAvailable();
         if (local != null) {
-            return local.findByHospitalIdOrderByCreatedAtDesc(hospitalId).stream()
+            List<RequestView> localViews = local.findByHospitalIdOrderByCreatedAtDesc(hospitalId).stream()
                     .map(this::view)
                     .toList();
+            if (!localViews.isEmpty()) return localViews;
+            try {
+                return cloudHospitalRequests(hospitalId).stream().map(this::view).toList();
+            } catch (RuntimeException ignored) {
+                return List.of();
+            }
         }
         return cloudHospitalRequests(hospitalId).stream().map(this::view).toList();
     }
 
     public List<RequestView> districtViews(Long districtId) {
+        LocalMedicineRequestRepository local = localRequestsProvider.getIfAvailable();
+        if (local != null) {
+            List<RequestView> localViews = local.findByDistrictIdOrderByCreatedAtDesc(districtId).stream()
+                    .filter(r -> List.of(
+                            MedicineRequestStatus.PENDING_DISTRICT.name(),
+                            MedicineRequestStatus.UNDER_REVIEW.name(),
+                            MedicineRequestStatus.APPROVED.name(),
+                            MedicineRequestStatus.PARTIALLY_FULFILLED.name(),
+                            MedicineRequestStatus.ESCALATED_TO_STATE.name()
+                    ).contains(r.getStatus()))
+                    .map(this::view)
+                    .toList();
+            if (!localViews.isEmpty()) return localViews;
+            try {
+                return districtRequests(districtId).stream().map(this::view).toList();
+            } catch (RuntimeException ignored) {
+                return List.of();
+            }
+        }
         return districtRequests(districtId).stream().map(this::view).toList();
     }
 
     public List<RequestView> stateViews(Long stateId) {
+        LocalMedicineRequestRepository local = localRequestsProvider.getIfAvailable();
+        if (local != null) {
+            List<RequestView> localViews = local.findByStateIdOrderByCreatedAtDesc(stateId).stream()
+                    .filter(r -> List.of(
+                            MedicineRequestStatus.ESCALATED_TO_STATE.name(),
+                            MedicineRequestStatus.STATE_APPROVED.name(),
+                            MedicineRequestStatus.STATE_PARTIALLY_FULFILLED.name()
+                    ).contains(r.getStatus()))
+                    .map(this::view)
+                    .toList();
+            if (!localViews.isEmpty()) return localViews;
+            try {
+                return stateRequests(stateId).stream().map(this::view).toList();
+            } catch (RuntimeException ignored) {
+                return List.of();
+            }
+        }
         return stateRequests(stateId).stream().map(this::view).toList();
     }
 

@@ -74,3 +74,17 @@ The intended production topology is:
 ```
 
 The local node must have completed at least one successful cloud/reference-data synchronization before it can provide a full real hospital snapshot after a first-time Internet outage. Development mode also contains a local demo bootstrap so a clean demo node can be started without the cloud database.
+
+
+## Fresh-node offline bootstrap (Phase 7)
+
+A fresh clone no longer depends on a previously populated `data/local-hospital-cache.mv.db`.
+
+On startup with `dev,local`:
+1. P.U.L.S.E attempts to mirror hospitals, medicines, and users from Supabase into H2.
+2. If Supabase is unreachable and H2 is empty, deterministic demo hospitals, medicines, stock, and development administrator accounts are created locally.
+3. Local stock synchronization is attempted immediately instead of waiting for the first scheduled sync.
+4. Phase 7 medicine requests are stored in H2 first. Hospital, district, and state request actions can operate against the local request mirror while offline.
+5. When connectivity returns, pending local request changes are pushed to Supabase by the existing scheduler.
+
+The runtime H2 database is intentionally local machine state. It should not be committed to Git or shared between developers.

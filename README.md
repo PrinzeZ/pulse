@@ -44,3 +44,12 @@ com.pulse
 ├── service/                    # Business logic & alert pipelines
 ├── controller/                 # Web traffic controllers & routers
 └── exception/                  # Custom runtime exception handling
+
+## Current roadmap status
+
+- Phase 7 — Medicine request workflow: complete
+- Phase 8 — Fulfillment / supply ledger: complete
+- Phase 9 — Tamper-evident stock audit ledger: complete
+- Phase 10 — Physical stock dispatch and receipt: complete
+
+See `PHASE_8_10_SUPPLY_AUDIT_TRANSFER.md` for the workflow and offline-first test checklist.

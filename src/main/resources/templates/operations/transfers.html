@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>P.U.L.S.E — Stock Transfers</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+    <link rel="stylesheet" th:href="@{/css/hierarchy-admin.css}">
+</head>
+<body class="tier-page">
+<div class="app-shell hierarchy">
+<header class="topbar">
+    <div class="topbar-left">
+        <button class="sidebar-toggle" type="button">☰</button>
+        <a class="brand" th:href="${tier == 'STATE' ? '/state-admin/dashboard' : '/district-admin/dashboard'}">
+            <div class="brand-mark">P</div>
+            <div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">District Health Inventory Network</div></div>
+        </a>
+    </div>
+    <div class="topbar-right"><span class="system-status"><span class="status-dot"></span>System online</span><span class="user-chip" th:text="${tier + ' ADMINISTRATOR'}">ADMINISTRATOR</span></div>
+</header>
+<div class="dashboard-layout">
+<th:block th:if="${tier == 'HOSPITAL'}"><th:block th:replace="~{fragments/sidebars :: hospitalAdmin('transfers')}"></th:block></th:block>
+<th:block th:if="${tier == 'DISTRICT'}"><th:block th:replace="~{fragments/sidebars :: district('transfers')}"></th:block></th:block>
+<th:block th:if="${tier == 'STATE'}"><th:block th:replace="~{fragments/sidebars :: state('transfers')}"></th:block></th:block>
+
+<main class="main-content"><div class="content-wrap">
+    <div class="page-heading">
+        <div class="eyebrow" th:text="${tier + ' Administration'}">Administration</div>
+        <h1>Stock transfers</h1>
+        <p>Approved medicine requests can be converted into physical, traceable stock transfers.</p>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success section-gap" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error section-gap" th:text="${error}"></div>
+
+    <section class="card section-gap">
+        <div class="card-header"><div><h2>Create transfer</h2><p>Choose an approved request and a source hospital. The destination is taken from the request.</p></div><span class="badge badge-info">STOCK LEDGER</span></div>
+        <div class="card-body">
+            <form class="request-form" method="post" th:action="${tier == 'STATE' ? '/state-admin/transfers/create' : '/district-admin/transfers/create'}">
+                <div class="request-form-grid">
+                    <label>Approved request
+                        <select name="requestId" required>
+                            <option value="">Select request</option>
+                            <option th:each="r : ${requests}"
+                                    th:if="${r.status == 'APPROVED' or r.status == 'PARTIALLY_FULFILLED' or r.status == 'STATE_APPROVED' or r.status == 'STATE_PARTIALLY_FULFILLED'}"
+                                    th:value="${r.id}"
+                                    th:text="${r.medicineName + ' · ' + r.hospitalName + ' · remaining ' + (r.requestedQuantity - r.fulfilledQuantity)}">Request</option>
+                        </select>
+                    </label>
+                    <label>Source hospital
+                        <select name="sourceHospitalId" required>
+                            <option value="">Select source</option>
+                            <option th:each="hospital : ${hospitals}" th:value="${hospital.hospitalId}" th:text="${hospital.name}">Hospital</option>
+                        </select>
+                    </label>
+                    <label>Quantity
+                        <input type="number" name="quantity" min="1" required placeholder="e.g. 50">
+                    </label>
+                    <label>Note
+                        <input type="text" name="note" maxlength="500" placeholder="Optional transfer note">
+                    </label>
+                    <div class="request-submit"><button class="btn btn-primary" type="submit">⇄ Create transfer</button></div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section class="card section-gap">
+        <div class="card-header"><div><h2>Transfer register</h2><p>Every dispatch and receipt changes stock and creates an audit-ledger entry.</p></div><span class="badge badge-info" th:text="${#lists.size(transfers) + ' TRANSFER(S)'}">0 TRANSFERS</span></div>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(transfers)}">
+            <table class="inventory-table">
+                <thead><tr><th>Source</th><th>Destination</th><th>Medicine ID</th><th>Qty</th><th>Status</th><th>Created</th></tr></thead>
+                <tbody>
+                <tr th:each="transfer : ${transfers}">
+                    <td th:text="${transfer.sourceHospital}">Source</td>
+                    <td th:text="${transfer.destinationHospital}">Destination</td>
+                    <td th:text="${transfer.medicineId}">Medicine</td>
+                    <td th:text="${transfer.quantity}">0</td>
+                    <td><span class="badge request-status" th:text="${transfer.status}">CREATED</span><div th:if="${transfer.localPending}" class="small muted">Pending cloud sync</div></td>
+                    <td class="muted" th:text="${transfer.createdAt != null ? #temporals.format(transfer.createdAt,'dd MMM yyyy HH:mm') : '—'}">Date</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(transfers)}"><strong>No transfers yet</strong><span>Approved requests will appear in the transfer form above.</span></div>
+    </section>
+</div></main></div></div>
+<script th:src="@{/js/pulse-shell.js}"></script>
+</body></html>

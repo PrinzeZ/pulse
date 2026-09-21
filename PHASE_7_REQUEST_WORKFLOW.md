@@ -79,3 +79,10 @@ The cloud table is created lazily when a cloud request operation is attempted, s
 ## Phase 7 boundary
 
 Phase 7 manages the request lifecycle. It intentionally does not automatically move stock between hospitals or warehouses. That allocation/transfer layer can be implemented in a later supply-chain phase once the request workflow has been validated.
+
+
+## Fresh-node / offline behavior
+
+Phase 7 is local-first on a `dev,local` node. A fresh installation initializes its H2 reference mirror from Supabase when available, or seeds the deterministic offline development baseline when the cloud is unavailable. Request creation, district review/actions, and state actions use the H2 request mirror while offline and remain queued for cloud synchronization.
+
+The H2 database is runtime state and must not be shared through Git.
