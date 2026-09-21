@@ -1,5 +1,7 @@
 package com.pulse.service;
 
+import jakarta.transaction.Transactional;
+
 import com.pulse.model.Hospital;
 import com.pulse.model.Medicine;
 import com.pulse.model.StockEntry;
@@ -64,6 +66,7 @@ public class StaffService {
         return new StaffInventory(hospital, inventory, thresholdAlerts);
     }
 
+    @Transactional
     public StockEntry updateStock(Long hospitalId, Long medicineId, int quantity, Medicine medicine) {
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantity cannot be negative");
