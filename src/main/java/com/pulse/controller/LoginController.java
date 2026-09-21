@@ -7,9 +7,11 @@ import com.pulse.model.StateAdmin;
 import com.pulse.model.DistrictAdmin;
 import com.pulse.model.User;
 import com.pulse.service.LoginService;
+import com.pulse.local.service.StockSyncService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,10 +21,15 @@ public class LoginController {
 
     private final LoginService loginService;
     private final SessionSecurity sessionSecurity;
+    private final ObjectProvider<StockSyncService> stockSyncServiceProvider;
 
-    public LoginController(LoginService loginService, SessionSecurity sessionSecurity) {
+    public LoginController(
+            LoginService loginService,
+            SessionSecurity sessionSecurity,
+            ObjectProvider<StockSyncService> stockSyncServiceProvider) {
         this.loginService = loginService;
         this.sessionSecurity = sessionSecurity;
+        this.stockSyncServiceProvider = stockSyncServiceProvider;
     }
 
     @GetMapping("/login")
@@ -64,6 +71,16 @@ public class LoginController {
             newSession.setAttribute("hospitalId", user.getHospitalId());
             String role = determineRole(user);
             newSession.setAttribute(SessionSecurity.ROLE, role);
+
+            // When the optional "local" profile is active, refresh this hospital's
+            // local H2 stock cache after staff login. Normal PostgreSQL mode is unchanged.
+            if ("STAFF".equals(role) && user.getHospitalId() != null) {
+                StockSyncService syncService = stockSyncServiceProvider.getIfAvailable();
+                if (syncService != null) {
+                    syncService.syncHospital(user.getHospitalId());
+                }
+            }
+
             return redirectToDashboard(role);
         } catch (RuntimeException e) {
             return "redirect:/login?error=true";

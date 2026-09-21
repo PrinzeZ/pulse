@@ -2,6 +2,8 @@ package com.pulse.service;
 
 import jakarta.transaction.Transactional;
 
+import com.pulse.local.model.LocalStockEntry;
+import com.pulse.local.repository.LocalStockEntryRepository;
 import com.pulse.model.Hospital;
 import com.pulse.model.Medicine;
 import com.pulse.model.StockEntry;
@@ -9,6 +11,7 @@ import com.pulse.model.StockStatus;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.MedicineRepository;
 import com.pulse.repository.StockEntryRepository;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,15 +28,18 @@ public class StaffService {
     private final HospitalRepository hospitalRepository;
     private final MedicineRepository medicineRepository;
     private final StockEntryRepository stockEntryRepository;
+    private final ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider;
 
     public StaffService(AlertService alertService,
                         HospitalRepository hospitalRepository,
                         MedicineRepository medicineRepository,
-                        StockEntryRepository stockEntryRepository) {
+                        StockEntryRepository stockEntryRepository,
+                        ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider) {
         this.alertService = alertService;
         this.hospitalRepository = hospitalRepository;
         this.medicineRepository = medicineRepository;
         this.stockEntryRepository = stockEntryRepository;
+        this.localStockRepositoryProvider = localStockRepositoryProvider;
     }
 
     public StaffInventory getInventory(Long hospitalId) {
@@ -43,9 +49,20 @@ public class StaffService {
         }
 
         List<Medicine> medicines = medicineRepository.findAll();
-        Map<Long, StockEntry> stockByMedicine = stockEntryRepository.findByHospitalId(hospitalId)
-                .stream()
-                .collect(Collectors.toMap(StockEntry::getMedId, stock -> stock));
+        Map<Long, StockEntry> stockByMedicine;
+        LocalStockEntryRepository localRepository = localStockRepositoryProvider.getIfAvailable();
+        if (localRepository != null) {
+            stockByMedicine = localRepository.findByHospitalId(hospitalId).stream()
+                    .collect(Collectors.toMap(
+                            LocalStockEntry::getMedicineId,
+                            local -> new StockEntry(local.getCloudEntryId(), local.getHospitalId(),
+                                    local.getMedicineId(), local.getQuantity()),
+                            (a, b) -> b));
+        } else {
+            stockByMedicine = stockEntryRepository.findByHospitalId(hospitalId)
+                    .stream()
+                    .collect(Collectors.toMap(StockEntry::getMedId, stock -> stock));
+        }
         List<StaffInventoryRow> inventory = new ArrayList<>();
         for (Medicine medicine : medicines) {
             StockEntry stock = stockByMedicine.get(medicine.getMedId());
@@ -73,6 +90,19 @@ public class StaffService {
         }
         if (medicine == null) {
             throw new IllegalArgumentException("Medicine is required");
+        }
+
+        LocalStockEntryRepository localRepository = localStockRepositoryProvider.getIfAvailable();
+        if (localRepository != null) {
+            LocalStockEntry local = localRepository.findByHospitalIdAndMedicineId(hospitalId, medicineId)
+                    .orElseGet(LocalStockEntry::new);
+            local.setHospitalId(hospitalId);
+            local.setMedicineId(medicineId);
+            local.setQuantity(quantity);
+            local.setLastUpdated(LocalDate.now().toString());
+            local.setSynced(false);
+            LocalStockEntry saved = localRepository.save(local);
+            return new StockEntry(saved.getCloudEntryId(), hospitalId, medicineId, quantity);
         }
 
         StockEntry entry = stockEntryRepository.findByHospitalIdAndMedId(hospitalId, medicineId)
