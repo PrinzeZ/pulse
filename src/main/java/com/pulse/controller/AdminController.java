@@ -24,10 +24,12 @@ public class AdminController {
                 .filter(h -> hospitalId != null && hospitalId.equals(h.getHospitalId()))
                 .findFirst().orElse(null);
         if (hospital == null) return "redirect:/login";
-        model.addAttribute("snapshot", dashboard.snapshot(java.util.List.of(hospital)));
+        model.addAttribute("snapshot", dashboard.snapshot(java.util.List.of(hospital), HierarchyDashboardService.ScopeLevel.HOSPITAL));
         model.addAttribute("scopeTitle", hospital.getName());
         model.addAttribute("scopeSubtitle", "Hospital inventory, staff activity and local alerts");
         model.addAttribute("hospital", hospital);
+        model.addAttribute("tierLabel", "HOSPITAL TIER");
+        model.addAttribute("tierBadge", "VERIFIED · HOSPITAL");
         return "admin_dashboard";
     }
 }

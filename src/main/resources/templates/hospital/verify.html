@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Email Verification</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+</head>
+<body class="login-page">
+<div class="login-form-panel" style="max-width:700px;margin:8vh auto;">
+    <div th:if="${success}">
+        <h2>Email verified</h2>
+        <p>Your hospital registration has been verified and is now available to the assigned district administrator for approval.</p>
+    </div>
+
+    <div th:unless="${success}">
+        <h2>Verify your hospital email</h2>
+        <p th:if="${error}" class="alert alert-error" th:text="${error}"></p>
+        <p>Use the verification link from your email, or enter the six-digit code from that email below.</p>
+        <form th:action="@{/hospital/verify-code}" method="post" class="login-form">
+            <div class="form-group">
+                <label for="email">Hospital email</label>
+                <input id="email" name="email" type="email" required>
+            </div>
+            <div class="form-group">
+                <label for="code">Verification code</label>
+                <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Verify email</button>
+        </form>
+    </div>
+    <p><a th:href="@{/login}">Return to login →</a></p>
+</div>
+</body>
+</html>

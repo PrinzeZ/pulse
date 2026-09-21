@@ -36,12 +36,14 @@ public class DistrictAdminController {
 
         var hospitals = dashboard.hospitalsInDistrict(district);
 
-        model.addAttribute("snapshot", dashboard.snapshot(hospitals));
+        model.addAttribute("snapshot", dashboard.snapshot(hospitals, HierarchyDashboardService.ScopeLevel.DISTRICT));
         model.addAttribute("scopeTitle", district + " District");
         model.addAttribute(
                 "scopeSubtitle",
                 "District hospital inventory, shortages and activity"
         );
+        model.addAttribute("tierLabel", "DISTRICT TIER");
+        model.addAttribute("tierBadge", "VERIFIED · DISTRICT");
 
         return "district-admin/dashboard";
     }

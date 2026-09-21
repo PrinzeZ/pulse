@@ -18,10 +18,12 @@ public class StateAdminController {
     public String dashboard(HttpSession session, Model model) {
         if (!"STATE_ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
         var hospitals = dashboard.allHospitals();
-        var snapshot = dashboard.snapshot(hospitals);
+        var snapshot = dashboard.snapshot(hospitals, HierarchyDashboardService.ScopeLevel.STATE);
         model.addAttribute("snapshot", snapshot);
         model.addAttribute("scopeTitle", "Kerala State");
         model.addAttribute("scopeSubtitle", "Statewide medicine inventory and hospital operations");
+        model.addAttribute("tierLabel", "STATE TIER");
+        model.addAttribute("tierBadge", "VERIFIED · STATE");
         return "state-admin/dashboard";
     }
 }
