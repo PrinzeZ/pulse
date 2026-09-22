@@ -15,13 +15,11 @@ import com.pulse.local.service.LocalOfflineStore;
 import com.pulse.local.model.LocalStockEntry;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service
 public class HierarchyDashboardService {
     private final AlertRepository alerts;
     private final HospitalRepository hospitals;

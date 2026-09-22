@@ -254,28 +254,35 @@
 .medicine-card-preview { min-width: 0; }
 .catalog-view-all {
     position: absolute;
+    left: 0;
     right: 0;
     bottom: 0;
     z-index: 4;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 26px;
-    min-width: 210px;
-    height: 62px;
-    padding: 0 18px 0 24px;
+    justify-content: center;
+    gap: 14px;
+    width: 100%;
+    height: 64px;
+    padding: 0 22px;
     color: var(--pulse-navy-dark);
-    background: rgba(255,255,255,.96);
-    border: 1px solid var(--pulse-border);
-    border-right: 0;
+    background: rgba(255,255,255,.58);
+    -webkit-backdrop-filter: blur(7px);
+    backdrop-filter: blur(7px);
+    border: 1px solid rgba(205,217,222,.82);
     border-bottom: 0;
-    border-radius: 2px 0 0 0;
-    box-shadow: -18px -12px 30px rgba(238,243,246,.96);
+    border-radius: 0;
+    box-shadow: 0 -16px 34px rgba(18,58,87,.13);
     font-size: 12px;
     font-weight: 800;
+    transition: background .18s ease, box-shadow .18s ease, color .18s ease, opacity .18s ease;
 }
 .catalog-view-all span:last-child { color: var(--pulse-teal); font-size: 17px; transition: transform .18s ease; }
-.catalog-view-all:hover { color: var(--pulse-navy); }
+.catalog-view-all:hover {
+    color: var(--pulse-navy);
+    background: rgba(255,255,255,.82);
+    box-shadow: 0 -18px 38px rgba(18,58,87,.17);
+}
 .catalog-view-all:hover span:last-child { transform: translateX(3px); }
 
 /* Full directory: no horizontal rail; it grows naturally down the page. */
@@ -326,3 +333,83 @@
     .catalog-view-all { width: 100%; min-width: 0; }
     .hero-medicine-fall { width: 75%; }
 }
+
+/* --- Government hospital map layer --- */
+.map-preview-section { margin-top: 34px; }
+.map-preview-head { margin-bottom: 14px; }
+.map-preview-wrap { position:relative; height:340px; overflow:hidden; background:#fff; border:1px solid var(--pulse-border); border-radius:4px; box-shadow:0 14px 32px rgba(15,39,58,.055); }
+.pulse-map { width:100%; background:#e9eef0; }
+.pulse-map-preview { height:100%; }
+.map-view-all { position:absolute; z-index:900; left:50%; bottom:0; transform:translateX(-50%); display:flex; align-items:center; justify-content:center; gap:18px; min-width:190px; height:58px; padding:0 22px; background:rgba(255,255,255,.97); border:1px solid var(--pulse-border); border-bottom:0; border-radius:3px 3px 0 0; box-shadow:0 -16px 32px rgba(225,232,236,.95); color:var(--pulse-navy-dark); font-size:12px; font-weight:800; }
+.map-view-all span:last-child { color:var(--pulse-teal); font-size:17px; }
+
+/* Crisp centered catalog overlay, intentionally covering the second row. */
+.catalog-view-all { left:0; right:0; bottom:0; transform:none; min-width:0; width:100%; justify-content:center; border-right:0; border-radius:0; opacity:.94; }\n.catalog-view-all:hover { opacity:1; }
+
+.public-map-page .main-content { padding-bottom:26px; }
+.map-page-intro { display:flex; align-items:flex-end; justify-content:space-between; gap:28px; margin-bottom:18px; }
+.map-page-intro h1 { margin:5px 0 8px; max-width:780px; }
+.map-page-intro p { margin:0; max-width:780px; color:var(--pulse-muted); }
+.map-workspace { display:grid; grid-template-columns:330px minmax(0,1fr); gap:14px; min-height:690px; }
+.map-sidebar { display:flex; flex-direction:column; gap:12px; }
+.map-search-box,.map-legend,.nearest-card { background:#fff; border:1px solid var(--pulse-border); border-radius:4px; padding:20px; box-shadow:0 10px 25px rgba(15,39,58,.04); }
+.map-search-box h2 { margin:5px 0 7px; font-size:24px; }
+.map-search-box p { margin:0 0 16px; color:var(--pulse-muted); font-size:12px; line-height:1.55; }
+.map-search-box label { display:block; font-size:11px; font-weight:800; color:var(--pulse-navy-dark); margin-bottom:6px; }
+.medicine-map-search { display:grid; grid-template-columns:1fr auto; gap:6px; }
+.medicine-map-search input { min-width:0; min-height:44px; border:1px solid var(--pulse-border); border-radius:2px; padding:0 12px; outline:none; }
+.medicine-map-search input:focus { border-color:#8bb7c1; box-shadow:0 0 0 2px rgba(19,139,151,.08); }
+.medicine-map-search .btn { min-height:44px; border-radius:2px; }
+.map-search-status { margin-top:12px; padding:11px 12px; background:#f7fafb; border:1px solid #e4ecef; color:var(--pulse-muted); font-size:11px; line-height:1.45; }
+.map-legend .eyebrow { margin-bottom:10px; }
+.legend-row { display:flex; align-items:center; gap:10px; margin:9px 0; font-size:11px; color:var(--pulse-muted); }
+.legend-row strong { color:var(--pulse-navy-dark); }
+.legend-marker { width:25px; height:25px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; color:#fff; font-size:13px; font-weight:900; flex:0 0 25px; }
+.legend-marker.green { background:#21865b; }.legend-marker.connected { background:#138b97; box-shadow:0 0 0 4px rgba(19,139,151,.18); }.legend-marker.yellow { background:#d59a16; }.legend-marker.red { background:#d64b4b; }.legend-marker.grey { background:#7e8993; }.legend-marker.unconnected { color:#7f8c95; background:#eef2f4; border:2px solid #aeb8bf; }
+.legend-note { margin-top:13px; padding-top:12px; border-top:1px solid var(--pulse-border); font-size:10px; color:var(--pulse-muted); line-height:1.5; }
+.map-main { position:relative; min-width:0; background:#fff; border:1px solid var(--pulse-border); border-radius:4px; overflow:hidden; box-shadow:0 12px 28px rgba(15,39,58,.045); }
+.pulse-map-full { height:660px; }
+.map-source-note { position:absolute; left:12px; bottom:10px; z-index:800; max-width:80%; padding:7px 9px; background:rgba(255,255,255,.9); border:1px solid rgba(205,217,222,.9); color:#718391; font-size:9px; }
+
+.pulse-marker-wrap { background:transparent !important; border:0 !important; }
+.pulse-hospital-marker { width:36px; height:36px; border-radius:10px 10px 12px 12px; background:var(--marker-color); border:3px solid #fff; box-shadow:0 4px 10px rgba(20,50,65,.22); color:#fff; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:900; position:relative; transform:rotate(0deg); }
+.pulse-hospital-marker::after { content:""; position:absolute; bottom:-7px; left:11px; width:11px; height:11px; background:var(--marker-color); transform:rotate(45deg); border-right:2px solid #fff; border-bottom:2px solid #fff; z-index:-1; }
+.pulse-hospital-marker.is-connected { box-shadow:0 0 0 4px rgba(255,255,255,.9), 0 0 0 7px color-mix(in srgb, var(--marker-color) 28%, transparent), 0 5px 14px rgba(20,50,65,.24); }
+.pulse-hospital-marker.is-unconnected { opacity:.68; background:#eef2f4; color:#7b8b94; border-color:#aeb8bf; }
+.pulse-hospital-marker.is-unconnected::after { background:#eef2f4; border-color:#aeb8bf; }
+.map-popup { min-width:220px; font-family:inherit; }
+.map-popup-kicker { font-size:9px; font-weight:800; letter-spacing:.12em; color:#15919c; text-transform:uppercase; }
+.map-popup h3 { margin:4px 0 4px; font-size:16px; color:#123a57; }
+.map-popup p { margin:0 0 8px; color:#738592; font-size:10px; line-height:1.4; }
+.map-popup-status { display:flex; align-items:center; gap:6px; font-size:10px; font-weight:800; color:#314e60; }
+.map-popup-dot { width:8px; height:8px; border-radius:50%; }
+.map-popup-stock { display:flex; align-items:baseline; gap:6px; margin:10px 0 6px; padding-top:8px; border-top:1px solid #edf1f2; }
+.map-popup-stock strong { font-size:21px; color:#123a57; }.map-popup-stock span { color:#7b8b94; font-size:10px; }
+.map-popup-actions { display:flex; gap:8px; margin-top:10px; }
+.map-popup-actions a,.map-popup-actions button { border:0; background:none; padding:0; color:#0d7185; font-size:10px; font-weight:800; cursor:pointer; }
+.map-popup-actions button { color:#123a57; }
+.map-popup-live,.map-popup-muted { display:inline-block; margin-top:8px; font-size:9px; color:#21865b; font-weight:800; }.map-popup-muted { color:#88959d; }
+.nearest-card.hidden { display:none; }
+.nearest-kicker { font-size:9px; color:#15919c; font-weight:800; letter-spacing:.12em; }
+.nearest-card h3 { margin:5px 0; color:#123a57; font-size:17px; }
+.nearest-card p { margin:0 0 9px; color:var(--pulse-muted); font-size:10px; line-height:1.4; }
+.nearest-stock { display:flex; align-items:center; gap:8px; font-size:10px; color:#607381; margin-bottom:9px; }.nearest-stock strong { color:#123a57; font-size:16px; }.nearest-stock-dot { width:9px; height:9px; border-radius:50%; }
+.nearest-card a { font-size:10px; font-weight:800; color:#0d7185; }
+
+/* Hospital registration map */
+.registration-shell { min-height:100vh; display:grid; grid-template-columns:minmax(300px,.9fr) minmax(500px,1.4fr); background:#f3f6f8; }
+.registration-intro { padding:44px 48px; background:#123a57; color:#fff; display:flex; flex-direction:column; justify-content:space-between; gap:40px; }
+.registration-intro .brand-name,.registration-intro .brand-subtitle { color:#fff; }.registration-intro .brand-subtitle { opacity:.72; }.registration-intro .brand-mark { background:#fff; color:#123a57; }
+.registration-intro .eyebrow { color:#9bd7d8; }.registration-intro h1 { margin:8px 0 12px; font-size:43px; line-height:1.05; max-width:560px; }.registration-intro p { max-width:550px; color:#c9d9e1; line-height:1.65; }
+.registration-rule { display:flex; flex-direction:column; gap:5px; padding:16px 18px; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); }.registration-rule span { color:#b7ccd6; font-size:11px; }
+.registration-form-panel { padding:34px 38px; background:#f8fafb; overflow:auto; }
+.registration-map-head { display:flex; align-items:flex-end; justify-content:space-between; gap:18px; margin-bottom:12px; }.registration-map-head h2 { margin:0 0 5px; }.registration-map-head p { margin:0; color:var(--pulse-muted); font-size:11px; }
+.selection-badge { padding:7px 10px; border:1px solid var(--pulse-border); background:#fff; color:#7c8a93; font-size:10px; font-weight:800; white-space:nowrap; }.selection-badge.selected { color:#21865b; border-color:#b8dfce; background:#f1faf5; }
+.registration-map { height:390px; background:#e9eef0; border:1px solid var(--pulse-border); box-shadow:0 10px 24px rgba(15,39,58,.05); }
+.selected-hospital-card { display:flex; flex-direction:column; gap:3px; margin:12px 0 18px; padding:13px 15px; background:#fff; border:1px solid var(--pulse-border); }.selected-hospital-card strong { color:#123a57; font-size:13px; }.selected-hospital-card span,.selected-hospital-card small { color:#738592; font-size:10px; }.registration-form { display:grid; grid-template-columns:1fr 1fr; gap:13px; }.registration-form .form-group:first-of-type { grid-column:1 / -1; }.registration-form .btn { grid-column:1 / -1; border-radius:2px; min-height:46px; }.registration-form input { border-radius:2px; }
+.map-select-hospital { margin-top:7px; border:0; background:#123a57; color:#fff; padding:6px 8px; cursor:pointer; border-radius:2px; font-size:10px; }
+@media(max-width:900px){.map-workspace{grid-template-columns:1fr}.pulse-map-full{height:540px}.registration-shell{grid-template-columns:1fr}.registration-intro{padding:30px 24px}.registration-intro h1{font-size:34px}.registration-form-panel{padding:25px 20px}}
+@media(max-width:650px){.map-page-intro{align-items:flex-start;flex-direction:column}.map-preview-wrap{height:300px}.registration-form{grid-template-columns:1fr}.registration-form .form-group:first-of-type{grid-column:auto}.registration-form .btn{grid-column:auto}.registration-map-head{align-items:flex-start;flex-direction:column}.registration-map{height:330px}}
+
+.map-register-link { display:block; padding:12px 14px; background:#123a57; color:#fff; border-radius:3px; font-size:10px; font-weight:800; text-align:center; box-shadow:0 8px 18px rgba(18,58,87,.12); }
+.map-register-link:hover { color:#fff; background:#0f3149; }

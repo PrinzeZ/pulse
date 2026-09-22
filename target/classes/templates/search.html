@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>P.U.L.S.E — Search Medicine</title><link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}"><link rel="stylesheet" th:href="@{/css/hierarchy-admin.css}"></head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>P.U.L.S.E — Search Medicine</title><link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}"><link rel="stylesheet" th:href="@{/css/hierarchy-admin.css}"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""></head>
 <body th:classappend="${session.role != null ? 'tier-page hierarchy-search' : 'public-search'}">
-<div th:if="${session.role == null}" class="app-shell user-content"><header class="topbar"><a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Medicine Availability Network</div></div></a><nav class="public-nav"><a th:href="@{/}">Home</a><a th:href="@{/search}" class="active">Search Medicine</a><a th:href="@{/login}">Staff Login</a></nav></header><main class="main-content"><div class="content-wrap">
+<div th:if="${session.role == null}" class="app-shell user-content"><header class="topbar"><a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Medicine Availability Network</div></div></a><nav class="public-nav"><a th:href="@{/}">Home</a><a th:href="@{/search}" class="active">Search Medicine</a><a th:href="@{/map}">Map</a><a th:href="@{/login}">Staff Login</a></nav></header><main class="main-content"><div class="content-wrap">
     <div class="page-heading"><div class="eyebrow">Public search</div><h1>Medicine availability</h1><p>Search reported stock across hospitals by medicine and district.</p></div>
     <div th:replace="~{fragments/search-content :: content}"></div>
 </div></main><footer class="public-footer">

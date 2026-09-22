@@ -25,6 +25,7 @@ public class HospitalProvisioningService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final HospitalEmailService emailService;
     private final SecureRandom secureRandom = new SecureRandom();
+    private final GovernmentHospitalCatalogService hospitalCatalog;
 
     public HospitalProvisioningService(
             HospitalRegistrationRepository registrations,
@@ -34,7 +35,8 @@ public class HospitalProvisioningService {
             StateRepository states,
             DistrictRepository districts,
             BCryptPasswordEncoder passwordEncoder,
-            HospitalEmailService emailService) {
+            HospitalEmailService emailService,
+            GovernmentHospitalCatalogService hospitalCatalog) {
         this.registrations = registrations;
         this.activations = activations;
         this.hospitals = hospitals;
@@ -43,6 +45,7 @@ public class HospitalProvisioningService {
         this.districts = districts;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.hospitalCatalog = hospitalCatalog;
     }
 
     public List<State> states() {
@@ -55,21 +58,25 @@ public class HospitalProvisioningService {
 
     @Transactional
     public HospitalRegistration register(
-            String hospitalName,
+            String governmentHospitalKey,
             String hospitalEmail,
             String adminName,
-            String adminUsername,
-            Long stateId,
-            Long districtId) {
+            String adminUsername) {
 
-        State state = states.findById(stateId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid state"));
+        GovernmentHospitalCatalogService.GovernmentHospital catalog = hospitalCatalog.find(governmentHospitalKey)
+                .orElseThrow(() -> new IllegalArgumentException("Select a valid government hospital from the map"));
 
-        District district = districts.findById(districtId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid district"));
+        if (catalog.closed()) {
+            throw new IllegalArgumentException("This government hospital is marked closed and cannot be registered");
+        }
 
-        if (!district.getStateId().equals(state.getStateId())) {
-            throw new IllegalArgumentException("District does not belong to selected state");
+        if (hospitals.existsByGovernmentHospitalKey(catalog.key())
+                || registrations.existsByGovernmentHospitalKeyAndStatusIn(
+                        catalog.key(),
+                        List.of(HospitalRegistrationStatus.PENDING_EMAIL,
+                                HospitalRegistrationStatus.EMAIL_VERIFIED,
+                                HospitalRegistrationStatus.PROVISIONED))) {
+            throw new IllegalArgumentException("That government hospital is already registered or has a registration in progress");
         }
 
         if (users.findByUsername(adminUsername).isPresent()
@@ -82,13 +89,17 @@ public class HospitalProvisioningService {
             throw new IllegalArgumentException("A pending registration already exists for this email");
         }
 
+        Long stateId = ensureKeralaState();
+        Long districtId = ensureDistrict(catalog.district(), stateId);
+
         HospitalRegistration registration = new HospitalRegistration();
-        registration.setHospitalName(hospitalName.trim());
+        registration.setHospitalName(catalog.name());
+        registration.setGovernmentHospitalKey(catalog.key());
         registration.setHospitalEmail(hospitalEmail.trim().toLowerCase());
         registration.setAdminName(adminName.trim());
         registration.setAdminUsername(adminUsername.trim());
-        registration.setStateId(state.getStateId());
-        registration.setDistrictId(district.getDistrictId());
+        registration.setStateId(stateId);
+        registration.setDistrictId(districtId);
         registration.setStatus(HospitalRegistrationStatus.PENDING_EMAIL);
         registration.setVerificationToken(token());
         String verificationCode = verificationCode();
@@ -100,6 +111,23 @@ public class HospitalProvisioningService {
         emailService.sendVerificationEmail(saved, verificationCode);
 
         return saved;
+    }
+
+    private Long ensureKeralaState() {
+        return states.findByNameIgnoreCase("Kerala").map(State::getStateId).orElseGet(() -> {
+            State state = new State();
+            state.setName("Kerala");
+            return states.saveAndFlush(state).getStateId();
+        });
+    }
+
+    private Long ensureDistrict(String name, Long stateId) {
+        return districts.findByNameIgnoreCaseAndStateId(name, stateId).map(District::getDistrictId).orElseGet(() -> {
+            District district = new District();
+            district.setName(name);
+            district.setStateId(stateId);
+            return districts.saveAndFlush(district).getDistrictId();
+        });
     }
 
     @Transactional
@@ -168,10 +196,20 @@ public class HospitalProvisioningService {
         District district = districts.findById(registration.getDistrictId())
                 .orElseThrow(() -> new IllegalArgumentException("District not found"));
 
+        GovernmentHospitalCatalogService.GovernmentHospital catalog = hospitalCatalog.find(registration.getGovernmentHospitalKey())
+                .orElseThrow(() -> new IllegalArgumentException("Selected government hospital is no longer in the directory"));
+
+        if (hospitals.existsByGovernmentHospitalKey(catalog.key())) {
+            throw new IllegalArgumentException("That government hospital has already been registered");
+        }
+
         Hospital hospital = new Hospital();
-        hospital.setName(registration.getHospitalName());
+        hospital.setName(catalog.name());
         hospital.setDistrict(district.getName());
         hospital.setDistrictId(district.getDistrictId());
+        hospital.setGovernmentHospitalKey(catalog.key());
+        hospital.setLatitude(catalog.latitude());
+        hospital.setLongitude(catalog.longitude());
         hospital = hospitals.saveAndFlush(hospital);
 
         Admin admin = new Admin();

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>P.U.L.S.E — Government Hospital Map</title>
+  <link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+</head>
+<body class="public-map-page">
+<div class="app-shell user-content">
+<header class="topbar"><a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Government Hospital Map</div></div></a>
+<nav class="public-nav"><a th:href="@{/}">Availability</a><a th:href="@{/search}">Medicine directory</a><a th:href="@{/map}" class="active">Map</a><a th:href="@{/login}">Staff Login</a></nav></header>
+<main class="main-content"><div class="content-wrap">
+  <section class="map-page-intro"><div><div class="eyebrow">GOVERNMENT HOSPITAL NETWORK</div><h1>Find medicine. Find the hospital. Get there.</h1><p>Only government hospitals in the P.U.L.S.E directory are shown. Connected hospitals glow with their latest reported stock.</p></div><button id="locateMe" class="btn btn-secondary" type="button">Use my location</button></section>
+  <section class="map-workspace">
+    <aside class="map-sidebar">
+      <div class="map-search-box"><div class="eyebrow">FIND MEDICINE NEAR ME</div><h2>What do you need?</h2><p>Search for a medicine and P.U.L.S.E will find the nearest connected government hospital reporting stock.</p>
+        <label for="medicineSearch">Medicine</label>
+        <div class="medicine-map-search"><input id="medicineSearch" list="medicineOptions" type="search" placeholder="e.g. Paracetamol" autocomplete="off"><button id="mapSearch" type="button" class="btn btn-primary">Find</button></div>
+        <datalist id="medicineOptions"></datalist>
+        <div id="mapSearchStatus" class="map-search-status" aria-live="polite">Choose a medicine to search.</div>
+      </div>
+      <div class="map-legend"><div class="eyebrow">MAP KEY</div>
+        <div class="legend-row"><span class="legend-marker green">✚</span><span><strong>Green</strong> — stocked</span></div>
+        <div class="legend-row"><span class="legend-marker yellow">✚</span><span><strong>Yellow</strong> — limited stock</span></div>
+        <div class="legend-row"><span class="legend-marker red">✚</span><span><strong>Red</strong> — low / empty</span></div>
+        <div class="legend-row"><span class="legend-marker grey">✚</span><span><strong>Grey</strong> — closed</span></div>
+        <div class="legend-row"><span class="legend-marker connected">✚</span><span><strong>Teal glow</strong> — connected, stock not reported</span></div><div class="legend-row"><span class="legend-marker unconnected">✚</span><span>Outline — not yet connected</span></div>
+        <div class="legend-note">A glow around a marker means that hospital has completed P.U.L.S.E setup.</div>
+      </div>
+      <div id="nearestCard" class="nearest-card hidden"></div>
+      <a class="map-register-link" th:href="@{/hospital/register}">Are you a government hospital? Register with P.U.L.S.E →</a>
+    </aside>
+    <div class="map-main"><div id="pulse-map-full" class="pulse-map pulse-map-full" data-map-mode="full"></div><div class="map-source-note">Map tiles © OpenStreetMap contributors · hospital directory based on Kerala DHS 2024–25 modern-medicine institution data.</div></div>
+  </section>
+</div></main>
+<footer class="public-footer"><div class="public-footer-brand"><strong>P.U.L.S.E</strong><span>Public Medicine Availability Network</span></div><div class="public-footer-contact"><span>Contact us</span><a href="mailto:liminality2026@gmail.com">liminality2026@gmail.com</a><a href="tel:+918089004231">+91 80890 04231</a></div><div class="public-footer-meta"><span>Government hospital discovery</span><span>© 2026 P.U.L.S.E</span></div></footer>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script th:src="@{/js/pulse-map.js}"></script><script th:src="@{/js/pulse-routing.js}"></script>
+</body></html>

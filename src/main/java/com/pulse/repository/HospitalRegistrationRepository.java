@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Collection;
 
 public interface HospitalRegistrationRepository extends JpaRepository<HospitalRegistration, Long> {
     Optional<HospitalRegistration> findByVerificationToken(String verificationToken);
@@ -16,4 +17,5 @@ public interface HospitalRegistrationRepository extends JpaRepository<HospitalRe
     boolean existsByAdminUsername(String adminUsername);
     boolean existsByHospitalEmailAndStatus(String hospitalEmail, HospitalRegistrationStatus status);
     Optional<HospitalRegistration> findTopByHospitalEmailOrderByCreatedAtDesc(String hospitalEmail);
+    boolean existsByGovernmentHospitalKeyAndStatusIn(String governmentHospitalKey, Collection<HospitalRegistrationStatus> statuses);
 }

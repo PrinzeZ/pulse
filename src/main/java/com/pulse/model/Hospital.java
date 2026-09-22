@@ -17,6 +17,12 @@ public class Hospital {
     @Column(name = "district_id")
     private Long districtId;
 
+    @Column(name = "government_hospital_key", unique = true, length = 64)
+    private String governmentHospitalKey;
+
+    private Double latitude;
+    private Double longitude;
+
     public Hospital() {}
 
     public Hospital(Long hospitalId, String name, String district) {
@@ -60,4 +66,11 @@ public class Hospital {
     public void setDistrictId(Long districtId) {
         this.districtId = districtId;
     }
+
+    public String getGovernmentHospitalKey() { return governmentHospitalKey; }
+    public void setGovernmentHospitalKey(String governmentHospitalKey) { this.governmentHospitalKey = governmentHospitalKey; }
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

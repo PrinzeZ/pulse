@@ -9,7 +9,7 @@
 <div class="app-shell user-content">
 <header class="topbar">
 <a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Medicine Availability Network</div></div></a>
-<div class="topbar-right"><nav class="public-nav"><a th:href="@{/}" class="active">Availability</a><a th:href="@{/search}">Medicine directory</a><a th:href="@{/login}">Staff Login</a></nav></div>
+<div class="topbar-right"><nav class="public-nav"><a th:href="@{/}" class="active">Availability</a><a th:href="@{/search}">Medicine directory</a><a th:href="@{/map}">Map</a><a th:href="@{/login}">Staff Login</a></nav></div>
 </header>
 <main class="main-content"><div class="content-wrap">
 <section class="public-hero">
@@ -20,6 +20,14 @@
 </div>
 <div class="public-hero-copy"><div class="hero-eyebrow">PUBLIC MEDICINE AVAILABILITY</div><h1>Find the medicine before you make the trip.</h1><p>Search participating hospitals and see their latest reported stock in one place.</p></div>
 <form th:action="@{/search}" method="get" class="public-search-form"><div class="search-input-wrap"><span>⌕</span><input type="text" name="query" placeholder="Search medicine or hospital..." aria-label="Search medicine or hospital"></div><select name="district"><option value="">All districts</option><option th:each="availableDistrict : ${districts}" th:value="${availableDistrict}" th:text="${availableDistrict}"></option></select><button type="submit" class="btn btn-primary">Search</button></form>
+</section>
+
+<section class="map-preview-section">
+  <div class="section-head map-preview-head"><div><div class="eyebrow">GOVERNMENT HOSPITAL MAP</div><h2>Find it on the map</h2><p>Government hospitals only. Connected P.U.L.S.E hospitals light up with live stock status.</p></div></div>
+  <div class="map-preview-wrap">
+    <div id="pulse-map-preview" class="pulse-map pulse-map-preview" data-map-mode="preview" aria-label="Government hospital map"></div>
+    <a class="map-view-all" th:href="@{/map}"><span>View full map</span><span>→</span></a>
+  </div>
 </section>
 
 <section class="catalog-section">
@@ -44,5 +52,5 @@
   <div class="public-footer-contact"><span>Contact us</span><a href="mailto:liminality2026@gmail.com">liminality2026@gmail.com</a><a href="tel:+918089004231">+91 80890 04231</a></div>
   <div class="public-footer-meta"><span>Reported inventory from participating hospitals</span><span>© 2026 P.U.L.S.E</span></div>
 </footer>
-</div><script th:src="@{/js/pulse-routing.js}"></script>
+</div><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script th:src="@{/js/pulse-map.js}"></script><script th:src="@{/js/pulse-routing.js}"></script>
 </body></html>

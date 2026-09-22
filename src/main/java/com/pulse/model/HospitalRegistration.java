@@ -16,6 +16,9 @@ public class HospitalRegistration {
     @Column(nullable = false, length = 120)
     private String hospitalName;
 
+    @Column(name = "government_hospital_key", length = 64)
+    private String governmentHospitalKey;
+
     @Column(nullable = false, length = 180)
     private String hospitalEmail;
 
@@ -52,6 +55,8 @@ public class HospitalRegistration {
 
     public Long getRegistrationId() { return registrationId; }
     public String getHospitalName() { return hospitalName; }
+    public String getGovernmentHospitalKey() { return governmentHospitalKey; }
+    public void setGovernmentHospitalKey(String governmentHospitalKey) { this.governmentHospitalKey = governmentHospitalKey; }
     public void setHospitalName(String hospitalName) { this.hospitalName = hospitalName; }
     public String getHospitalEmail() { return hospitalEmail; }
     public void setHospitalEmail(String hospitalEmail) { this.hospitalEmail = hospitalEmail; }

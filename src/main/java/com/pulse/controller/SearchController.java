@@ -47,6 +47,7 @@ public class SearchController {
     @GetMapping("/search")
     public String search(@RequestParam(name = "query", required = false, defaultValue = "") String query,
                          @RequestParam(name = "district", required = false, defaultValue = "") String district,
+                         @RequestParam(name = "view", required = false, defaultValue = "") String view,
                          Model model) {
         List<SearchResult> results = searchService.search(district, query);
         model.addAttribute("results", results);
@@ -56,7 +57,9 @@ public class SearchController {
         model.addAttribute("districts", districts());
         model.addAttribute("districtStatuses", districtStatuses(results));
         model.addAttribute("medicineCards", medicineCards(results));
-        model.addAttribute("searched", (query != null && !query.isBlank()) || (district != null && !district.isBlank()));
+        boolean searched = (query != null && !query.isBlank()) || (district != null && !district.isBlank());
+        model.addAttribute("searched", searched);
+        model.addAttribute("directoryFull", !searched && "all".equalsIgnoreCase(view));
         return "search";
     }
 

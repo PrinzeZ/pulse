@@ -54,7 +54,7 @@ public class PostgresJpaConfig {
     public LocalContainerEntityManagerFactoryBean postgresEntityManagerFactory(
             EntityManagerFactoryBuilder builder,
             @Qualifier("dataSource") DataSource dataSource,
-            @Value("${pulse.cloud.ddl-auto:update}") String ddlAuto) {
+            @Value("${pulse.cloud.ddl-auto:none}") String ddlAuto) {
 
         return builder
                 .dataSource(dataSource)

@@ -1,0 +1,148 @@
+key,name,district,category,latitude,longitude,address,closed
+1764876338,District Hospital Peroorkada,Thiruvananthapuram,District Hospital,8.5353544,76.9673732,"Peroorkada, Thiruvananthapuram 695005",false
+4866245733,District Hospital Nedumangad,Thiruvananthapuram,District Hospital,8.603774,77.0008022,"Nedumangad, Thiruvananthapuram 695541",false
+1115314583,AA Rahim Memorial District Hospital Kollam,Kollam,District Hospital,8.8880171,76.5846879,"Hospital Road, Kollam 691001",false
+1115314674,District Hospital Kozhencherry,Pathanamthitta,District Hospital,9.3356364,76.7063591,"Kozhencherry, Pathanamthitta 689641",false
+4736458326,District Hospital Mavelikara,Alappuzha,District Hospital,9.2559616,76.5516494,"Thazhakara PO, Mavelikara 690102",false
+5882517484,District Hospital Chengannur,Alappuzha,District Hospital,9.3285603,76.6165824,Chengannur 689121,false
+1115314732,District Hospital Idukki,Idukki,District Hospital,9.8537728,76.9389028,Idukki Colony PO 685602,false
+6688123774,District Hospital Thodupuzha,Idukki,District Hospital,9.9001388,76.7266153,Thodupuzha East PO 685584,false
+4572885723,District Hospital Aluva,Ernakulam,District Hospital,10.1052066,76.3555833,Aluva 683101,false
+7624348178,District Hospital Wadakkanchery,Thrissur,District Hospital,10.6655614,76.2525185,Wadakkanchery 680590,false
+1115315788,District Hospital Palakkad,Palakkad,District Hospital,10.7680087,76.6583995,"Court Road, Palakkad 678001",false
+2776633774,District Hospital Tirur,Malappuram,District Hospital,10.9118666,75.9226716,Tirur 676104,false
+1111678619,District Hospital Perinthalmanna,Malappuram,District Hospital,10.9745721,76.2322311,Perinthalmanna 679322,false
+4827534571,District Hospital Nilambur,Malappuram,District Hospital,11.2764809,76.2223146,Nilambur 679329,false
+1115315846,District Hospital Vatakara,Kozhikode,District Hospital,11.59933,75.59659,Vatakara 673101,false
+3364334767,District Hospital Mananthavady,Wayanad,District Hospital,11.8004688,76.0020462,Mananthavady 670645,false
+1115316380,District Hospital Kannur,Kannur,District Hospital,11.8606711,75.3720299,Kannur HQ 670017,false
+6528574863,District Hospital Kanhangad,Kasaragod,District Hospital,12.3147,75.1051,"Bella, Kanhangad 671531",false
+1115288514,General Hospital Thiruvananthapuram,Thiruvananthapuram,General Hospital,8.4998918,76.9433242,"Vanchiyoor PO, Thiruvananthapuram 695035",false
+1115288217,General Hospital Neyyattinkara,Thiruvananthapuram,General Hospital,8.4065987,77.0855838,Neyyattinkara 695121,false
+1115312488,General Hospital Pathanamthitta,Pathanamthitta,General Hospital,9.2664487,76.7819347,Pathanamthitta PO 689645,false
+1115311886,General Hospital Adoor,Pathanamthitta,General Hospital,9.1568031,76.7307354,Adoor PO 691523,false
+1115312785,General Hospital Alappuzha,Alappuzha,General Hospital,9.49048,76.3402266,"Iron Bridge, Alappuzha 688012",false
+1115313445,General Hospital Kottayam,Kottayam,General Hospital,9.5897182,76.5265482,Kottayam 686001,false
+1115313387,K M Mani Smaraka Govt General Hospital Pala,Kottayam,General Hospital,9.7114407,76.680751,"Central Junction, Pala 686575",false
+1115312843,General Hospital Changanachery,Kottayam,General Hospital,9.4450002,76.5386222,Changanachery 686101,false
+1115312876,General Hospital Kanjirappally,Kottayam,General Hospital,9.5597059,76.7797893,Kanjirappally 686507,false
+3238837417,General Hospital Ernakulam,Ernakulam,General Hospital,9.9722768,76.2813966,"Hospital Road, Ernakulam 682011",false
+1115313478,General Hospital Muvattupuzha,Ernakulam,General Hospital,9.9793597,76.5805796,Muvattupuzha 686661,false
+4565248475,General Hospital Thrissur,Thrissur,General Hospital,10.5229494,76.217191,"Swaraj Round, Thrissur 680001",false
+7724836353,General Hospital Irinjalakuda,Thrissur,General Hospital,10.3473113,76.2176183,Irinjalakuda 680121,false
+1115314286,Government General Hospital Manjeri,Malappuram,General Hospital,11.1178,76.1223,Manjeri 676121,false
+7548818611,Government General Hospital Kozhikode Beach,Kozhikode,General Hospital,11.25751,75.77319,Kozhikode Beach 673032,false
+1115314377,General Hospital Kalpetta,Wayanad,General Hospital,11.6334063,76.0894675,Kalpetta,false
+1115314435,General Hospital Thalassery,Kannur,General Hospital,11.7482268,75.4878218,Thalassery 670101,false
+1115314468,General Hospital Kasaragod,Kasaragod,General Hospital,12.503013,74.991813,Kasaragod,false
+4836178410,Taluk Headquarters Hospital Chirayinkeezhu,Thiruvananthapuram,Taluk HQ Hospital,8.6610399,76.7866079,"Taluk Headquarters Hospital Chirayinkeezhu, Kerala",false
+1261215865,Taluk Headquarters Hospital Parassala,Thiruvananthapuram,Taluk HQ Hospital,8.3447676,77.1513808,"Taluk Headquarters Hospital Parassala, Kerala",false
+8631672840,Taluk Headquarters Hospital Malayinkeezhu,Thiruvananthapuram,Taluk HQ Hospital,8.4887739,77.0352497,"Taluk Headquarters Hospital Malayinkeezhu, Kerala",false
+4258373739,Taluk Headquarters Hospital Karunagappally,Kollam,Taluk HQ Hospital,9.063986,76.5346159,"Taluk Headquarters Hospital Karunagappally, Kerala",false
+5562843788,Taluk Headquarters Hospital Kottarakkara,Kollam,Taluk HQ Hospital,9.005173,76.7755716,"Taluk Headquarters Hospital Kottarakkara, Kerala",false
+5715631130,Taluk Headquarters Hospital Pathanapuram,Kollam,Taluk HQ Hospital,9.0968445,76.8599033,"Taluk Headquarters Hospital Pathanapuram, Kerala",false
+5745688233,Taluk Headquarters Hospital Punalur,Kollam,Taluk HQ Hospital,9.0198598,76.9564483,"Taluk Headquarters Hospital Punalur, Kerala",false
+1111836142,Taluk Headquarters Hospital Sasthamkotta,Kollam,Taluk HQ Hospital,9.0557581,76.6277839,"Taluk Headquarters Hospital Sasthamkotta, Kerala",false
+4386834123,Taluk Headquarters Hospital Thiruvalla,Pathanamthitta,Taluk HQ Hospital,9.3794476,76.5689895,"Taluk Headquarters Hospital Thiruvalla, Kerala",false
+1115246546,Taluk Headquarters Hospital Ranni,Pathanamthitta,Taluk HQ Hospital,9.377735,76.7800416,"Taluk Headquarters Hospital Ranni, Kerala",false
+7481457575,Taluk Headquarters Hospital Konni,Pathanamthitta,Taluk HQ Hospital,9.2314894,76.8457385,"Taluk Headquarters Hospital Konni, Kerala",false
+1115246330,Taluk Headquarters Hospital Mallappally,Pathanamthitta,Taluk HQ Hospital,9.4527662,76.6482627,"Taluk Headquarters Hospital Mallappally, Kerala",false
+2544188580,Taluk Headquarters Hospital Cherthala,Alappuzha,Taluk HQ Hospital,9.6816131,76.3399459,"Taluk Headquarters Hospital Cherthala, Kerala",false
+4273438350,Taluk Headquarters Hospital Pulinkunnu,Alappuzha,Taluk HQ Hospital,9.4350678,76.43650619,"Taluk Headquarters Hospital Pulinkunnu, Kerala",false
+3873524288,Taluk Headquarters Hospital Haripad,Alappuzha,Taluk HQ Hospital,9.2802281,76.4595874,"Taluk Headquarters Hospital Haripad, Kerala",false
+5768181876,PK Kunju Sahib Memorial Taluk Hospital Kayamkulam,Alappuzha,Taluk HQ Hospital,9.1717,76.4997,"PK Kunju Sahib Memorial Taluk Hospital Kayamkulam, Kerala",false
+1116145820,Taluk Headquarters Hospital Vaikom,Kottayam,Taluk HQ Hospital,9.7502847,76.3900199,"Taluk Headquarters Hospital Vaikom, Kerala",false
+1116145820-P,Taluk Headquarters Hospital Pampady,Kottayam,Taluk HQ Hospital,9.5657,76.6455807,"Taluk Headquarters Hospital Pampady, Kerala",false
+1115558429,Taluk Headquarters Hospital Kuravilangad,Kottayam,Taluk HQ Hospital,9.7570007,76.5550583,"Taluk Headquarters Hospital Kuravilangad, Kerala",false
+8285227388,Taluk Headquarters Hospital Peermade,Idukki,Taluk HQ Hospital,9.6298854,76.979417,"Taluk Headquarters Hospital Peermade, Kerala",false
+2555165634,Taluk Headquarters Hospital Adimaly,Idukki,Taluk HQ Hospital,10.0155013,77.0125484,"Taluk Headquarters Hospital Adimaly, Kerala",false
+7352774439,Taluk Headquarters Hospital Nedumkandam,Idukki,Taluk HQ Hospital,9.8350183,77.159065,"Taluk Headquarters Hospital Nedumkandam, Kerala",false
+1887185856,Taluk Headquarters Hospital Fort Kochi,Ernakulam,Taluk HQ Hospital,9.9661423,76.24505,"Taluk Headquarters Hospital Fort Kochi, Kerala",false
+1685473389,Taluk Headquarters Hospital Thrippunithura,Ernakulam,Taluk HQ Hospital,9.9423883,76.3461833,"Taluk Headquarters Hospital Thrippunithura, Kerala",false
+5241713212,Taluk Headquarters Hospital Perumbavoor,Ernakulam,Taluk HQ Hospital,10.1155963,76.4811462,"Taluk Headquarters Hospital Perumbavoor, Kerala",false
+5684423824,Taluk Headquarters Hospital North Paravur,Ernakulam,Taluk HQ Hospital,10.14942,76.232717,"Taluk Headquarters Hospital North Paravur, Kerala",false
+1877687259,Taluk Headquarters Hospital Kothamangalam,Ernakulam,Taluk HQ Hospital,10.06,76.6,"Taluk Headquarters Hospital Kothamangalam, Kerala",false
+6841273748,Taluk Headquarters Hospital Chavakkad,Thrissur,Taluk HQ Hospital,10.587339,76.0200923,"Taluk Headquarters Hospital Chavakkad, Kerala",false
+1135712543,Taluk Headquarters Hospital Kodungalloor,Thrissur,Taluk HQ Hospital,10.2290171,76.1970707,"Taluk Headquarters Hospital Kodungalloor, Kerala",false
+2576311555,Taluk Headquarters Hospital Chalakudy,Thrissur,Taluk HQ Hospital,10.2958919,76.341017,"Taluk Headquarters Hospital Chalakudy, Kerala",false
+7331474374,Taluk Headquarters Hospital Alathur,Palakkad,Taluk HQ Hospital,10.6462624,76.5382475,"Taluk Headquarters Hospital Alathur, Kerala",false
+1774363384,Taluk Headquarters Hospital Chittur,Palakkad,Taluk HQ Hospital,10.6996999,76.7533975,"Taluk Headquarters Hospital Chittur, Kerala",false
+7341733686,Taluk Headquarters Hospital Ottappalam,Palakkad,Taluk HQ Hospital,10.7799933,76.3745437,"Taluk Headquarters Hospital Ottappalam, Kerala",false
+8474614412,Taluk Headquarters Hospital Mannarkkad,Palakkad,Taluk HQ Hospital,10.9946102,76.4658269,"Taluk Headquarters Hospital Mannarkkad, Kerala",false
+1115335430,Taluk Headquarters Hospital Pattambi,Palakkad,Taluk HQ Hospital,10.8024894,76.180522,"Taluk Headquarters Hospital Pattambi, Kerala",false
+1115858217,Attappady Tribal Taluk Speciality Hospital Kottathara,Palakkad,Taluk HQ Hospital,11.1313237,76.6814187,"Attappady Tribal Taluk Speciality Hospital Kottathara, Kerala",false
+1116751825,Taluk Headquarters Hospital Ponnani,Malappuram,Taluk HQ Hospital,10.7752388,75.9225387,"Taluk Headquarters Hospital Ponnani, Kerala",false
+6436536848,Taluk Headquarters Hospital Thirurangadi,Malappuram,Taluk HQ Hospital,11.040707,75.912433,"Taluk Headquarters Hospital Thirurangadi, Kerala",false
+1116133370,Taluk Headquarters Hospital Malappuram,Malappuram,Taluk HQ Hospital,11.0470056,76.073251,"Taluk Headquarters Hospital Malappuram, Kerala",false
+3212114635,Taluk Headquarters Hospital Kondotty,Malappuram,Taluk HQ Hospital,11.1281546,75.9753974,"Taluk Headquarters Hospital Kondotty, Kerala",false
+5285516158,Taluk Headquarters Hospital Koyilandy,Kozhikode,Taluk HQ Hospital,11.44246,75.69269,"Taluk Headquarters Hospital Koyilandy, Kerala",false
+2316523550,Taluk Headquarters Hospital Sulthan Bathery,Wayanad,Taluk HQ Hospital,11.6629159,76.2575468,"Taluk Headquarters Hospital Sulthan Bathery, Kerala",false
+7876353421,Taluk Headquarters Hospital Vythiri,Wayanad,Taluk HQ Hospital,11.550803,76.0403991,"Taluk Headquarters Hospital Vythiri, Kerala",false
+1116752724,Taluk Headquarters Hospital Taliparamba,Kannur,Taluk HQ Hospital,12.0454442,75.3772509,"Taluk Headquarters Hospital Taliparamba, Kerala",false
+1655262713,Taluk Headquarters Hospital Panathady / Vellarikund,Kasaragod,Taluk HQ Hospital,12.414939,75.239019,"Taluk Headquarters Hospital Panathady / Vellarikund, Kerala",false
+4625758836,Taluk Headquarters Hospital Mangalpady,Kasaragod,Taluk HQ Hospital,12.678595,74.907684,"Taluk Headquarters Hospital Mangalpady, Kerala",false
+3338734266,Taluk Headquarters Hospital Bedadka,Kasaragod,Taluk HQ Hospital,12.460308,75.167468,"Taluk Headquarters Hospital Bedadka, Kerala",false
+6881633371,Taluk Headquarters Hospital Nileshwar,Kasaragod,Taluk HQ Hospital,12.2568,75.1454,"Taluk Headquarters Hospital Nileshwar, Kerala",false
+6331877859,Taluk Hospital Fort,Thiruvananthapuram,Taluk Hospital,8.4860596,76.9407618,"Taluk Hospital Fort, Kerala",false
+8364157746,Taluk Hospital Varkala,Thiruvananthapuram,Taluk Hospital,8.7331189,76.7201277,"Taluk Hospital Varkala, Kerala",false
+7836536644,Taluk Hospital Nemom,Thiruvananthapuram,Taluk Hospital,8.4541586,76.9998887,"Taluk Hospital Nemom, Kerala",false
+1267848453,Taluk Hospital Attingal,Thiruvananthapuram,Taluk Hospital,8.6861487,76.8281344,"Taluk Hospital Attingal, Kerala",false
+2467568438,Taluk Hospital Vithura,Thiruvananthapuram,Taluk Hospital,8.6729747,77.0832909,"Taluk Hospital Vithura, Kerala",false
+3227648734,Taluk Hospital Kadakkal,Kollam,Taluk Hospital,8.8266915,76.9168015,"Taluk Hospital Kadakkal, Kerala",false
+8831857654,Taluk Hospital Kundara,Kollam,Taluk Hospital,8.9611252,76.6714048,"Taluk Hospital Kundara, Kerala",false
+1115556860,Rama Rao Memorial Taluk Hospital Nedungolam,Kollam,Taluk Hospital,8.8327717,76.6827434,"Rama Rao Memorial Taluk Hospital Nedungolam, Kerala",false
+7635344828,Taluk Hospital Neendakara,Kollam,Taluk Hospital,8.9635767,76.5324888,"Taluk Hospital Neendakara, Kerala",false
+8662536781,Taluk Hospital Thuravoor,Alappuzha,Taluk Hospital,9.7700686,76.317692381,"Taluk Hospital Thuravoor, Kerala",false
+3528211133,Taluk Hospital Chettikad,Alappuzha,Taluk Hospital,9.5313947,76.3142974,"Taluk Hospital Chettikad, Kerala",false
+4117378473,Taluk Hospital Kattappana,Idukki,Taluk Hospital,9.746065,77.1009,"Taluk Hospital Kattappana, Kerala",false
+1111675466,Taluk Hospital Njarakkal,Ernakulam,Taluk Hospital,10.0425271,76.222481,"Taluk Hospital Njarakkal, Kerala",false
+6645858249,Govt Maharaja's Taluk Hospital Karuvelipady,Ernakulam,Taluk Hospital,9.9430984,76.2605823,"Govt Maharaja's Taluk Hospital Karuvelipady, Kerala",false
+4386553863,Taluk Hospital Angamaly,Ernakulam,Taluk Hospital,10.1962932,76.3873515,"Taluk Hospital Angamaly, Kerala",false
+2617488636,Taluk Hospital Parakkadavu,Ernakulam,Taluk Hospital,10.185409,76.2459363,"Taluk Hospital Parakkadavu, Kerala",false
+1128652557,Taluk Hospital Piravom,Ernakulam,Taluk Hospital,9.8742068,76.4950013,"Taluk Hospital Piravom, Kerala",false
+7423436646,Taluk Hospital Palluruthy,Ernakulam,Taluk Hospital,9.9113701,76.2737098,"Taluk Hospital Palluruthy, Kerala",false
+1115335737,Taluk Hospital Chelakkara,Thrissur,Taluk Hospital,10.6553583,76.3581816,"Taluk Hospital Chelakkara, Kerala",false
+1115335828,Taluk Hospital Pudukkad,Thrissur,Taluk Hospital,10.4197869,76.2662719,"Taluk Hospital Pudukkad, Kerala",false
+3885734610,Taluk Hospital Kunnamkulam,Thrissur,Taluk Hospital,10.6488752,76.0695395,"Taluk Hospital Kunnamkulam, Kerala",false
+1115335463,Taluk Hospital Elappully,Palakkad,Taluk Hospital,10.7563974,76.7448551,"Taluk Hospital Elappully, Kerala",false
+5778866318,Taluk Hospital Areacode,Malappuram,Taluk Hospital,11.2339729,76.0501817,"Taluk Hospital Areacode, Kerala",false
+8242357740,Taluk Hospital Kuttippuram,Malappuram,Taluk Hospital,10.8534242,76.0364982,"Taluk Hospital Kuttippuram, Kerala",false
+5356261312,Taluk Hospital Wandoor,Malappuram,Taluk Hospital,11.1923061,76.2368328,"Taluk Hospital Wandoor, Kerala",false
+8843613632,Taluk Hospital Feroke,Kozhikode,Taluk Hospital,11.1819633,75.8410333,"Taluk Hospital Feroke, Kerala",false
+7783351385,Taluk Hospital Kuttiyadi,Kozhikode,Taluk Hospital,11.6551953,75.7496058,"Taluk Hospital Kuttiyadi, Kerala",false
+5873166788,Taluk Hospital Nadapuram,Kozhikode,Taluk Hospital,11.6821211,75.6521681,"Taluk Hospital Nadapuram, Kerala",false
+8468137321,Taluk Hospital Thamarassery,Kozhikode,Taluk Hospital,11.4124524,75.9367378,"Taluk Hospital Thamarassery, Kerala",false
+6474711485,Taluk Hospital Perambra,Kozhikode,Taluk Hospital,11.5695204,75.7548113,"Taluk Hospital Perambra, Kerala",false
+3882142742,Taluk Hospital Balussery,Kozhikode,Taluk Hospital,11.4458812,75.835913,"Taluk Hospital Balussery, Kerala",false
+1116752575,Taluk Hospital Kuthuparamba,Kannur,Taluk Hospital,11.8283634,75.5647889,"Taluk Hospital Kuthuparamba, Kerala",false
+1115557850,Taluk Hospital Pazhyangadi,Kannur,Taluk Hospital,12.0347992,75.2657431,"Taluk Hospital Pazhyangadi, Kerala",false
+1116752542,Taluk Hospital Peringome,Kannur,Taluk Hospital,12.040624,75.368103,"Taluk Hospital Peringome, Kerala",false
+1117524569,Taluk Hospital Iritty,Kannur,Taluk Hospital,11.9859096,75.6730301,"Taluk Hospital Iritty, Kerala",false
+4356116519,Taluk Hospital Irikkur,Kannur,Taluk Hospital,11.9843299,75.5530723,"Taluk Hospital Irikkur, Kerala",false
+8348455323,Taluk Hospital Panoor,Kannur,Taluk Hospital,11.7587646,75.578522,"Taluk Hospital Panoor, Kerala",false
+8127482829,Taluk Hospital Payyannur,Kannur,Taluk Hospital,12.1143,75.2108,"Taluk Hospital Payyannur, Kerala",false
+1116148162,Taluk Hospital Peravoor,Kannur,Taluk Hospital,11.9027363,75.7328468,"Taluk Hospital Peravoor, Kerala",false
+8864252435,Taluk Hospital Thrikaripur,Kasaragod,Taluk Hospital,12.138959,75.1767931,"Taluk Hospital Thrikaripur, Kerala",false
+6687364320,Women & Children Hospital Thycaud,Thiruvananthapuram,Women & Children Hospital,8.4875587,76.9568554,"Thycaud, Thiruvananthapuram 695014",false
+7637423281,Women & Children Victoria Hospital Kollam,Kollam,Women & Children Hospital,8.8879834,76.5861807,"Poyilakkada Junction, Kollam 691001",false
+5473646825,Women & Children Hospital Alappuzha,Alappuzha,Women & Children Hospital,9.49007,76.32119,"Bazar PO, Alappuzha 688012",false
+WCKTM-VAICOM,Women & Children Hospital Vaikom,Kottayam,Women & Children Hospital,9.748,76.395,Vaikom 686141,true
+3177267873,Women & Children Hospital Mattancherry,Ernakulam,Women & Children Hospital,9.9593869,76.2597548,"Bazar Road, Mattancherry 682002",false
+1115335588,Women & Children Hospital Palakkad,Palakkad,Women & Children Hospital,10.7686066,76.6506477,"Behind District Hospital, Palakkad 678001",false
+1115558189,Women & Children Hospital Ponnani,Malappuram,Women & Children Hospital,10.7726988,75.9226414,Ponnani 679586,false
+3248827234,Women & Children Hospital Kozhikode,Kozhikode,Women & Children Hospital,11.25165,75.78407,"Kottapparamba, Kozhikode 673001",false
+1116147230,Women & Children Hospital Mangattuparamba,Kannur,Women & Children Hospital,11.9921267,75.3859795,"Mangattuparamba, Kannur 670563",false
+1131842153,Women & Children Hospital Kanhangad,Kasaragod,Women & Children Hospital,12.312064,75.093173,Kanhangad 671315,false
+DME-TVPM,Government Medical College Hospital Thiruvananthapuram,Thiruvananthapuram,Medical College Hospital,8.5241,76.9282,"Medical College PO, Thiruvananthapuram",false
+DME-KLM,Government Medical College Hospital Kollam,Kollam,Medical College Hospital,8.765,76.756,"Parippally, Kollam",false
+DME-KONNI,Government Medical College Hospital Konni,Pathanamthitta,Medical College Hospital,9.232,76.848,"Konni, Pathanamthitta",false
+DME-ALP,Government TD Medical College Hospital Alappuzha,Alappuzha,Medical College Hospital,9.4981,76.3388,"Vandanam, Alappuzha",false
+DME-KTM,Government Medical College Hospital Kottayam,Kottayam,Medical College Hospital,9.592,76.5222,"Gandhinagar, Kottayam",false
+DME-IDK,Government Medical College Hospital Idukki,Idukki,Medical College Hospital,9.855,76.938,"Idukki Medical College, Idukki",false
+DME-EKM,Government Medical College Hospital Ernakulam,Ernakulam,Medical College Hospital,10.052,76.33,"Kalamassery, Ernakulam",false
+DME-TSR,Government Medical College Hospital Thrissur,Thrissur,Medical College Hospital,10.568,76.213,"Mulankunnathukavu, Thrissur",false
+DME-MLP,Government Medical College Hospital Manjeri,Malappuram,Medical College Hospital,11.119,76.118,"Manjeri, Malappuram",false
+DME-KKD,Government Medical College Hospital Kozhikode,Kozhikode,Medical College Hospital,11.274,75.826,"Medical College PO, Kozhikode",false
+DME-KNR,Government Medical College Hospital Kannur,Kannur,Medical College Hospital,12.089,75.358,"Pariyaram, Kannur",false
+DME-WYD,Government Medical College Hospital Wayanad,Wayanad,Medical College Hospital,11.8,76.0,Wayanad,false
+DME-KSD,Government Medical College Hospital Kasaragod,Kasaragod,Medical College Hospital,12.627646,75.091023,"Badiadka, Kasaragod",false

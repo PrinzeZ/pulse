@@ -56,9 +56,15 @@ public class LocalOfflineStore {
                 hospital_id BIGINT PRIMARY KEY,
                 name VARCHAR(150) NOT NULL,
                 district VARCHAR(100),
-                district_id BIGINT
+                district_id BIGINT,
+                government_hospital_key VARCHAR(64),
+                latitude DOUBLE,
+                longitude DOUBLE
             )
             """);
+        jdbc.execute("ALTER TABLE local_hospitals ADD COLUMN IF NOT EXISTS government_hospital_key VARCHAR(64)");
+        jdbc.execute("ALTER TABLE local_hospitals ADD COLUMN IF NOT EXISTS latitude DOUBLE");
+        jdbc.execute("ALTER TABLE local_hospitals ADD COLUMN IF NOT EXISTS longitude DOUBLE");
         jdbc.execute("""
             CREATE TABLE IF NOT EXISTS local_medicines (
                 medicine_id BIGINT PRIMARY KEY,
@@ -112,6 +118,9 @@ public class LocalOfflineStore {
         Hospital h = new Hospital(((Number) r.get("hospital_id")).longValue(),
                 (String) r.get("name"), (String) r.get("district"));
         h.setDistrictId(number(r.get("district_id")));
+        h.setGovernmentHospitalKey((String) r.get("government_hospital_key"));
+        h.setLatitude(numberDouble(r.get("latitude")));
+        h.setLongitude(numberDouble(r.get("longitude")));
         return Optional.of(h);
     }
 
@@ -124,6 +133,9 @@ public class LocalOfflineStore {
         return jdbc.query("SELECT * FROM local_hospitals ORDER BY name", (rs, i) -> {
             Hospital h = new Hospital(rs.getLong("hospital_id"), rs.getString("name"), rs.getString("district"));
             h.setDistrictId((Long) rs.getObject("district_id"));
+            h.setGovernmentHospitalKey(rs.getString("government_hospital_key"));
+            h.setLatitude((Double) rs.getObject("latitude"));
+            h.setLongitude((Double) rs.getObject("longitude"));
             return h;
         });
     }
@@ -154,12 +166,16 @@ public class LocalOfflineStore {
     public void seedDemoReferenceData() {
         if (hasLocalData()) return;
         Object[][] hospitals = {
-                {1L, "Kozhikode General Hospital", "Kozhikode", 2L},
-                {2L, "Kozhikode District Hospital", "Kozhikode", 2L},
-                {3L, "Ernakulam General Hospital", "Ernakulam", 1L}
+                {1L, "Kozhikode General Hospital", "Kozhikode", 2L, "7548818611", 11.25751, 75.77319},
+                {2L, "Kozhikode District Hospital", "Kozhikode", 2L, null, null, null},
+                {3L, "Ernakulam General Hospital", "Ernakulam", 1L, "3238837417", 9.9722768, 76.2813966}
         };
         for (Object[] h : hospitals) {
-            jdbc.update("MERGE INTO local_hospitals (hospital_id,name,district,district_id) KEY(hospital_id) VALUES (?,?,?,?)", h);
+            jdbc.update("""
+                MERGE INTO local_hospitals
+                (hospital_id,name,district,district_id,government_hospital_key,latitude,longitude)
+                KEY(hospital_id) VALUES (?,?,?,?,?,?,?)
+                """, h);
         }
         Object[][] medicines = {
                 {1L,"Paracetamol","Analgesic",50},{2L,"Insulin","Hormone",20},{3L,"Amoxicillin","Antibiotic",30},
@@ -193,9 +209,11 @@ public class LocalOfflineStore {
         try {
             for (Hospital h : cloudHospitals.findAll()) {
                 jdbc.update("""
-                    MERGE INTO local_hospitals (hospital_id,name,district,district_id)
-                    KEY(hospital_id) VALUES (?,?,?,?)
-                    """, h.getHospitalId(), h.getName(), h.getDistrict(), h.getDistrictId());
+                    MERGE INTO local_hospitals
+                    (hospital_id,name,district,district_id,government_hospital_key,latitude,longitude)
+                    KEY(hospital_id) VALUES (?,?,?,?,?,?,?)
+                    """, h.getHospitalId(), h.getName(), h.getDistrict(), h.getDistrictId(),
+                    h.getGovernmentHospitalKey(), h.getLatitude(), h.getLongitude());
             }
             for (Medicine m : cloudMedicines.findAll()) {
                 jdbc.update("""
@@ -333,5 +351,9 @@ public class LocalOfflineStore {
 
     private static Long number(Object value) {
         return value == null ? null : ((Number) value).longValue();
+    }
+
+    private static Double numberDouble(Object value) {
+        return value == null ? null : ((Number) value).doubleValue();
     }
 }

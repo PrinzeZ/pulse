@@ -8,6 +8,17 @@
 </form>
 </section>
 
+<section class="map-preview-section" th:if="${session.role == null and not searched}">
+  <div class="results-heading map-preview-head">
+    <div><div class="eyebrow">GOVERNMENT HOSPITAL NETWORK</div><h2>Find medicine. Find the hospital.</h2><p class="section-subtitle">Connected government hospitals glow with their latest reported stock.</p></div>
+    <a class="clear-link" th:href="@{/map}">Open full map →</a>
+  </div>
+  <div class="map-preview-wrap">
+    <div id="pulse-map-preview" class="pulse-map pulse-map-preview" data-map-mode="preview"></div>
+    <a class="map-view-all" th:href="@{/map}"><span>View full map</span><span>→</span></a>
+  </div>
+</section>
+
 <section class="public-section" style="margin-top:24px;" th:if="${searched}">
   <div class="results-heading">
     <div><div class="eyebrow">Search results</div><h2 th:text="${#lists.size(medicineCards)} + ' medicines found'">0 medicines found</h2></div>
@@ -16,16 +27,12 @@
   <div class="medicine-grid" th:if="${medicineCards != null and medicineCards.size() > 0}">
     <a class="medicine-card" th:each="medicine : ${medicineCards}" th:href="@{/medicine/{id}(id=${medicine.medicineId})}">
       <div class="medicine-card-media">
-        <img th:src="${medicine.imageUrl}"
-             th:attr="data-fallback=${medicine.fallbackImageUrl}"
-             th:alt="${medicine.medicineName + ' packaging'}"
-             onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
+        <img th:src="${medicine.imageUrl}" th:attr="data-fallback=${medicine.fallbackImageUrl}" th:alt="${medicine.medicineName + ' packaging'}" onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
         <span th:class="${'availability-dot ' + medicine.overallStatus.toLowerCase()}"></span>
       </div>
       <div class="medicine-card-body">
         <div class="medicine-card-top"><div><h3 th:text="${medicine.medicineName}">Medicine</h3><p th:text="${medicine.category}">Category</p></div>
-          <span th:class="${medicine.overallStatus == 'GREEN' ? 'badge badge-success' : (medicine.overallStatus == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}"
-                th:text="${medicine.overallStatus == 'GREEN' ? 'Available' : (medicine.overallStatus == 'YELLOW' ? 'Limited' : 'Out of stock')}">Status</span>
+          <span th:class="${medicine.overallStatus == 'GREEN' ? 'badge badge-success' : (medicine.overallStatus == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${medicine.overallStatus == 'GREEN' ? 'Available' : (medicine.overallStatus == 'YELLOW' ? 'Limited' : 'Out of stock')}">Status</span>
         </div>
         <div class="medicine-card-meta"><span><strong th:text="${medicine.availableHospitalCount}">0</strong> available hospitals</span><span><strong th:text="${medicine.hospitalCount}">0</strong> reporting</span></div>
         <div class="medicine-card-link">View medicine details <span>→</span></div>
@@ -36,20 +43,41 @@
 </section>
 
 <section class="public-section" style="margin-top:28px;" th:if="${not searched}">
-  <div class="results-heading"><div><div class="eyebrow">Browse medicines</div><h2>Available through P.U.L.S.E</h2><p class="section-subtitle">Select a medicine to see participating hospitals and reported stock.</p></div></div>
-  <div class="medicine-directory-grid">
-      <a class="medicine-card medicine-card-directory" th:each="medicine : ${medicineCards}" th:href="@{/medicine/{id}(id=${medicine.medicineId})}">
+  <div class="results-heading">
+    <div><div class="eyebrow">BROWSE MEDICINES</div><h2>Available through P.U.L.S.E</h2><p class="section-subtitle">Select a medicine to see participating hospitals and reported stock.</p></div>
+  </div>
+
+  <div class="medicine-preview-wrap" th:if="${not directoryFull}">
+    <div class="medicine-preview-grid">
+      <a class="medicine-card medicine-card-preview" th:each="medicine : ${medicineCards}" th:href="@{/medicine/{id}(id=${medicine.medicineId})}">
         <div class="medicine-card-media">
-          <img th:src="${medicine.imageUrl}"
-               th:attr="data-fallback=${medicine.fallbackImageUrl}"
-               th:alt="${medicine.medicineName + ' packaging'}"
-               onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
+          <img th:src="${medicine.imageUrl}" th:attr="data-fallback=${medicine.fallbackImageUrl}" th:alt="${medicine.medicineName + ' packaging'}" onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
           <span th:class="${'availability-dot ' + medicine.overallStatus.toLowerCase()}"></span>
         </div>
-        <div class="medicine-card-body"><div class="medicine-card-top"><div><h3 th:text="${medicine.medicineName}">Medicine</h3><p th:text="${medicine.category}">Category</p></div>
-          <span th:class="${medicine.overallStatus == 'GREEN' ? 'badge badge-success' : (medicine.overallStatus == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${medicine.overallStatus == 'GREEN' ? 'Available' : (medicine.overallStatus == 'YELLOW' ? 'Limited' : 'Out of stock')}">Status</span>
-        </div><div class="medicine-card-link">Explore <span>→</span></div></div>
+        <div class="medicine-card-body">
+          <div class="medicine-card-top"><div><h3 th:text="${medicine.medicineName}">Medicine</h3><p th:text="${medicine.category}">Category</p></div>
+            <span th:class="${medicine.overallStatus == 'GREEN' ? 'badge badge-success' : (medicine.overallStatus == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${medicine.overallStatus == 'GREEN' ? 'Available' : (medicine.overallStatus == 'YELLOW' ? 'Limited' : 'Out of stock')}">Status</span>
+          </div>
+          <div class="medicine-card-link">Explore <span>→</span></div>
+        </div>
       </a>
+    </div>
+    <a class="catalog-view-all" th:href="@{/search(view='all')}"><span>View all medicines</span><span>→</span></a>
+  </div>
+
+  <div class="medicine-directory-grid" th:if="${directoryFull}">
+    <a class="medicine-card medicine-card-directory" th:each="medicine : ${medicineCards}" th:href="@{/medicine/{id}(id=${medicine.medicineId})}">
+      <div class="medicine-card-media">
+        <img th:src="${medicine.imageUrl}" th:attr="data-fallback=${medicine.fallbackImageUrl}" th:alt="${medicine.medicineName + ' packaging'}" onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}">
+        <span th:class="${'availability-dot ' + medicine.overallStatus.toLowerCase()}"></span>
+      </div>
+      <div class="medicine-card-body">
+        <div class="medicine-card-top"><div><h3 th:text="${medicine.medicineName}">Medicine</h3><p th:text="${medicine.category}">Category</p></div>
+          <span th:class="${medicine.overallStatus == 'GREEN' ? 'badge badge-success' : (medicine.overallStatus == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${medicine.overallStatus == 'GREEN' ? 'Available' : (medicine.overallStatus == 'YELLOW' ? 'Limited' : 'Out of stock')}">Status</span>
+        </div>
+        <div class="medicine-card-link">Explore <span>→</span></div>
+      </div>
+    </a>
   </div>
 </section>
 
@@ -59,4 +87,4 @@
     <div class="card-body"><div class="list"><div class="list-item" th:each="entry : ${districtStatuses.entrySet()}"><div class="list-main"><div class="list-title" th:text="${entry.key}">District</div></div><span th:class="${entry.value == 'GREEN' ? 'badge badge-success' : (entry.value == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${entry.value == 'GREEN' ? 'AVAILABLE' : (entry.value == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span></div></div></div>
   </div>
 </section>
-</div><script th:src="@{/js/pulse-routing.js}"></script></body></html>
+</div></body></html>
