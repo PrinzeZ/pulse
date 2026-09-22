@@ -61,3 +61,48 @@ See `PHASE_8_10_SUPPLY_AUDIT_TRANSFER.md` and `PHASE_11_13_COMPLETION.md` for th
 ## Online architecture
 
 For real remote access, deploy P.U.L.S.E to Railway. The Railway service runs Spring Boot remotely and connects to Supabase PostgreSQL. H2 remains the local/offline cache and is not activated on Railway.
+
+
+## Smart connection routing
+
+P.U.L.S.E automatically prefers the fastest available server from the browser:
+1. `http://localhost:8080` when the local server is running.
+2. A previously learned LAN server when available.
+3. The Railway deployment as the final fallback.
+
+The browser checks server health periodically. If a local/LAN server disappears, the current page fails over to Railway automatically. If a local server starts while Railway is open, the browser moves back to localhost automatically.
+
+A normal browser cannot enumerate arbitrary private LAN IP addresses from a web page. Therefore the LAN address is learned when a user visits a LAN instance and is carried across failover to Railway. `start.ps1` still prints the current LAN address.
+
+
+## Automatic connection routing
+
+P.U.L.S.E automatically prefers connections in this order:
+
+1. `http://localhost:8080`
+2. `http://pulse.local:8080`
+3. Railway
+
+The browser checks the faster local endpoints periodically. If localhost becomes
+available while Railway or LAN is open, it redirects to localhost automatically.
+If localhost stops responding, it falls back to the LAN hostname, then Railway.
+
+### One-time LAN hostname setup
+
+A normal browser cannot discover arbitrary LAN servers. For a stable LAN address,
+run `setup-lan-hostname.ps1` once **as Administrator on each LAN client** and pass
+the current P.U.L.S.E server IP:
+
+```powershell
+.\setup-lan-hostname.ps1 -ServerIp 192.168.1.37
+```
+
+Then LAN clients can use:
+
+```text
+http://pulse.local:8080
+```
+
+If the P.U.L.S.E server gets a different LAN IP later, rerun the setup script on
+the clients with the new IP. The server's `start.ps1` still detects its current
+LAN IP automatically.
