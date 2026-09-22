@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
@@ -47,7 +46,7 @@ public class StockLedgerService {
         movement.setReferenceId(referenceId);
         movement.setActorUsername(actor);
         movement.setNote(note);
-        movement.setOccurredAt(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
+        movement.setOccurredAt(LocalDateTime.now());
         movement.setPreviousHash(previous == null ? null : previous.getHash());
         movement.setHash(hash(
                 movement.getEventId(), movement.getHospitalId(), movement.getMedicineId(),
@@ -74,7 +73,7 @@ public class StockLedgerService {
         movement.setReferenceId(referenceId);
         movement.setActorUsername(actor);
         movement.setNote(note);
-        movement.setOccurredAt(LocalDateTime.now().truncatedTo(ChronoUnit.MICROS));
+        movement.setOccurredAt(LocalDateTime.now());
         movement.setPreviousHash(previous == null ? null : previous.getHash());
         movement.setHash(hash(
                 movement.getEventId(), movement.getHospitalId(), movement.getMedicineId(),
@@ -146,13 +145,7 @@ public class StockLedgerService {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             String canonical = java.util.Arrays.stream(values)
-                    .map(v -> {
-                        if (v == null) return "<null>";
-                        if (v instanceof LocalDateTime time) {
-                            return time.truncatedTo(ChronoUnit.MICROS).toString();
-                        }
-                        return v.toString();
-                    })
+                    .map(v -> v == null ? "<null>" : v.toString())
                     .reduce((a, b) -> a + "|" + b)
                     .orElse("");
             return HexFormat.of().formatHex(digest.digest(canonical.getBytes(StandardCharsets.UTF_8)));

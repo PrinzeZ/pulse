@@ -5,6 +5,7 @@ C:\Projects\pulse\src\main\java\com\pulse\config\LocalSchedulingConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\Phase3AdminInitializer.java
 C:\Projects\pulse\src\main\java\com\pulse\config\PostgresJpaConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\AdminController.java
+C:\Projects\pulse\src\main\java\com\pulse\controller\AnalyticsController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\DistrictAdminController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\DistrictHospitalRegistrationController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\HealthCheckController.java
@@ -12,6 +13,7 @@ C:\Projects\pulse\src\main\java\com\pulse\controller\HomeController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\HospitalRegistrationController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\LoginController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\OperationsController.java
+C:\Projects\pulse\src\main\java\com\pulse\controller\PublicApiController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\RoleViewController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\SearchController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\StaffController.java
@@ -69,6 +71,7 @@ C:\Projects\pulse\src\main\java\com\pulse\repository\StockTransferRepository.jav
 C:\Projects\pulse\src\main\java\com\pulse\repository\UserRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\service\AdminDashboardService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\AlertService.java
+C:\Projects\pulse\src\main\java\com\pulse\service\AnalyticsService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\HierarchyDashboardService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\HospitalEmailService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\HospitalProvisioningService.java

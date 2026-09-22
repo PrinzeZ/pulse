@@ -44,13 +44,15 @@ The server listens on port `8080` and is configured to listen on LAN interfaces 
 
 ## 5. Finding the Server LAN IP on Windows
 
-Run:
+`start.ps1` detects the active private IPv4 address automatically and prints it.
+
+You can also run:
 
 ```text
 ipconfig
 ```
 
-Find the IPv4 address of the active Ethernet or Wi-Fi adapter. Do not hard-code an example IP in the application.
+and use the IPv4 address of the active Ethernet/Wi-Fi adapter. Do not hard-code an example IP in the application.
 
 ## 6. LAN Access
 

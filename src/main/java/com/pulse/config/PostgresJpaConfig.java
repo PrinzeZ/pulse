@@ -37,18 +37,16 @@ public class PostgresJpaConfig {
 
     @Bean(name = "dataSource")
     @Primary
-    public DataSource dataSource(
+    @ConfigurationProperties("spring.datasource.hikari")
+    public HikariDataSource dataSource(
             @Qualifier("postgresDataSourceProperties") DataSourceProperties properties) {
-        DataSource dataSource = properties.initializeDataSourceBuilder().build();
-        if (dataSource instanceof HikariDataSource hikari) {
-            // PostgreSQL is optional in local/offline mode. Do not make startup depend
-            // on an Internet connection, and reconnect quickly when connectivity returns.
-            hikari.setInitializationFailTimeout(-1);
-            hikari.setConnectionTimeout(3000);
-            hikari.setValidationTimeout(1000);
-            hikari.setMaxLifetime(240000);
-        }
-        return dataSource;
+        // DataSourceProperties creates the JDBC URL/credentials, while the
+        // @ConfigurationProperties binding above applies the Hikari settings from
+        // spring.datasource.hikari.*. Without this binding, those settings are
+        // silently ignored when the DataSource is constructed manually.
+        return properties.initializeDataSourceBuilder()
+                .type(HikariDataSource.class)
+                .build();
     }
 
     @Bean(name = "postgresEntityManagerFactory")
@@ -63,9 +61,10 @@ public class PostgresJpaConfig {
                 .packages("com.pulse.model")
                 .persistenceUnit("postgres")
                 .properties(Map.of(
-                        "hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect",
                         "hibernate.hbm2ddl.auto", ddlAuto,
-                        "hibernate.show_sql", "true",
+                        "hibernate.show_sql", "false",
+                        // Keep PostgreSQL JPA metadata independent of an optional/unavailable pool connection.
+                        "hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect",
                         "hibernate.boot.allow_jdbc_metadata_access", "false"
                 ))
                 .build();

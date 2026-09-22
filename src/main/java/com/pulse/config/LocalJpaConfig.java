@@ -35,7 +35,6 @@ public class LocalJpaConfig {
                 .packages("com.pulse.local.model")
                 .persistenceUnit("local")
                 .properties(Map.of(
-                        "hibernate.dialect", "org.hibernate.dialect.H2Dialect",
                         "hibernate.hbm2ddl.auto", "update"
                 ))
                 .build();

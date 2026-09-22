@@ -17,7 +17,7 @@ PULSE is structured using a clean, layered Spring Boot architecture ensuring str
 ## Tech Stack
 
 - **Backend Framework:** Spring Boot (v4.1.1)
-- **Persistence & ORM:** Spring Data JPA / Hibernate, MySQL 8.0
+- **Persistence & ORM:** Spring Data JPA / Hibernate, PostgreSQL (Supabase)
 - **Security:** Spring Security Crypto (`BCryptPasswordEncoder`)
 - **Frontend Engine:** Thymeleaf, HTML5, CSS3
 - **Build Tool:** Maven
@@ -51,5 +51,13 @@ com.pulse
 - Phase 8 — Fulfillment / supply ledger: complete
 - Phase 9 — Tamper-evident stock audit ledger: complete
 - Phase 10 — Physical stock dispatch and receipt: complete
+- Phase 11 — District → State escalation: complete
+- Phase 12 — Hierarchical operational analytics: complete
+- Phase 13 — Public read-only API foundation: complete
+- Online deployment foundation — Railway: configured; final acceptance requires a live Railway deployment test from outside the LAN
 
-See `PHASE_8_10_SUPPLY_AUDIT_TRANSFER.md` for the workflow and offline-first test checklist.
+See `PHASE_8_10_SUPPLY_AUDIT_TRANSFER.md` and `PHASE_11_13_COMPLETION.md` for the functional phases. See `RAILWAY_DEPLOYMENT.md` for cloud deployment.
+
+## Online architecture
+
+For real remote access, deploy P.U.L.S.E to Railway. The Railway service runs Spring Boot remotely and connects to Supabase PostgreSQL. H2 remains the local/offline cache and is not activated on Railway.

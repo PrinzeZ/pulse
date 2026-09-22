@@ -24,9 +24,35 @@
 </header>
 
 <div class="dashboard-layout">
-<th:block th:if="${tier == 'HOSPITAL'}"><th:block th:replace="~{fragments/sidebars :: hospitalAdmin('requests')}"></th:block></th:block>
-<th:block th:if="${tier == 'DISTRICT'}"><th:block th:replace="~{fragments/sidebars :: district('requests')}"></th:block></th:block>
-<th:block th:if="${tier == 'STATE'}"><th:block th:replace="~{fragments/sidebars :: state('requests')}"></th:block></th:block>
+<aside class="sidebar">
+<div class="sidebar-label" th:text="${tier + ' OPERATIONS'}">OPERATIONS</div>
+<nav class="sidebar-nav">
+<a th:if="${tier == 'HOSPITAL'}" th:href="@{/admin/dashboard}"><span class="nav-icon">▦</span><span>Dashboard</span></a>
+<a th:if="${tier == 'HOSPITAL'}" class="active" th:href="@{/admin/requests}"><span class="nav-icon">↗</span><span>Requests</span></a>
+<a th:if="${tier == 'HOSPITAL'}" th:href="@{/admin/audit}"><span class="nav-icon">⌁</span><span>Audit ledger</span></a>
+<a th:if="${tier == 'HOSPITAL'}" th:href="@{/admin/staff}"><span class="nav-icon">♙</span><span>Staff Accounts</span></a>
+<a th:if="${tier == 'HOSPITAL'}" th:href="@{/admin/alerts}"><span class="nav-icon">!</span><span>Alerts</span></a>
+<a th:if="${tier == 'HOSPITAL'}" th:href="@{/search}"><span class="nav-icon">⌕</span><span>Medicine Search</span></a>
+<a th:if="${tier == 'HOSPITAL'}" th:href="@{/admin/analytics}"><span class="nav-icon">▥</span><span>Analytics</span></a>
+
+<a th:if="${tier == 'DISTRICT'}" th:href="@{/district-admin/dashboard}"><span class="nav-icon">▦</span><span>Dashboard</span></a>
+<a th:if="${tier == 'DISTRICT'}" class="active" th:href="@{/district-admin/requests}"><span class="nav-icon">↗</span><span>Requests</span></a>
+<a th:if="${tier == 'DISTRICT'}" th:href="@{/district-admin/transfers}"><span class="nav-icon">⇄</span><span>Transfers</span></a>
+<a th:if="${tier == 'DISTRICT'}" th:href="@{/district-admin/verifications}"><span class="nav-icon">✓</span><span>Verifications</span></a>
+<a th:if="${tier == 'DISTRICT'}" th:href="@{/district-admin/analytics}"><span class="nav-icon">▥</span><span>Analytics</span></a>
+<a th:if="${tier == 'DISTRICT'}" th:href="@{/search}"><span class="nav-icon">⌕</span><span>Medicine Search</span></a>
+
+<a th:if="${tier == 'STATE'}" th:href="@{/state-admin/dashboard}"><span class="nav-icon">▦</span><span>Dashboard</span></a>
+<a th:if="${tier == 'STATE'}" class="active" th:href="@{/state-admin/requests}"><span class="nav-icon">↗</span><span>Requests</span></a>
+<a th:if="${tier == 'STATE'}" th:href="@{/state-admin/transfers}"><span class="nav-icon">⇄</span><span>Transfers</span></a>
+<a th:if="${tier == 'STATE'}" th:href="@{/state-admin/analytics}"><span class="nav-icon">▥</span><span>Analytics</span></a>
+<a th:if="${tier == 'STATE'}" th:href="@{/search}"><span class="nav-icon">⌕</span><span>Medicine Search</span></a>
+
+</nav>
+<div class="sidebar-spacer"></div><div class="sidebar-label">SYSTEM</div>
+<nav class="sidebar-nav"><a th:href="@{/logout}"><span class="nav-icon">↪</span><span>Sign out</span></a></nav>
+<div class="sidebar-footer">P.U.L.S.E v1.0<br><span th:text="${tier + '-level operations'}">Operations</span></div>
+</aside>
 
 <main class="main-content"><div class="content-wrap">
     <div class="page-heading">

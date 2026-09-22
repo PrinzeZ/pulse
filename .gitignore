@@ -1,17 +1,11 @@
-# Build output
 target/
-*.class
-
-# Local runtime database
-data/
-*.mv.db
-*.trace.db
-
-# IDE
+!.mvn/wrapper/maven-wrapper.jar
+*.log
+data/*.mv.db
+data/*.trace.db
 .idea/
 .vscode/
 *.iml
+.env
 
-# OS
-.DS_Store
-Thumbs.db
+.env.local

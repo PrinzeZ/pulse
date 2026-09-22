@@ -173,9 +173,18 @@ public class HierarchyDashboardService {
     }
 
     public List<Hospital> hospitalsInDistrict(String district) {
-        return hospitals.findAll(Sort.by("name")).stream()
-                .filter(h -> h.getDistrict() != null && h.getDistrict().equalsIgnoreCase(district))
-                .toList();
+        try {
+            return hospitals.findAll(Sort.by("name")).stream()
+                    .filter(h -> h.getDistrict() != null && h.getDistrict().equalsIgnoreCase(district))
+                    .toList();
+        } catch (RuntimeException ex) {
+            LocalOfflineStore local = localStoreProvider.getIfAvailable();
+            if (local == null) throw ex;
+            return local.hospitals().stream()
+                    .filter(h -> h.getDistrict() != null && h.getDistrict().equalsIgnoreCase(district))
+                    .sorted(Comparator.comparing(Hospital::getName))
+                    .toList();
+        }
     }
 
     private Snapshot localSnapshot(Collection<Hospital> requestedScope, ScopeLevel scopeLevel, LocalOfflineStore local) {

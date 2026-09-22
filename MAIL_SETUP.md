@@ -15,10 +15,10 @@ $env:PULSE_BASE_URL="http://localhost:8080"
 
 For a Gmail sender, use a Google App Password rather than your normal Google password. The recipient can be a Brave email alias that forwards to the real mailbox.
 
-For a LAN deployment, change `PULSE_BASE_URL` to the address that hospital users can reach, for example:
+For a LAN deployment, do not hard-code an old IP address. `start.ps1` detects the active private IPv4 address and sets `PULSE_BASE_URL` automatically. If you start Maven manually, find the current address with `ipconfig` and set it for that terminal, for example:
 
 ```powershell
-$env:PULSE_BASE_URL="http://192.168.1.50:8080"
+$env:PULSE_BASE_URL="http://<CURRENT-LAN-IP>:8080"
 ```
 
 Do not commit SMTP passwords or app passwords to Git.

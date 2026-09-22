@@ -65,10 +65,8 @@ public class SearchController {
     }
 
     private int statusRank(StockStatus status) {
-        return switch (status) {
-            case RED -> 3;
-            case YELLOW -> 2;
-            case GREEN -> 1;
-        };
+        if (status == StockStatus.RED) return 3;
+        if (status == StockStatus.YELLOW) return 2;
+        return 1;
     }
 }
