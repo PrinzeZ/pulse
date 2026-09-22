@@ -4,6 +4,7 @@ C:\Projects\pulse\src\main\java\com\pulse\config\LocalJpaConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\LocalSchedulingConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\Phase3AdminInitializer.java
 C:\Projects\pulse\src\main\java\com\pulse\config\PostgresJpaConfig.java
+C:\Projects\pulse\src\main\java\com\pulse\config\PrivateNetworkAccessConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\AdminController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\AnalyticsController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\DistrictAdminController.java
@@ -31,6 +32,7 @@ C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalMedicineRequestR
 C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalStockEntryRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalStockMovementRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\local\repository\LocalStockTransferRepository.java
+C:\Projects\pulse\src\main\java\com\pulse\local\service\LanRegistrationService.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\LocalOfflineStore.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\LocalSyncScheduler.java
 C:\Projects\pulse\src\main\java\com\pulse\local\service\StockLedgerSyncService.java

@@ -2,6 +2,7 @@ package com.pulse;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
@@ -13,6 +14,7 @@ import com.pulse.local.service.LocalOfflineStore;
 import org.springframework.beans.factory.ObjectProvider;
 
 @SpringBootApplication
+@EnableScheduling
 public class PulseApplication {
 
     public static void main(String[] args) {
