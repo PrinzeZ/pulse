@@ -12,7 +12,7 @@ public interface StockEntryRepository extends JpaRepository<StockEntry, Long> {
     Optional<StockEntry> findByHospitalIdAndMedId(Long hospitalId, Long medId);
     List<StockEntry> findByQuantityLessThan(int threshold);
 
-    @Query(value = "SELECT h.name AS hospital_name, h.district, m.name AS medicine_name, m.category, s.quantity, m.threshold " +
+    @Query(value = "SELECT m.medicine_id, h.name AS hospital_name, h.district, m.name AS medicine_name, m.category, s.quantity, m.threshold " +
                    "FROM stock_entries s " +
                    "JOIN hospitals h ON s.hospital_id = h.hospital_id " +
                    "JOIN medicines m ON s.medicine_id = m.medicine_id " +

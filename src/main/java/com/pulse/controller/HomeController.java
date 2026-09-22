@@ -44,6 +44,7 @@ public class HomeController {
         model.addAttribute("selectedDistrict", district == null ? "" : district);
         model.addAttribute("districts", districts());
         model.addAttribute("results", results);
+        model.addAttribute("medicineCards", medicineCards(results));
         model.addAttribute("districtStatuses", districtStatuses(results));
         model.addAttribute("searched", (query != null && !query.isBlank()) || (district != null && !district.isBlank()));
     }
@@ -55,6 +56,18 @@ public class HomeController {
             LocalOfflineStore local = localStoreProvider.getIfAvailable();
             return local == null ? List.of() : local.districts();
         }
+    }
+
+
+    private List<SearchController.MedicineCard> medicineCards(List<SearchResult> results) {
+        Map<Long, SearchController.MedicineCard> grouped = new LinkedHashMap<>();
+        for (SearchResult result : results) {
+            if (result.getMedicineId() == null) continue;
+            SearchController.MedicineCard card = grouped.computeIfAbsent(result.getMedicineId(),
+                    id -> new SearchController.MedicineCard(id, result.getMedicineName(), result.getCategory()));
+            card.add(result);
+        }
+        return new java.util.ArrayList<>(grouped.values());
     }
 
     private Map<String, String> districtStatuses(List<SearchResult> results) {

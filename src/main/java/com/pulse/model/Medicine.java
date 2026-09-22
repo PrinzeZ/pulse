@@ -36,6 +36,7 @@ public class Medicine {
     public String getName() {return name;}
     public void setName(String name) { this.name = name;}
     public String getCat() {return category;}
+    public String getCategory() { return category; }
     public void setCat(String category) {this.category= category;}
     public int getThreshold() { return threshold;}
     public void setThreshold(int threshold) { this.threshold = threshold; }

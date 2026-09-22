@@ -1,112 +1,48 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P.U.L.S.E — Medicine Availability</title>
-    <link rel="stylesheet" th:href="@{/css/pulse.css}">
-    <link rel="stylesheet" th:href="@{/css/user.css}">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P.U.L.S.E — Medicine Availability</title>
+<link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}">
 </head>
 <body>
 <div class="app-shell user-content">
-    <header class="topbar">
-        <a class="brand" th:href="@{/}">
-            <div class="brand-mark">P</div>
-            <div>
-                <div class="brand-name">P.U.L.S.E</div>
-                <div class="brand-subtitle">Medicine Availability Network</div>
-            </div>
-        </a>
-        <div class="topbar-right">
-            <nav class="public-nav">
-                <a th:href="@{/}" class="active">Availability</a>
-                <a th:href="@{/login}">Staff Login</a>
-            </nav>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <div class="content-wrap">
-            <section class="hero hero-search">
-                <div class="hero-eyebrow">Public medicine availability</div>
-                <h1>Find essential medicine nearby.</h1>
-                <p>Check current reported stock across participating hospitals before you travel.</p>
-                <div class="search-panel">
-                    <form th:action="@{/search}" method="get" class="search-form">
-                        <input type="text" name="query" th:value="${query}" placeholder="Search by medicine name..." aria-label="Medicine name">
-                        <select name="district" aria-label="District">
-                            <option value="">All districts</option>
-                            <option th:each="availableDistrict : ${districts}"
-                                    th:value="${availableDistrict}"
-                                    th:text="${availableDistrict}"
-                                    th:selected="${availableDistrict == selectedDistrict}"></option>
-                        </select>
-                        <button type="submit" class="btn btn-primary">Search availability</button>
-                    </form>
-                </div>
-            </section>
-
-            <section class="grid grid-2" style="margin-top:18px;" th:if="${districtStatuses != null and districtStatuses.size() > 0}">
-                <div class="card">
-                    <div class="card-header">
-                        <div><h2>District availability</h2><p>Current status from matching inventory records</p></div>
-                    </div>
-                    <div class="card-body" style="padding-top:7px;">
-                        <div class="list">
-                            <div class="list-item" th:each="districtStatus : ${districtStatuses.entrySet()}">
-                                <div class="list-main">
-                                    <div class="list-title" th:text="${districtStatus.key}">District</div>
-                                    <div class="list-meta" th:text="${districtStatus.value == 'GREEN' ? 'Stock available across matching hospitals' : (districtStatus.value == 'YELLOW' ? 'At least one matching hospital is low on stock' : 'At least one matching hospital is out of stock')}">Status meaning</div>
-                                </div>
-                                <span th:class="${districtStatus.value == 'GREEN' ? 'badge badge-success' : (districtStatus.value == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}"
-                                      th:text="${districtStatus.value == 'GREEN' ? 'AVAILABLE' : (districtStatus.value == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-header"><div><h2>How to read results</h2><p>Stock status is based on each medicine's configured threshold.</p></div></div>
-                    <div class="card-body">
-                        <div class="list">
-                            <div class="list-item"><div class="list-title">Available</div><span class="badge badge-success">GREEN</span></div>
-                            <div class="list-item"><div class="list-title">Limited stock</div><span class="badge badge-warning">YELLOW</span></div>
-                            <div class="list-item"><div class="list-title">Out of stock</div><span class="badge badge-danger">RED</span></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="card" style="margin-top:18px;">
-                <div class="card-header">
-                    <div><h2>Medicine availability</h2><p>Hospital-level results for your current search</p></div>
-                    <span class="result-count" th:if="${results != null}" th:text="${#lists.size(results)} + ' results'">0 results</span>
-                </div>
-                <div th:if="${results != null and results.size() > 0}" class="table-wrap">
-                    <table>
-                        <thead><tr><th>Medicine</th><th>Category</th><th>Hospital</th><th>District</th><th>Available</th><th>Threshold</th><th>Status</th></tr></thead>
-                        <tbody>
-                        <tr th:each="result : ${results}">
-                            <td class="result-name" th:text="${result.medicineName}">Medicine</td>
-                            <td th:text="${result.category}">Category</td>
-                            <td class="hospital-name" th:text="${result.hospitalName}">Hospital</td>
-                            <td th:text="${result.district}">District</td>
-                            <td th:text="${result.quantity} + ' units'">0 units</td>
-                            <td th:text="${result.threshold} + ' units'">0 units</td>
-                            <td><span th:class="${result.status == 'GREEN' ? 'badge badge-success' : (result.status == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}"
-                                      th:text="${result.status == 'GREEN' ? 'AVAILABLE' : (result.status == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span></td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="empty-state" th:if="${results == null or results.size() == 0}">
-                    <strong>No matching inventory found</strong>
-                    Try another medicine name or choose a different district.
-                </div>
-            </section>
-        </div>
-    </main>
-    <footer class="footer"><span>Public medicine availability</span><span>P.U.L.S.E v1.0</span></footer>
+<header class="topbar">
+<a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Medicine Availability Network</div></div></a>
+<div class="topbar-right"><nav class="public-nav"><a th:href="@{/}" class="active">Availability</a><a th:href="@{/search}">Medicine directory</a><a th:href="@{/login}">Staff Login</a></nav></div>
+</header>
+<main class="main-content"><div class="content-wrap">
+<section class="public-hero">
+<div class="hero-medicine-fall" aria-hidden="true">
+  <span class="fall-pill pill-a"></span><span class="fall-pill pill-b"></span><span class="fall-pill pill-c"></span>
+  <span class="fall-capsule cap-a"></span><span class="fall-capsule cap-b"></span><span class="fall-capsule cap-c"></span>
+  <span class="fall-bottle bottle-a"></span><span class="fall-bottle bottle-b"></span>
 </div>
-<script th:src="@{/js/pulse-routing.js}"></script>
-</body>
-</html>
+<div class="public-hero-copy"><div class="hero-eyebrow">PUBLIC MEDICINE AVAILABILITY</div><h1>Find the medicine before you make the trip.</h1><p>Search participating hospitals and see their latest reported stock in one place.</p></div>
+<form th:action="@{/search}" method="get" class="public-search-form"><div class="search-input-wrap"><span>⌕</span><input type="text" name="query" placeholder="Search medicine or hospital..." aria-label="Search medicine or hospital"></div><select name="district"><option value="">All districts</option><option th:each="availableDistrict : ${districts}" th:value="${availableDistrict}" th:text="${availableDistrict}"></option></select><button type="submit" class="btn btn-primary">Search</button></form>
+</section>
+
+<section class="catalog-section">
+<div class="section-head"><div><div class="eyebrow">MEDICINE DIRECTORY</div><h2>Browse medicines</h2><p>Open a medicine to see hospital-level availability.</p></div></div>
+<div class="medicine-preview-wrap">
+<div class="medicine-preview-grid">
+<a class="medicine-card medicine-card-preview" th:each="medicine : ${medicineCards}" th:href="@{/medicine/{id}(id=${medicine.medicineId})}">
+<div class="medicine-card-media"><img th:src="${medicine.imageUrl}" th:attr="data-fallback=${medicine.fallbackImageUrl}" th:alt="${medicine.medicineName + ' packaging'}" onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}"><span th:class="${'availability-dot ' + medicine.overallStatus.toLowerCase()}"></span></div>
+<div class="medicine-card-body"><div class="medicine-card-top"><div><h3 th:text="${medicine.medicineName}">Medicine</h3><p th:text="${medicine.category}">Category</p></div><span th:class="${medicine.overallStatus == 'GREEN' ? 'badge badge-success' : (medicine.overallStatus == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${medicine.overallStatus == 'GREEN' ? 'Available' : (medicine.overallStatus == 'YELLOW' ? 'Limited' : 'Out of stock')}">Status</span></div><div class="medicine-card-meta"><span><strong th:text="${medicine.availableHospitalCount}">0</strong> hospitals available</span></div><div class="medicine-card-link">View details <span>→</span></div></div>
+</a>
+</div>
+<a class="catalog-view-all" th:href="@{/search}"><span>View all medicines</span><span>→</span></a>
+</div>
+</section>
+
+<section class="info-strip"><div><strong>Reported inventory</strong><span>Stock status reflects the latest information received from participating hospitals.</span></div><div><strong>Need directions?</strong><span>Nearest-hospital maps are the next public discovery layer.</span></div></section>
+
+<section class="card" th:if="${searched}" style="margin-top:24px;"><div class="card-header"><div><h2>Search results</h2><p th:text="${#lists.size(results)} + ' hospital records'">0 hospital records</p></div></div><div class="table-wrap"><table><thead><tr><th>Medicine</th><th>Hospital</th><th>District</th><th>Available</th><th>Status</th></tr></thead><tbody><tr th:each="result : ${results}"><td><a th:href="@{/medicine/{id}(id=${result.medicineId})}" class="result-name" th:text="${result.medicineName}">Medicine</a></td><td class="hospital-name" th:text="${result.hospitalName}">Hospital</td><td th:text="${result.district}">District</td><td th:text="${result.quantity} + ' units'">0 units</td><td><span th:class="${result.status == 'GREEN' ? 'badge badge-success' : (result.status == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${result.status == 'GREEN' ? 'AVAILABLE' : (result.status == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span></td></tr></tbody></table></div></section>
+</div></main>
+<footer class="public-footer">
+  <div class="public-footer-brand"><strong>P.U.L.S.E</strong><span>Public Medicine Availability Network</span></div>
+  <div class="public-footer-contact"><span>Contact us</span><a href="mailto:liminality2026@gmail.com">liminality2026@gmail.com</a><a href="tel:+918089004231">+91 80890 04231</a></div>
+  <div class="public-footer-meta"><span>Reported inventory from participating hospitals</span><span>© 2026 P.U.L.S.E</span></div>
+</footer>
+</div><script th:src="@{/js/pulse-routing.js}"></script>
+</body></html>

@@ -1,6 +1,7 @@
 package com.pulse.dto;
 
 public class SearchResult {
+    private final Long medicineId;
     private final String hospitalName;
     private final String district;
     private final String medicineName;
@@ -9,8 +10,9 @@ public class SearchResult {
     private final int threshold;
     private final String status;
 
-    public SearchResult(String hospitalName, String district, String medicineName, String category,
+    public SearchResult(Long medicineId, String hospitalName, String district, String medicineName, String category,
                         int quantity, int threshold, String status) {
+        this.medicineId = medicineId;
         this.hospitalName = hospitalName;
         this.district = district;
         this.medicineName = medicineName;
@@ -20,6 +22,7 @@ public class SearchResult {
         this.status = status;
     }
 
+    public Long getMedicineId() { return medicineId; }
     public String getHospitalName() { return hospitalName; }
     public String getDistrict() { return district; }
     public String getMedicineName() { return medicineName; }

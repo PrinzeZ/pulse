@@ -9,6 +9,7 @@ import com.pulse.local.model.LocalStockEntry;
 
 public interface LocalStockEntryRepository extends JpaRepository<LocalStockEntry, Long> {
     List<LocalStockEntry> findByHospitalId(Long hospitalId);
+    List<LocalStockEntry> findByMedicineId(Long medicineId);
     List<LocalStockEntry> findBySyncedFalse();
     List<LocalStockEntry> findByHospitalIdAndSyncedFalse(Long hospitalId);
     Optional<LocalStockEntry> findByCloudEntryId(Long cloudEntryId);

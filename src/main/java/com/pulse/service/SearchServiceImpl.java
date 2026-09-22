@@ -49,14 +49,15 @@ public class SearchServiceImpl implements SearchService {
         List<Object[]> rows = stockEntryRepository.searchPublicStock(query);
         List<SearchResult> results = new ArrayList<>();
         for (Object[] row : rows) {
-            String hospitalName = (String) row[0];
-            String rowDistrict = (String) row[1];
-            String medicineName = (String) row[2];
-            String category = row[3] == null ? "" : (String) row[3];
-            int quantity = ((Number) row[4]).intValue();
-            int threshold = ((Number) row[5]).intValue();
+            Long medicineId = ((Number) row[0]).longValue();
+            String hospitalName = (String) row[1];
+            String rowDistrict = (String) row[2];
+            String medicineName = (String) row[3];
+            String category = row[4] == null ? "" : (String) row[4];
+            int quantity = ((Number) row[5]).intValue();
+            int threshold = ((Number) row[6]).intValue();
             if (!selectedDistrict.isBlank() && !selectedDistrict.equalsIgnoreCase(rowDistrict)) continue;
-            results.add(new SearchResult(hospitalName, rowDistrict, medicineName, category, quantity, threshold,
+            results.add(new SearchResult(medicineId, hospitalName, rowDistrict, medicineName, category, quantity, threshold,
                     StockStatus.from(quantity, threshold).name()));
         }
         return results;
@@ -79,7 +80,7 @@ public class SearchServiceImpl implements SearchService {
             if (!district.isBlank() && !district.equalsIgnoreCase(hospital.getDistrict())) continue;
             if (!q.isBlank() && !medicine.getName().toLowerCase().contains(q)
                     && !hospital.getName().toLowerCase().contains(q)) continue;
-            results.add(new SearchResult(hospital.getName(), hospital.getDistrict(), medicine.getName(),
+            results.add(new SearchResult(medicine.getMedId(), hospital.getName(), hospital.getDistrict(), medicine.getName(),
                     medicine.getCat() == null ? "" : medicine.getCat(), entry.getQuantity(), medicine.getThreshold(),
                     StockStatus.from(entry.getQuantity(), medicine.getThreshold()).name()));
         }
