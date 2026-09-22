@@ -2,10 +2,13 @@ package com.pulse.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
+/**
+ * Local-only configuration placeholder.
+ * Scheduling is enabled once globally by PulseApplication.
+ * Keeping a second @EnableScheduling here would register scheduled tasks twice.
+ */
 @Configuration
 @Profile("local")
-@EnableScheduling
 public class LocalSchedulingConfig {
 }
