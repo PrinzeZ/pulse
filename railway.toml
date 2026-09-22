@@ -1,5 +1,3 @@
-$schema = "https://railway.com/railway.schema.json"
-
 [deploy]
 healthcheckPath = "/health"
 healthcheckTimeout = 300
