@@ -159,7 +159,7 @@ public class StaffService {
 
             localRepository.saveAndFlush(local);
             stockLedgerService.recordLocal(hospitalId, medicineId, quantity - previousQuantity,
-                    "MANUAL_ADJUSTMENT", "STOCK_ENTRY", local.getEntryId(), actor, "Staff stock quantity adjustment.");
+                    "MANUAL_ADJUSTMENT", "STOCK_ENTRY", local.getEntryId(), actor, "Staff stock quantity adjustment.", previousQuantity, quantity);
 
             // Alerts in local mode are derived from local stock by AlertService.
             // Do not call the cloud alert path here; it would reintroduce a
@@ -175,7 +175,7 @@ public class StaffService {
         stockEntryRepository.saveAndFlush(entry);
         try {
             stockLedgerService.recordCloud(hospitalId, medicineId, quantity - previousQuantity,
-                    "MANUAL_ADJUSTMENT", "STOCK_ENTRY", entry.getEntryId(), actor, "Staff stock quantity adjustment.");
+                    "MANUAL_ADJUSTMENT", "STOCK_ENTRY", entry.getEntryId(), actor, "Staff stock quantity adjustment.", previousQuantity, quantity);
         } catch (RuntimeException ignored) {
             // Stock remains authoritative; the audit ledger can be retried separately.
         }

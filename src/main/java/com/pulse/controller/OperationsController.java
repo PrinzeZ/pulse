@@ -5,6 +5,8 @@ import com.pulse.model.Admin;
 import com.pulse.model.DistrictAdmin;
 import com.pulse.model.StateAdmin;
 import com.pulse.model.Hospital;
+import com.pulse.model.MedicineRequest;
+import com.pulse.model.MedicineRequestStatus;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.DistrictRepository;
 import com.pulse.service.StockTransferService;
@@ -15,6 +17,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 public class OperationsController {
@@ -105,6 +110,26 @@ public class OperationsController {
     }
 
     @PreAuthorize("@pulseScope.canAccessRequest(#id)")
+    @GetMapping("/district-admin/requests/{id}/audit")
+    public String districtRequestAudit(@PathVariable Long id, HttpSession session, Model model) {
+        DistrictAdmin admin = security.getUser(session) instanceof DistrictAdmin a ? a : null;
+        if (admin == null || admin.getDistrictId() == null) return "redirect:/login";
+
+        MedicineRequest request = requests.findCloudRequest(id);
+        if (!admin.getDistrictId().equals(request.getDistrictId())) return "redirect:/access-denied";
+
+        var evidence = requests.auditEvidenceView(id);
+        model.addAttribute("tier", "DISTRICT");
+        model.addAttribute("title", "Medicine audit evidence");
+        model.addAttribute("subtitle", "Automatically attached to this request. Read-only evidence for the requested medicine only.");
+        model.addAttribute("request", request);
+        model.addAttribute("medicineName", evidence.medicineName());
+        model.addAttribute("todayRows", evidence.todayRows());
+        model.addAttribute("monthRows", evidence.monthRows());
+        return "request-audit";
+    }
+
+    @PreAuthorize("@pulseScope.canAccessRequest(#id)")
     @PostMapping("/district-admin/requests/{id}/action")
     public String districtAction(@PathVariable Long id,
                                  @RequestParam String action,
@@ -136,6 +161,35 @@ public class OperationsController {
         model.addAttribute("pageSubtitle", "Review requests escalated by district administrators.");
         model.addAttribute("requests", requests.stateViews(admin.getStateId()));
         return "operations/requests";
+    }
+
+    @PreAuthorize("@pulseScope.canAccessRequest(#id)")
+    @GetMapping("/state-admin/requests/{id}/audit")
+    public String stateRequestAudit(@PathVariable Long id, HttpSession session, Model model) {
+        StateAdmin admin = security.getUser(session) instanceof StateAdmin a ? a : null;
+        if (admin == null || admin.getStateId() == null) return "redirect:/login";
+
+        MedicineRequest request = requests.findCloudRequest(id);
+        if (request.getStateId() != null && !admin.getStateId().equals(request.getStateId())) {
+            return "redirect:/access-denied";
+        }
+        if (request.getStatus() != MedicineRequestStatus.ESCALATED_TO_STATE
+                && request.getStatus() != MedicineRequestStatus.STATE_APPROVED
+                && request.getStatus() != MedicineRequestStatus.STATE_PARTIALLY_FULFILLED
+                && request.getStatus() != MedicineRequestStatus.FULFILLED
+                && request.getStatus() != MedicineRequestStatus.REJECTED) {
+            return "redirect:/access-denied";
+        }
+
+        var evidence = requests.auditEvidenceView(id);
+        model.addAttribute("tier", "STATE");
+        model.addAttribute("title", "Medicine audit evidence");
+        model.addAttribute("subtitle", "Automatically attached to this request. Read-only evidence for the requested medicine only.");
+        model.addAttribute("request", request);
+        model.addAttribute("medicineName", evidence.medicineName());
+        model.addAttribute("todayRows", evidence.todayRows());
+        model.addAttribute("monthRows", evidence.monthRows());
+        return "request-audit";
     }
 
     @PreAuthorize("@pulseScope.canAccessRequest(#id)")

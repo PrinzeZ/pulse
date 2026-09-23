@@ -121,7 +121,12 @@
                     </td>
                     <td class="muted" th:text="${request.createdAt != null ? #temporals.format(request.createdAt,'dd MMM yyyy HH:mm') : '—'}">Date</td>
                     <td>
+                        <div th:if="${tier == 'DISTRICT' or tier == 'STATE'}" class="request-note-cell">
+                            <a class="btn btn-secondary" th:href="${tier == 'DISTRICT' ? '/district-admin/requests/' + request.id + '/audit' : '/state-admin/requests/' + request.id + '/audit'}">📎 View medicine log</a>
+                            <span class="small muted">Automatically attached · selected medicine only</span>
+                        </div>
                         <div th:if="${tier == 'HOSPITAL'}" class="request-note-cell" th:text="${request.note != null ? request.note : '—'}">Note</div>
+                        <a th:if="${tier == 'HOSPITAL'}" class="btn" th:href="@{'/admin/audit/medicine/' + ${request.medicineId}}">View resupply audit</a>
 
                         <form th:if="${tier == 'DISTRICT' and (request.status == 'PENDING_DISTRICT' or request.status == 'UNDER_REVIEW' or request.status == 'APPROVED' or request.status == 'PARTIALLY_FULFILLED')}"
                               class="request-action-form" method="post" th:action="@{'/district-admin/requests/' + ${request.id} + '/action'}">

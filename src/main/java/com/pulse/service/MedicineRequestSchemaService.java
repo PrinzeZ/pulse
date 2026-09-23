@@ -41,6 +41,12 @@ public class MedicineRequestSchemaService {
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_medicine_requests_district ON medicine_requests(district_id, status)");
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_medicine_requests_state ON medicine_requests(state_id, status)");
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_medicine_requests_hospital ON medicine_requests(hospital_id, created_at)");
+            jdbc.execute("ALTER TABLE medicine_requests ADD COLUMN IF NOT EXISTS audit_attachment_file_name VARCHAR(255)");
+            jdbc.execute("ALTER TABLE medicine_requests ADD COLUMN IF NOT EXISTS audit_attachment_sha256 VARCHAR(64)");
+            jdbc.execute("ALTER TABLE medicine_requests ADD COLUMN IF NOT EXISTS audit_attachment_period_start DATE");
+            jdbc.execute("ALTER TABLE medicine_requests ADD COLUMN IF NOT EXISTS audit_attachment_period_end DATE");
+            jdbc.execute("ALTER TABLE medicine_requests ADD COLUMN IF NOT EXISTS audit_attachment_created_at TIMESTAMP");
+            jdbc.execute("ALTER TABLE medicine_requests ADD COLUMN IF NOT EXISTS audit_attachment_encrypted BYTEA");
             return true;
         } catch (RuntimeException ex) {
             return false;

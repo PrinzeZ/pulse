@@ -9,3 +9,4 @@ data/*.trace.db
 .env
 
 .env.local
+data/audit-archives/

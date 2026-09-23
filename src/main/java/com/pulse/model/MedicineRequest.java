@@ -52,6 +52,25 @@ public class MedicineRequest {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    @Column(name = "audit_attachment_file_name", length = 255)
+    private String auditAttachmentFileName;
+
+    @Column(name = "audit_attachment_sha256", length = 64)
+    private String auditAttachmentSha256;
+
+    @Column(name = "audit_attachment_period_start")
+    private java.time.LocalDate auditAttachmentPeriodStart;
+
+    @Column(name = "audit_attachment_period_end")
+    private java.time.LocalDate auditAttachmentPeriodEnd;
+
+    @Column(name = "audit_attachment_created_at")
+    private LocalDateTime auditAttachmentCreatedAt;
+
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "audit_attachment_encrypted", columnDefinition = "bytea")
+    private byte[] auditAttachmentEncrypted;
+
     public MedicineRequest() {}
 
     @PrePersist
@@ -95,4 +114,16 @@ public class MedicineRequest {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getAuditAttachmentFileName() { return auditAttachmentFileName; }
+    public void setAuditAttachmentFileName(String value) { this.auditAttachmentFileName = value; }
+    public String getAuditAttachmentSha256() { return auditAttachmentSha256; }
+    public void setAuditAttachmentSha256(String value) { this.auditAttachmentSha256 = value; }
+    public java.time.LocalDate getAuditAttachmentPeriodStart() { return auditAttachmentPeriodStart; }
+    public void setAuditAttachmentPeriodStart(java.time.LocalDate value) { this.auditAttachmentPeriodStart = value; }
+    public java.time.LocalDate getAuditAttachmentPeriodEnd() { return auditAttachmentPeriodEnd; }
+    public void setAuditAttachmentPeriodEnd(java.time.LocalDate value) { this.auditAttachmentPeriodEnd = value; }
+    public LocalDateTime getAuditAttachmentCreatedAt() { return auditAttachmentCreatedAt; }
+    public void setAuditAttachmentCreatedAt(LocalDateTime value) { this.auditAttachmentCreatedAt = value; }
+    public byte[] getAuditAttachmentEncrypted() { return auditAttachmentEncrypted; }
+    public void setAuditAttachmentEncrypted(byte[] value) { this.auditAttachmentEncrypted = value; }
 }

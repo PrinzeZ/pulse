@@ -48,6 +48,12 @@ public class StockMovement {
     @Column(nullable = false, length = 64)
     private String hash;
 
+    @Column(name = "quantity_before")
+    private Integer quantityBefore;
+
+    @Column(name = "quantity_after")
+    private Integer quantityAfter;
+
     public Long getMovementId() { return movementId; }
     public void setMovementId(Long movementId) { this.movementId = movementId; }
     public String getEventId() { return eventId; }
@@ -74,4 +80,8 @@ public class StockMovement {
     public void setPreviousHash(String previousHash) { this.previousHash = previousHash; }
     public String getHash() { return hash; }
     public void setHash(String hash) { this.hash = hash; }
+    public Integer getQuantityBefore() { return quantityBefore; }
+    public void setQuantityBefore(Integer quantityBefore) { this.quantityBefore = quantityBefore; }
+    public Integer getQuantityAfter() { return quantityAfter; }
+    public void setQuantityAfter(Integer quantityAfter) { this.quantityAfter = quantityAfter; }
 }

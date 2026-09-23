@@ -1,6 +1,5 @@
 package com.pulse.security;
 
-import com.pulse.model.District;
 import com.pulse.model.Hospital;
 import com.pulse.repository.DistrictRepository;
 import com.pulse.repository.HospitalRepository;

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.access.prepost.PreAuthorize;
+import java.time.LocalDate;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class StaffController {
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
     private final StockTransferService transferService;
     private final StockLedgerService ledgerService;
+    private final com.pulse.service.AuditArchiveService auditArchiveService;
 
     public StaffController(SessionSecurity sessionSecurity,
                            StaffService staffService,
@@ -42,7 +44,8 @@ public class StaffController {
                            ObjectProvider<LocalStockEntryRepository> localStockRepositoryProvider,
                            ObjectProvider<LocalOfflineStore> localStoreProvider,
                            StockTransferService transferService,
-                           StockLedgerService ledgerService) {
+                           StockLedgerService ledgerService,
+                           com.pulse.service.AuditArchiveService auditArchiveService) {
         this.sessionSecurity = sessionSecurity;
         this.staffService = staffService;
         this.medicineRepository = medicineRepository;
@@ -51,6 +54,7 @@ public class StaffController {
         this.localStoreProvider = localStoreProvider;
         this.transferService = transferService;
         this.ledgerService = ledgerService;
+        this.auditArchiveService = auditArchiveService;
     }
 
     @GetMapping("/staff/dashboard")
@@ -253,8 +257,70 @@ public class StaffController {
         PharmacyStaff staff = sessionSecurity.getStaff(session);
         if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
         model.addAttribute("hospitalId", staff.getHospitalId());
-        model.addAttribute("movements", ledgerService.localMovements(staff.getHospitalId()));
-        model.addAttribute("verification", ledgerService.verifyLocal(staff.getHospitalId()));
+        model.addAttribute("movements", auditArchiveService.recentForStaff(staff.getHospitalId()));
+        model.addAttribute("verification", ledgerService.verifyCloud(staff.getHospitalId()));
+        model.addAttribute("hotDays", auditArchiveService.getHotDays());
+        model.addAttribute("archives", auditArchiveService.archives(staff.getHospitalId()));
+        model.addAttribute("accessRequests", auditArchiveService.requestsForStaff(staff.getHospitalId(), staff.getUsername()));
+        model.addAttribute("approvedHistorical", false);
+        model.addAttribute("periodStart", LocalDate.now().minusDays(auditArchiveService.getHotDays() - 1L));
+        model.addAttribute("periodEnd", LocalDate.now());
+        model.addAttribute("quickDates", java.util.stream.IntStream.range(0, 30).mapToObj(i -> LocalDate.now().minusDays(i)).toList());
+        return "staff-audit";
+    }
+
+    @GetMapping("/staff/audit/view")
+    public String viewAudit(@RequestParam LocalDate start, @RequestParam LocalDate end,
+                            HttpSession session, Model model) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
+        if (end.isBefore(start)) return "redirect:/staff/audit";
+        LocalDate cutoff = LocalDate.now().minusDays(auditArchiveService.getHotDays() - 1L);
+        boolean hotWindow = !start.isBefore(cutoff);
+        if (!hotWindow && !auditArchiveService.approvedRequest(staff.getHospitalId(), staff.getUsername(), start, end)) {
+            return "redirect:/access-denied";
+        }
+        model.addAttribute("title", "Audit spreadsheet");
+        model.addAttribute("subtitle", hotWindow
+                ? "Read-only browser view. Staff cannot download or edit the workbook."
+                : "Administrator-approved historical period. Read-only browser view.");
+        model.addAttribute("rows", auditArchiveService.reportRows(staff.getHospitalId(), start, end, true));
+        model.addAttribute("medicineRows", List.of());
+        model.addAttribute("medicineName", null);
+        model.addAttribute("medicineId", null);
+        model.addAttribute("start", start);
+        model.addAttribute("end", end);
+        model.addAttribute("canDownload", false);
+        model.addAttribute("adminView", false);
+        model.addAttribute("quickDates", java.util.stream.IntStream.range(0, 30).mapToObj(i -> LocalDate.now().minusDays(i)).toList());
+        return "audit-preview";
+    }
+
+    @PostMapping("/staff/audit/request")
+    public String requestAuditArchive(HttpSession session, @RequestParam LocalDate start, @RequestParam LocalDate end,
+                                      @RequestParam(required = false, defaultValue = "Historical stock audit review") String reason,
+                                      RedirectAttributes redirectAttributes) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
+        try {
+            auditArchiveService.requestArchiveAccess(staff.getHospitalId(), staff.getUsername(), start, end, reason);
+            redirectAttributes.addFlashAttribute("success", "Audit access request sent to your hospital administrator.");
+        } catch (RuntimeException ex) { redirectAttributes.addFlashAttribute("error", ex.getMessage()); }
+        return "redirect:/staff/audit";
+    }
+
+    @GetMapping("/staff/audit/approved")
+    public String approvedAudit(HttpSession session, @RequestParam LocalDate start, @RequestParam LocalDate end, Model model) {
+        PharmacyStaff staff = sessionSecurity.getStaff(session);
+        if (staff == null || staff.getHospitalId() == null) return "redirect:/login";
+        if (!auditArchiveService.approvedRequest(staff.getHospitalId(), staff.getUsername(), start, end)) return "redirect:/access-denied";
+        model.addAttribute("hospitalId", staff.getHospitalId());
+        model.addAttribute("movements", auditArchiveService.archivedHistory(staff.getHospitalId(), start, end));
+        model.addAttribute("periodStart", start);
+        model.addAttribute("periodEnd", end);
+        model.addAttribute("accessRequests", auditArchiveService.requestsForStaff(staff.getHospitalId(), staff.getUsername()));
+        model.addAttribute("approvedHistorical", true);
+        model.addAttribute("quickDates", java.util.stream.IntStream.range(0, 30).mapToObj(i -> LocalDate.now().minusDays(i)).toList());
         return "staff-audit";
     }
 

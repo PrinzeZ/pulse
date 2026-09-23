@@ -25,19 +25,22 @@ public class MedicineRequestService {
     private final ObjectProvider<LocalMedicineRequestRepository> localRequestsProvider;
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
     private final MedicineRequestSchemaService schema;
+    private final AuditArchiveService auditArchiveService;
 
     public MedicineRequestService(MedicineRequestRepository cloudRequests,
                                   HospitalRepository cloudHospitals,
                                   MedicineRepository cloudMedicines,
                                   ObjectProvider<LocalMedicineRequestRepository> localRequestsProvider,
                                   ObjectProvider<LocalOfflineStore> localStoreProvider,
-                                  MedicineRequestSchemaService schema) {
+                                  MedicineRequestSchemaService schema,
+                                  AuditArchiveService auditArchiveService) {
         this.cloudRequests = cloudRequests;
         this.cloudHospitals = cloudHospitals;
         this.cloudMedicines = cloudMedicines;
         this.localRequestsProvider = localRequestsProvider;
         this.localStoreProvider = localStoreProvider;
         this.schema = schema;
+        this.auditArchiveService = auditArchiveService;
     }
 
     public CreateResult createHospitalRequest(Long hospitalId, Long districtId, Long stateId,
@@ -78,6 +81,12 @@ public class MedicineRequestService {
             localRequest.setUpdatedAt(LocalDateTime.now());
             localRequest.setPendingSync(true);
             localRequest = local.saveAndFlush(localRequest);
+            try {
+                attachMedicineAudit(localRequest, hospitalId, medicineId, LocalDateTime.now().toLocalDate());
+                local.saveAndFlush(localRequest);
+            } catch (RuntimeException ex) {
+                throw new IllegalStateException("The medicine audit log could not be generated automatically. Configure the shared audit encryption secret before creating requests.", ex);
+            }
         }
 
         try {
@@ -95,6 +104,15 @@ public class MedicineRequestService {
             cloud.setDistrictNote(note);
             cloud.setCreatedAt(LocalDateTime.now());
             cloud.setUpdatedAt(LocalDateTime.now());
+            if (localRequest != null) {
+                if (!hasAuditAttachment(localRequest)) {
+                    attachMedicineAudit(localRequest, hospitalId, medicineId, LocalDateTime.now().toLocalDate());
+                    local.saveAndFlush(localRequest);
+                }
+                copyAuditAttachment(localRequest, cloud);
+            } else {
+                attachMedicineAudit(cloud, hospitalId, medicineId, LocalDateTime.now().toLocalDate());
+            }
             cloud = cloudRequests.saveAndFlush(cloud);
 
             if (localRequest != null) {
@@ -103,7 +121,7 @@ public class MedicineRequestService {
                 localRequest.setUpdatedAt(cloud.getUpdatedAt());
                 local.save(localRequest);
             }
-            return new CreateResult(cloud.getRequestId(), false, "Request submitted to district.");
+            return new CreateResult(cloud.getRequestId(), false, "Request submitted to district. The selected medicine's audit log was attached automatically.");
         } catch (RuntimeException ex) {
             if (localRequest != null) {
                 return new CreateResult(localRequest.getLocalRequestId(), true,
@@ -132,6 +150,27 @@ public class MedicineRequestService {
                 MedicineRequestStatus.PARTIALLY_FULFILLED,
                 MedicineRequestStatus.ESCALATED_TO_STATE
         ));
+    }
+
+    public MedicineRequest findCloudRequest(Long requestId) {
+        ensureCloud();
+        return cloudRequests.findById(requestId).orElseThrow(() -> new IllegalArgumentException("Request not found."));
+    }
+
+    public byte[] auditAttachment(Long requestId) {
+        MedicineRequest request = findCloudRequest(requestId);
+        if (!hasAuditAttachment(request)) throw new IllegalArgumentException("This medicine request has no audit evidence attachment.");
+        return auditArchiveService.decryptRequestAttachment(request.getAuditAttachmentEncrypted(), request.getAuditAttachmentSha256());
+    }
+
+    public String auditAttachmentFileName(Long requestId) {
+        return findCloudRequest(requestId).getAuditAttachmentFileName();
+    }
+
+    public AuditArchiveService.RequestEvidenceView auditEvidenceView(Long requestId) {
+        MedicineRequest request = findCloudRequest(requestId);
+        if (!hasAuditAttachment(request)) throw new IllegalArgumentException("Medicine audit evidence is unavailable.");
+        return auditArchiveService.requestEvidenceView(request.getAuditAttachmentEncrypted(), request.getAuditAttachmentSha256());
     }
 
     public List<MedicineRequest> stateRequests(Long stateId) {
@@ -341,6 +380,10 @@ public class MedicineRequestService {
                     cloud = cloudRequests.findById(item.getCloudRequestId()).orElseGet(MedicineRequest::new);
                 }
                 boolean existingCloud = cloud.getRequestId() != null;
+                if (!hasAuditAttachment(item)) {
+                    try { attachMedicineAudit(item, item.getHospitalId(), item.getMedicineId(), item.getCreatedAt().toLocalDate()); local.saveAndFlush(item); }
+                    catch (RuntimeException ignored) { continue; }
+                }
                 copyToCloud(item, cloud);
                 if (!existingCloud) cloud.setRequestId(null);
                 cloud = cloudRequests.saveAndFlush(cloud);
@@ -380,6 +423,7 @@ public class MedicineRequestService {
         cloud.setStateNote(local.getStateNote());
         cloud.setCreatedAt(local.getCreatedAt());
         cloud.setUpdatedAt(local.getUpdatedAt());
+        copyAuditAttachment(local, cloud);
     }
 
     private void copyFromCloud(MedicineRequest cloud, LocalMedicineRequest local) {
@@ -397,6 +441,48 @@ public class MedicineRequestService {
         local.setStateNote(cloud.getStateNote());
         local.setCreatedAt(cloud.getCreatedAt());
         local.setUpdatedAt(cloud.getUpdatedAt());
+        copyAuditAttachment(cloud, local);
+    }
+
+    private void attachMedicineAudit(LocalMedicineRequest request, Long hospitalId, Long medicineId, java.time.LocalDate day) {
+        AuditArchiveService.RequestAuditAttachment attachment = auditArchiveService.createMedicineRequestAttachment(hospitalId, medicineId, day);
+        request.setAuditAttachmentFileName(attachment.fileName());
+        request.setAuditAttachmentSha256(attachment.sha256());
+        request.setAuditAttachmentPeriodStart(attachment.periodStart());
+        request.setAuditAttachmentPeriodEnd(attachment.periodEnd());
+        request.setAuditAttachmentCreatedAt(attachment.createdAt());
+        request.setAuditAttachmentEncrypted(attachment.encryptedPayload());
+    }
+
+    private void attachMedicineAudit(MedicineRequest request, Long hospitalId, Long medicineId, java.time.LocalDate day) {
+        AuditArchiveService.RequestAuditAttachment attachment = auditArchiveService.createMedicineRequestAttachment(hospitalId, medicineId, day);
+        request.setAuditAttachmentFileName(attachment.fileName());
+        request.setAuditAttachmentSha256(attachment.sha256());
+        request.setAuditAttachmentPeriodStart(attachment.periodStart());
+        request.setAuditAttachmentPeriodEnd(attachment.periodEnd());
+        request.setAuditAttachmentCreatedAt(attachment.createdAt());
+        request.setAuditAttachmentEncrypted(attachment.encryptedPayload());
+    }
+
+    private boolean hasAuditAttachment(MedicineRequest request) { return request != null && request.getAuditAttachmentEncrypted() != null && request.getAuditAttachmentEncrypted().length > 0 && request.getAuditAttachmentSha256() != null; }
+    private boolean hasAuditAttachment(LocalMedicineRequest request) { return request != null && request.getAuditAttachmentEncrypted() != null && request.getAuditAttachmentEncrypted().length > 0 && request.getAuditAttachmentSha256() != null; }
+
+    private void copyAuditAttachment(LocalMedicineRequest from, MedicineRequest to) {
+        to.setAuditAttachmentFileName(from.getAuditAttachmentFileName());
+        to.setAuditAttachmentSha256(from.getAuditAttachmentSha256());
+        to.setAuditAttachmentPeriodStart(from.getAuditAttachmentPeriodStart());
+        to.setAuditAttachmentPeriodEnd(from.getAuditAttachmentPeriodEnd());
+        to.setAuditAttachmentCreatedAt(from.getAuditAttachmentCreatedAt());
+        to.setAuditAttachmentEncrypted(from.getAuditAttachmentEncrypted());
+    }
+
+    private void copyAuditAttachment(MedicineRequest from, LocalMedicineRequest to) {
+        to.setAuditAttachmentFileName(from.getAuditAttachmentFileName());
+        to.setAuditAttachmentSha256(from.getAuditAttachmentSha256());
+        to.setAuditAttachmentPeriodStart(from.getAuditAttachmentPeriodStart());
+        to.setAuditAttachmentPeriodEnd(from.getAuditAttachmentPeriodEnd());
+        to.setAuditAttachmentCreatedAt(from.getAuditAttachmentCreatedAt());
+        to.setAuditAttachmentEncrypted(from.getAuditAttachmentEncrypted());
     }
 
     private void ensureCloud() {
@@ -448,28 +534,32 @@ public class MedicineRequestService {
     private RequestView view(MedicineRequest request) {
         Medicine medicine = cloudMedicines.findById(request.getMedicineId()).orElse(null);
         Hospital hospital = cloudHospitals.findById(request.getHospitalId()).orElse(null);
-        return new RequestView(request.getRequestId(), hospital == null ? "Hospital #" + request.getHospitalId() : hospital.getName(),
+        return new RequestView(request.getRequestId(), request.getHospitalId(), request.getMedicineId(), hospital == null ? "Hospital #" + request.getHospitalId() : hospital.getName(),
                 medicine == null ? "Medicine #" + request.getMedicineId() : medicine.getName(),
                 request.getStatus().name(), request.getRequestedQuantity(), request.getFulfilledQuantity(),
                 request.getDistrictNote() != null ? request.getDistrictNote() : request.getStateNote(),
-                request.getRequestedByUsername(), request.getCreatedAt(), false);
+                request.getRequestedByUsername(), request.getCreatedAt(), false,
+                hasAuditAttachment(request), request.getAuditAttachmentFileName(), request.getAuditAttachmentSha256(), request.getAuditAttachmentPeriodStart(), request.getAuditAttachmentPeriodEnd());
     }
 
     private RequestView view(LocalMedicineRequest request) {
         LocalOfflineStore local = localStoreProvider.getIfAvailable();
         Medicine medicine = local == null ? null : local.findMedicine(request.getMedicineId()).orElse(null);
         Hospital hospital = local == null ? null : local.findHospital(request.getHospitalId()).orElse(null);
-        return new RequestView(request.getLocalRequestId(),
+        return new RequestView(request.getLocalRequestId(), request.getHospitalId(), request.getMedicineId(),
                 hospital == null ? "Hospital #" + request.getHospitalId() : hospital.getName(),
                 medicine == null ? "Medicine #" + request.getMedicineId() : medicine.getName(),
                 request.getStatus(), request.getRequestedQuantity(), request.getFulfilledQuantity(),
                 request.getDistrictNote() != null ? request.getDistrictNote() : request.getStateNote(),
-                request.getRequestedByUsername(), request.getCreatedAt(), request.isPendingSync());
+                request.getRequestedByUsername(), request.getCreatedAt(), request.isPendingSync(),
+                hasAuditAttachment(request), request.getAuditAttachmentFileName(), request.getAuditAttachmentSha256(), request.getAuditAttachmentPeriodStart(), request.getAuditAttachmentPeriodEnd());
     }
 
     public record CreateResult(Long id, boolean localPending, String message) {}
     public record SyncResult(int pushed, int pulled, String status) {}
-    public record RequestView(Long id, String hospitalName, String medicineName, String status,
+    public record RequestView(Long id, Long hospitalId, Long medicineId, String hospitalName, String medicineName, String status,
                               int requestedQuantity, int fulfilledQuantity, String note,
-                              String requestedBy, LocalDateTime createdAt, boolean localPending) {}
+                              String requestedBy, LocalDateTime createdAt, boolean localPending,
+                              boolean auditAttached, String auditFileName, String auditSha256,
+                              java.time.LocalDate auditPeriodStart, java.time.LocalDate auditPeriodEnd) {}
 }

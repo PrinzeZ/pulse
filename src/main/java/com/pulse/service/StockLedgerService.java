@@ -32,6 +32,13 @@ public class StockLedgerService {
     public LocalStockMovement recordLocal(Long hospitalId, Long medicineId, int delta,
                                           String type, String referenceType, Long referenceId,
                                           String actor, String note) {
+        return recordLocal(hospitalId, medicineId, delta, type, referenceType, referenceId, actor, note, null, null);
+    }
+
+    public LocalStockMovement recordLocal(Long hospitalId, Long medicineId, int delta,
+                                          String type, String referenceType, Long referenceId,
+                                          String actor, String note, Integer quantityBefore, Integer quantityAfter) {
+        if (delta == 0) return null;
         LocalStockMovementRepository repo = localProvider.getIfAvailable();
         if (repo == null) throw new IllegalStateException("Local ledger is not enabled.");
 
@@ -48,11 +55,13 @@ public class StockLedgerService {
         movement.setNote(note);
         movement.setOccurredAt(LocalDateTime.now());
         movement.setPreviousHash(previous == null ? null : previous.getHash());
+        movement.setQuantityBefore(quantityBefore);
+        movement.setQuantityAfter(quantityAfter);
         movement.setHash(hash(
                 movement.getEventId(), movement.getHospitalId(), movement.getMedicineId(),
                 movement.getDeltaQuantity(), movement.getMovementType(), movement.getReferenceType(),
                 movement.getReferenceId(), movement.getActorUsername(), movement.getNote(),
-                movement.getOccurredAt(), movement.getPreviousHash()));
+                movement.getOccurredAt(), movement.getPreviousHash(), movement.getQuantityBefore(), movement.getQuantityAfter()));
         movement.setPendingSync(true);
         return repo.saveAndFlush(movement);
     }
@@ -60,6 +69,13 @@ public class StockLedgerService {
     public StockMovement recordCloud(Long hospitalId, Long medicineId, int delta,
                                      String type, String referenceType, Long referenceId,
                                      String actor, String note) {
+        return recordCloud(hospitalId, medicineId, delta, type, referenceType, referenceId, actor, note, null, null);
+    }
+
+    public StockMovement recordCloud(Long hospitalId, Long medicineId, int delta,
+                                     String type, String referenceType, Long referenceId,
+                                     String actor, String note, Integer quantityBefore, Integer quantityAfter) {
+        if (delta == 0) return null;
         if (!schema.ensureTables()) throw new IllegalStateException("Cloud ledger is unavailable.");
 
         StockMovement previous = latestCloud(hospitalId);
@@ -75,11 +91,13 @@ public class StockLedgerService {
         movement.setNote(note);
         movement.setOccurredAt(LocalDateTime.now());
         movement.setPreviousHash(previous == null ? null : previous.getHash());
+        movement.setQuantityBefore(quantityBefore);
+        movement.setQuantityAfter(quantityAfter);
         movement.setHash(hash(
                 movement.getEventId(), movement.getHospitalId(), movement.getMedicineId(),
                 movement.getDeltaQuantity(), movement.getMovementType(), movement.getReferenceType(),
                 movement.getReferenceId(), movement.getActorUsername(), movement.getNote(),
-                movement.getOccurredAt(), movement.getPreviousHash()));
+                movement.getOccurredAt(), movement.getPreviousHash(), movement.getQuantityBefore(), movement.getQuantityAfter()));
         return cloudRepository.saveAndFlush(movement);
     }
 
@@ -88,36 +106,38 @@ public class StockLedgerService {
         if (repo == null) return new Verification(false, 0, "LOCAL_LEDGER_DISABLED");
         String previousHash = null;
         int count = 0;
+        boolean first = true;
         for (LocalStockMovement m : repo.findByHospitalIdOrderByOccurredAtAscLocalMovementIdAsc(hospitalId)) {
-            String expected = hash(
-                    m.getEventId(), m.getHospitalId(), m.getMedicineId(), m.getDeltaQuantity(),
-                    m.getMovementType(), m.getReferenceType(), m.getReferenceId(),
-                    m.getActorUsername(), m.getNote(), m.getOccurredAt(), m.getPreviousHash());
-            if (!equals(previousHash, m.getPreviousHash()) || !expected.equals(m.getHash())) {
+            String expected = expectedHash(m.getEventId(), m.getHospitalId(), m.getMedicineId(), m.getDeltaQuantity(),
+                    m.getMovementType(), m.getReferenceType(), m.getReferenceId(), m.getActorUsername(),
+                    m.getNote(), m.getOccurredAt(), m.getPreviousHash(), m.getQuantityBefore(), m.getQuantityAfter());
+            if ((!first && !equals(previousHash, m.getPreviousHash())) || !expected.equals(m.getHash())) {
                 return new Verification(false, count, "HASH_CHAIN_MISMATCH at " + m.getEventId());
             }
             previousHash = m.getHash();
+            first = false;
             count++;
         }
-        return new Verification(true, count, "LOCAL_LEDGER_VALID");
+        return new Verification(true, count, first ? "LOCAL_LEDGER_EMPTY" : "LOCAL_LEDGER_VALID_FROM_RETAINED_BOUNDARY");
     }
 
     public Verification verifyCloud(Long hospitalId) {
         if (!schema.ensureTables()) return new Verification(false, 0, "CLOUD_LEDGER_UNAVAILABLE");
         String previousHash = null;
         int count = 0;
+        boolean first = true;
         for (StockMovement m : cloudRepository.findByHospitalIdOrderByOccurredAtAscMovementIdAsc(hospitalId)) {
-            String expected = hash(
-                    m.getEventId(), m.getHospitalId(), m.getMedicineId(), m.getDeltaQuantity(),
-                    m.getMovementType(), m.getReferenceType(), m.getReferenceId(),
-                    m.getActorUsername(), m.getNote(), m.getOccurredAt(), m.getPreviousHash());
-            if (!equals(previousHash, m.getPreviousHash()) || !expected.equals(m.getHash())) {
+            String expected = expectedHash(m.getEventId(), m.getHospitalId(), m.getMedicineId(), m.getDeltaQuantity(),
+                    m.getMovementType(), m.getReferenceType(), m.getReferenceId(), m.getActorUsername(),
+                    m.getNote(), m.getOccurredAt(), m.getPreviousHash(), m.getQuantityBefore(), m.getQuantityAfter());
+            if ((!first && !equals(previousHash, m.getPreviousHash())) || !expected.equals(m.getHash())) {
                 return new Verification(false, count, "HASH_CHAIN_MISMATCH at " + m.getEventId());
             }
             previousHash = m.getHash();
+            first = false;
             count++;
         }
-        return new Verification(true, count, "CLOUD_LEDGER_VALID");
+        return new Verification(true, count, first ? "CLOUD_LEDGER_EMPTY" : "CLOUD_LEDGER_VALID_FROM_RETAINED_BOUNDARY");
     }
 
     public List<LocalStockMovement> localMovements(Long hospitalId) {
@@ -135,6 +155,15 @@ public class StockLedgerService {
     private StockMovement latestCloud(Long hospitalId) {
         List<StockMovement> all = cloudRepository.findByHospitalIdOrderByOccurredAtAscMovementIdAsc(hospitalId);
         return all.isEmpty() ? null : all.get(all.size() - 1);
+    }
+
+    private static String expectedHash(String eventId, Long hospitalId, Long medicineId, int delta, String type, String referenceType,
+                                        Long referenceId, String actor, String note, LocalDateTime occurredAt, String previousHash,
+                                        Integer quantityBefore, Integer quantityAfter) {
+        if (quantityBefore == null && quantityAfter == null) {
+            return hash(eventId, hospitalId, medicineId, delta, type, referenceType, referenceId, actor, note, occurredAt, previousHash);
+        }
+        return hash(eventId, hospitalId, medicineId, delta, type, referenceType, referenceId, actor, note, occurredAt, previousHash, quantityBefore, quantityAfter);
     }
 
     private static boolean equals(String a, String b) {

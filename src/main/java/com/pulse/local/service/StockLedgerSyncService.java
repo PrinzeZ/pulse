@@ -44,6 +44,8 @@ public class StockLedgerSyncService {
                     movement.setOccurredAt(item.getOccurredAt());
                     movement.setPreviousHash(item.getPreviousHash());
                     movement.setHash(item.getHash());
+                    movement.setQuantityBefore(item.getQuantityBefore());
+                    movement.setQuantityAfter(item.getQuantityAfter());
                     cloud.saveAndFlush(movement);
                 }
                 item.setPendingSync(false);

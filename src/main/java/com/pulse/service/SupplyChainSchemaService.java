@@ -109,6 +109,23 @@ public class SupplyChainSchemaService implements ApplicationRunner {
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_stock_transfers_request ON stock_transfers(request_id, created_at)");
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_stock_transfers_source ON stock_transfers(source_hospital_id, status)");
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_stock_transfers_destination ON stock_transfers(destination_hospital_id, status)");
+            jdbc.execute("ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS quantity_before INT");
+            jdbc.execute("ALTER TABLE stock_movements ADD COLUMN IF NOT EXISTS quantity_after INT");
+            jdbc.execute("""
+                CREATE TABLE IF NOT EXISTS audit_archives (
+                    archive_id BIGSERIAL PRIMARY KEY,
+                    hospital_id BIGINT NOT NULL,
+                    granularity VARCHAR(12) NOT NULL,
+                    period_start DATE NOT NULL,
+                    period_end DATE NOT NULL,
+                    storage_name VARCHAR(255) NOT NULL,
+                    sha256 VARCHAR(64) NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    encrypted_payload BYTEA NOT NULL,
+                    CONSTRAINT ux_audit_archive_period UNIQUE(hospital_id, granularity, period_start)
+                )
+                """);
+            jdbc.execute("CREATE INDEX IF NOT EXISTS idx_audit_archives_hospital ON audit_archives(hospital_id, period_start)");
             jdbc.execute("CREATE INDEX IF NOT EXISTS idx_stock_movements_hospital ON stock_movements(hospital_id, occurred_at, movement_id)");
             return true;
         } catch (RuntimeException ex) {

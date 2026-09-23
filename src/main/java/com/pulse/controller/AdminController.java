@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.HttpHeaders;
+import jakarta.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
+import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
@@ -20,11 +24,13 @@ public class AdminController {
     private final HierarchyDashboardService dashboard;
     private final StaffManagementService staffManagement;
     private final StockLedgerService ledgerService;
+    private final com.pulse.service.AuditArchiveService auditArchiveService;
 
-    public AdminController(HierarchyDashboardService dashboard, StaffManagementService staffManagement, StockLedgerService ledgerService) {
+    public AdminController(HierarchyDashboardService dashboard, StaffManagementService staffManagement, StockLedgerService ledgerService, com.pulse.service.AuditArchiveService auditArchiveService) {
         this.dashboard = dashboard;
         this.staffManagement = staffManagement;
         this.ledgerService = ledgerService;
+        this.auditArchiveService = auditArchiveService;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -89,9 +95,88 @@ public class AdminController {
         Long hospitalId = (Long) session.getAttribute("hospitalId");
         if (hospitalId == null) return "redirect:/login";
         model.addAttribute("hospitalId", hospitalId);
-        model.addAttribute("movements", ledgerService.localMovements(hospitalId));
-        model.addAttribute("verification", ledgerService.verifyLocal(hospitalId));
+        model.addAttribute("movements", auditArchiveService.history(hospitalId, LocalDate.now().minusDays(auditArchiveService.getHotDays() - 1L), LocalDate.now()));
+        model.addAttribute("verification", ledgerService.verifyCloud(hospitalId));
+        model.addAttribute("archives", auditArchiveService.archives(hospitalId));
+        model.addAttribute("archiveRequests", auditArchiveService.pendingRequests(hospitalId));
+        model.addAttribute("archiveEncryptionReady", auditArchiveService.archiveEncryptionReady());
+        model.addAttribute("hotDays", auditArchiveService.getHotDays());
+        model.addAttribute("coldAfterDays", auditArchiveService.getColdAfterDays());
+        model.addAttribute("retentionDays", auditArchiveService.getRetentionDays());
+        model.addAttribute("quickDates", java.util.stream.IntStream.range(0, 30)
+                .mapToObj(i -> LocalDate.now().minusDays(i)).toList());
         return "admin-audit";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/audit/view")
+    public String viewAudit(@RequestParam LocalDate start, @RequestParam LocalDate end,
+                            @RequestParam(required = false) Long medicineId,
+                            HttpSession session, Model model) {
+        if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
+        Long hospitalId = (Long) session.getAttribute("hospitalId");
+        if (hospitalId == null) return "redirect:/login";
+        if (end.isBefore(start)) return "redirect:/admin/audit";
+        model.addAttribute("title", medicineId == null ? "Audit spreadsheet" : "Resupply audit report");
+        model.addAttribute("subtitle", medicineId == null
+                ? "Read-only browser view of the selected audit period."
+                : "Today's hospital log plus a dedicated 30-day history sheet for the selected medicine.");
+        model.addAttribute("rows", auditArchiveService.reportRows(hospitalId, start, end, true));
+        model.addAttribute("medicineRows", medicineId == null ? List.of()
+                : auditArchiveService.reportRows(hospitalId, end.minusDays(29), end, true).stream()
+                    .filter(r -> medicineId.equals(r.medicineId())).toList());
+        model.addAttribute("medicineName", medicineId == null ? null : auditArchiveService.medicineDisplayName(medicineId));
+        model.addAttribute("medicineId", medicineId);
+        model.addAttribute("start", start);
+        model.addAttribute("end", end);
+        model.addAttribute("canDownload", true);
+        model.addAttribute("adminView", true);
+        model.addAttribute("quickDates", java.util.stream.IntStream.range(0, 30).mapToObj(i -> LocalDate.now().minusDays(i)).toList());
+        return "audit-preview";
+    }
+
+    @GetMapping("/audit/export")
+    public void exportAudit(@RequestParam LocalDate start, @RequestParam LocalDate end,
+                             @RequestParam(required = false) Long medicineId,
+                             HttpSession session, HttpServletResponse response) throws java.io.IOException {
+        if (!"ADMIN".equals(session.getAttribute("role"))) { response.sendRedirect("/login"); return; }
+        Long hospitalId = (Long) session.getAttribute("hospitalId");
+        if (hospitalId == null) { response.sendRedirect("/login"); return; }
+        byte[] excel = auditArchiveService.exportExcel(hospitalId, start, end, true, medicineId);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"pulse-audit-" + start + "-to-" + end + ".xlsx\"");
+        response.getOutputStream().write(excel);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/audit/medicine/{medicineId}")
+    public String medicineAudit(@PathVariable Long medicineId, HttpSession session) {
+        if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
+        return "redirect:/admin/audit/view?start=" + LocalDate.now() + "&end=" + LocalDate.now() + "&medicineId=" + medicineId;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/audit/seal")
+    public String sealAuditDay(@RequestParam LocalDate day, HttpSession session, RedirectAttributes redirectAttributes) {
+        Long hospitalId = (Long) session.getAttribute("hospitalId");
+        if (hospitalId == null) return "redirect:/login";
+        try {
+            redirectAttributes.addFlashAttribute("success", auditArchiveService.sealDayNow(hospitalId, day));
+        } catch (RuntimeException ex) { redirectAttributes.addFlashAttribute("error", ex.getMessage()); }
+        return "redirect:/admin/audit";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/audit/requests/{id}/decision")
+    public String decideAuditRequest(@PathVariable Long id, @RequestParam boolean approve,
+                                     HttpSession session, RedirectAttributes redirectAttributes) {
+        Long hospitalId = (Long) session.getAttribute("hospitalId");
+        if (hospitalId == null) return "redirect:/login";
+        try {
+            auditArchiveService.decideRequest(hospitalId, id, String.valueOf(session.getAttribute("username")), approve);
+            redirectAttributes.addFlashAttribute("success", approve ? "Audit access approved." : "Audit access rejected.");
+        } catch (RuntimeException ex) { redirectAttributes.addFlashAttribute("error", ex.getMessage()); }
+        return "redirect:/admin/audit";
     }
 
     @PreAuthorize("hasRole('ADMIN')")

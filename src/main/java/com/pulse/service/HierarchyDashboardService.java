@@ -86,7 +86,7 @@ public class HierarchyDashboardService {
 
         rows.sort(Comparator.comparing(Row::hospitalName).thenComparing(Row::medicineName));
 
-        List<Alert> activeAlerts = alerts.findByResolvedFalseOrderByCreatedAtDesc().stream()
+        List<Alert> activeAlerts = alertService.getActiveAlerts().stream()
                 .filter(a -> hospitalIds.contains(a.getHospitalId())).toList();
         List<StockEntry> recent = stock.findAll(Sort.by(Sort.Direction.DESC, "lastUpdated", "entryId"))
                 .stream().filter(e -> hospitalIds.contains(e.getHospitalId())).limit(8).toList();

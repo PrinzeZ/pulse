@@ -47,6 +47,12 @@ public class LocalStockMovement {
     @Column(nullable = false, length = 64)
     private String hash;
 
+    @Column(name = "quantity_before")
+    private Integer quantityBefore;
+
+    @Column(name = "quantity_after")
+    private Integer quantityAfter;
+
     @Column(nullable = false)
     private boolean pendingSync = true;
 
@@ -76,6 +82,10 @@ public class LocalStockMovement {
     public void setPreviousHash(String previousHash) { this.previousHash = previousHash; }
     public String getHash() { return hash; }
     public void setHash(String hash) { this.hash = hash; }
+    public Integer getQuantityBefore() { return quantityBefore; }
+    public void setQuantityBefore(Integer quantityBefore) { this.quantityBefore = quantityBefore; }
+    public Integer getQuantityAfter() { return quantityAfter; }
+    public void setQuantityAfter(Integer quantityAfter) { this.quantityAfter = quantityAfter; }
     public boolean isPendingSync() { return pendingSync; }
     public void setPendingSync(boolean pendingSync) { this.pendingSync = pendingSync; }
 }

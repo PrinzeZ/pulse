@@ -6,6 +6,8 @@ import com.pulse.model.Alert;
 import com.pulse.model.Hospital;
 import com.pulse.model.Medicine;
 import com.pulse.repository.AlertRepository;
+import com.pulse.repository.MedicineRepository;
+import com.pulse.repository.StockEntryRepository;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +18,15 @@ public class AlertService implements Notifiable {
 
     private final AlertRepository alertRepository;
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
+    private final MedicineRepository medicineRepository;
+    private final StockEntryRepository stockEntryRepository;
 
-    public AlertService(AlertRepository alertRepository, ObjectProvider<LocalOfflineStore> localStoreProvider) {
+    public AlertService(AlertRepository alertRepository, ObjectProvider<LocalOfflineStore> localStoreProvider,
+                        MedicineRepository medicineRepository, StockEntryRepository stockEntryRepository) {
         this.alertRepository = alertRepository;
         this.localStoreProvider = localStoreProvider;
+        this.medicineRepository = medicineRepository;
+        this.stockEntryRepository = stockEntryRepository;
     }
 
     @Override
@@ -41,13 +48,39 @@ public class AlertService implements Notifiable {
 
     public List<Alert> getActiveAlerts() {
         try {
+            synchronizeCloudAlerts();
             return alertRepository.findByResolvedFalseOrderByCreatedAtDesc();
         } catch (RuntimeException ex) {
             LocalOfflineStore local = localStoreProvider.getIfAvailable();
             if (local == null) throw ex;
             return local.hospitals().stream().flatMap(h -> local.stockForHospital(h.getHospitalId()).stream()
                     .map(stock -> localAlert(h, stock, local))
-                    .filter(java.util.Objects::nonNull)).toList();
+                    .filter(java.util.Objects::nonNull).toList().stream())
+                    .toList();
+        }
+    }
+
+    private void synchronizeCloudAlerts() {
+        var medicines = new java.util.HashMap<Long, Medicine>();
+        medicineRepository.findAll().forEach(m -> medicines.put(m.getMedId(), m));
+        var active = new java.util.HashMap<String, Alert>();
+        alertRepository.findByResolvedFalseOrderByCreatedAtDesc().forEach(a -> active.put(a.getHospitalId() + ":" + a.getmedId(), a));
+        for (var stock : stockEntryRepository.findAll()) {
+            Medicine medicine = medicines.get(stock.getMedId());
+            if (medicine == null) continue;
+            String key = stock.getHospitalId() + ":" + stock.getMedId();
+            boolean low = stock.getQuantity() <= medicine.getThreshold();
+            Alert existing = active.get(key);
+            if (low && existing == null) {
+                alertRepository.save(new Alert(stock.getHospitalId(), stock.getMedId(),
+                        "LOW STOCK: " + medicine.getName() + " at hospital " + stock.getHospitalId() + " (qty: " + stock.getQuantity() + ")"));
+            } else if (!low && existing != null) {
+                existing.setResolved(true);
+                alertRepository.save(existing);
+            } else if (low && existing != null) {
+                existing.setMessage("LOW STOCK: " + medicine.getName() + " at hospital " + stock.getHospitalId() + " (qty: " + stock.getQuantity() + ")");
+                alertRepository.save(existing);
+            }
         }
     }
 

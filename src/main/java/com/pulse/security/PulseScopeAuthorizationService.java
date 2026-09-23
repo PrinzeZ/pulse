@@ -3,8 +3,6 @@ package com.pulse.security;
 import com.pulse.model.District;
 import com.pulse.model.Hospital;
 import com.pulse.model.MedicineRequest;
-import com.pulse.model.StockTransfer;
-import com.pulse.model.User;
 import com.pulse.repository.DistrictRepository;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.MedicineRequestRepository;

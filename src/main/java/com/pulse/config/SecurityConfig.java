@@ -127,6 +127,7 @@ public class SecurityConfig {
             if (authentication.getPrincipal() instanceof UserPrincipal principal) {
                 HttpSession session = request.getSession(true);
                 session.setAttribute("role", principal.getRole());
+                session.setAttribute("username", principal.getUsername());
                 session.setAttribute("stateId", principal.getStateId());
                 session.setAttribute("districtId", principal.getDistrictId());
                 session.setAttribute("hospitalId", principal.getHospitalId());

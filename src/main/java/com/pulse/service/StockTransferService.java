@@ -164,7 +164,9 @@ public class StockTransferService {
                 throw new IllegalArgumentException("Insufficient source stock. Available: " + stock.getQuantity());
             }
 
-            stock.setQuantity(stock.getQuantity() - transfer.getQuantity());
+            int previousQuantity = stock.getQuantity();
+            int nextQuantity = previousQuantity - transfer.getQuantity();
+            stock.setQuantity(nextQuantity);
             stock.setLastUpdated(java.time.LocalDate.now().toString());
             stock.setSynced(false);
             localStock.saveAndFlush(stock);
@@ -172,7 +174,7 @@ public class StockTransferService {
             ledger.recordLocal(hospitalId, transfer.getMedicineId(), -transfer.getQuantity(),
                     "TRANSFER_OUT", "STOCK_TRANSFER", transfer.getCloudTransferId() != null
                             ? transfer.getCloudTransferId() : transfer.getLocalTransferId(), actor,
-                    "Dispatched medicine transfer.");
+                    "Dispatched medicine transfer.", previousQuantity, nextQuantity);
 
             transfer.setStatus(StockTransferStatus.IN_TRANSIT.name());
             transfer.setDispatchedByUsername(actor);
@@ -189,11 +191,13 @@ public class StockTransferService {
         StockEntry stock = cloudStock.findByHospitalIdAndMedId(hospitalId, transfer.getMedicineId())
                 .orElseThrow(() -> new IllegalArgumentException("Source stock is not available."));
         if (stock.getQuantity() < transfer.getQuantity()) throw new IllegalArgumentException("Insufficient source stock.");
-        stock.setQuantity(stock.getQuantity() - transfer.getQuantity());
+        int previousQuantity = stock.getQuantity();
+        int nextQuantity = previousQuantity - transfer.getQuantity();
+        stock.setQuantity(nextQuantity);
         stock.setLastUpdated(java.time.LocalDate.now());
         cloudStock.saveAndFlush(stock);
         ledger.recordCloud(hospitalId, transfer.getMedicineId(), -transfer.getQuantity(),
-                "TRANSFER_OUT", "STOCK_TRANSFER", transfer.getTransferId(), actor, "Dispatched medicine transfer.");
+                "TRANSFER_OUT", "STOCK_TRANSFER", transfer.getTransferId(), actor, "Dispatched medicine transfer.", previousQuantity, nextQuantity);
         transfer.setStatus(StockTransferStatus.IN_TRANSIT);
         transfer.setDispatchedByUsername(actor);
         cloudTransfers.saveAndFlush(transfer);
@@ -217,7 +221,9 @@ public class StockTransferService {
                     .orElseGet(LocalStockEntry::new);
             stock.setHospitalId(hospitalId);
             stock.setMedicineId(transfer.getMedicineId());
-            stock.setQuantity(stock.getQuantity() + transfer.getQuantity());
+            int previousQuantity = stock.getQuantity();
+            int nextQuantity = previousQuantity + transfer.getQuantity();
+            stock.setQuantity(nextQuantity);
             stock.setLastUpdated(java.time.LocalDate.now().toString());
             stock.setSynced(false);
             localStock.saveAndFlush(stock);
@@ -225,7 +231,7 @@ public class StockTransferService {
             ledger.recordLocal(hospitalId, transfer.getMedicineId(), transfer.getQuantity(),
                     "TRANSFER_IN", "STOCK_TRANSFER", transfer.getCloudTransferId() != null
                             ? transfer.getCloudTransferId() : transfer.getLocalTransferId(), actor,
-                    "Received medicine transfer.");
+                    "Received medicine transfer.", previousQuantity, nextQuantity);
 
             transfer.setStatus(StockTransferStatus.RECEIVED.name());
             transfer.setReceivedByUsername(actor);
@@ -244,11 +250,13 @@ public class StockTransferService {
         }
         StockEntry stock = cloudStock.findByHospitalIdAndMedId(hospitalId, transfer.getMedicineId())
                 .orElseGet(() -> new StockEntry(null, hospitalId, transfer.getMedicineId(), 0));
-        stock.setQuantity(stock.getQuantity() + transfer.getQuantity());
+        int previousQuantity = stock.getQuantity();
+        int nextQuantity = previousQuantity + transfer.getQuantity();
+        stock.setQuantity(nextQuantity);
         stock.setLastUpdated(java.time.LocalDate.now());
         cloudStock.saveAndFlush(stock);
         ledger.recordCloud(hospitalId, transfer.getMedicineId(), transfer.getQuantity(),
-                "TRANSFER_IN", "STOCK_TRANSFER", transfer.getTransferId(), actor, "Received medicine transfer.");
+                "TRANSFER_IN", "STOCK_TRANSFER", transfer.getTransferId(), actor, "Received medicine transfer.", previousQuantity, nextQuantity);
         transfer.setStatus(StockTransferStatus.RECEIVED);
         transfer.setReceivedByUsername(actor);
         cloudTransfers.saveAndFlush(transfer);
