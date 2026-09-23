@@ -13,11 +13,13 @@ public class LoginService {
 
     private final UserRepository userRepository;
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder encoder;
 
-    public LoginService(UserRepository userRepository, ObjectProvider<LocalOfflineStore> localStoreProvider) {
+    public LoginService(UserRepository userRepository, ObjectProvider<LocalOfflineStore> localStoreProvider,
+                        BCryptPasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.localStoreProvider = localStoreProvider;
+        this.encoder = encoder;
     }
 
     public User authenticate(String username, String password) {

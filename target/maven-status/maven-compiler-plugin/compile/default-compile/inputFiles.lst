@@ -3,9 +3,11 @@ C:\Projects\pulse\src\main\java\com\pulse\config\HierarchyDashboardConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\LocalDataSourceConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\LocalJpaConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\LocalSchedulingConfig.java
+C:\Projects\pulse\src\main\java\com\pulse\config\PasswordEncoderConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\Phase3AdminInitializer.java
 C:\Projects\pulse\src\main\java\com\pulse\config\PostgresJpaConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\config\PrivateNetworkAccessConfig.java
+C:\Projects\pulse\src\main\java\com\pulse\config\SecurityConfig.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\AdminController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\AnalyticsController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\DistrictAdminController.java
@@ -20,6 +22,7 @@ C:\Projects\pulse\src\main\java\com\pulse\controller\OperationsController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\PublicApiController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\RoleViewController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\SearchController.java
+C:\Projects\pulse\src\main\java\com\pulse\controller\SecurityErrorController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\StaffController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\StateAdminController.java
 C:\Projects\pulse\src\main\java\com\pulse\controller\UserController.java
@@ -74,6 +77,11 @@ C:\Projects\pulse\src\main\java\com\pulse\repository\StockEntryRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\StockMovementRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\StockTransferRepository.java
 C:\Projects\pulse\src\main\java\com\pulse\repository\UserRepository.java
+C:\Projects\pulse\src\main\java\com\pulse\security\LoginAttemptService.java
+C:\Projects\pulse\src\main\java\com\pulse\security\PulseAccessDeniedHandler.java
+C:\Projects\pulse\src\main\java\com\pulse\security\PulseAuthenticationProvider.java
+C:\Projects\pulse\src\main\java\com\pulse\security\SecurityAuditListener.java
+C:\Projects\pulse\src\main\java\com\pulse\security\UserPrincipal.java
 C:\Projects\pulse\src\main\java\com\pulse\service\AdminDashboardService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\AlertService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\AnalyticsService.java
@@ -92,6 +100,5 @@ C:\Projects\pulse\src\main\java\com\pulse\service\StaffService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\StockLedgerService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\StockTransferService.java
 C:\Projects\pulse\src\main\java\com\pulse\service\SupplyChainSchemaService.java
-C:\Projects\pulse\src\main\java\com\pulse\SessionAccessInterceptor.java
 C:\Projects\pulse\src\main\java\com\pulse\SessionSecurity.java
 C:\Projects\pulse\src\main\java\com\pulse\WebConfig.java

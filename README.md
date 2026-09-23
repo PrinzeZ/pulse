@@ -18,7 +18,7 @@ PULSE is structured using a clean, layered Spring Boot architecture ensuring str
 
 - **Backend Framework:** Spring Boot (v4.1.1)
 - **Persistence & ORM:** Spring Data JPA / Hibernate, PostgreSQL (Supabase)
-- **Security:** Spring Security Crypto (`BCryptPasswordEncoder`)
+- **Security:** Spring Security + Zero Trust architecture + RBAC/scope authorization + OWASP ASVS baseline
 - **Frontend Engine:** Thymeleaf, HTML5, CSS3
 - **Build Tool:** Maven
 - **Version Control:** Git / GitHub
@@ -106,3 +106,25 @@ http://pulse.local:8080
 If the P.U.L.S.E server gets a different LAN IP later, rerun the setup script on
 the clients with the new IP. The server's `start.ps1` still detects its current
 LAN IP automatically.
+
+
+## Security
+
+P.U.L.S.E now uses **Spring Security** as its enforcement framework. The security architecture follows **NIST Zero Trust principles** and uses **OWASP ASVS 5.0** as the verification/checklist baseline.
+
+### Implemented security foundation
+- Spring Security request authorization with explicit role boundaries for STATE_ADMIN, DISTRICT_ADMIN, ADMIN, and STAFF.
+- Custom authentication provider that preserves the existing cloud PostgreSQL + local H2 offline login flow.
+- BCrypt password hashing retained for compatibility with existing accounts.
+- Session fixation protection through Spring Security session management.
+- HTTP-only, SameSite=Lax session cookies and cookie-only session tracking.
+- CSRF protection for state-changing browser requests.
+- Security headers including frame denial, content-type protection, referrer policy, and HSTS for HTTPS deployments.
+- Login brute-force throttling/temporary lockout.
+- Authentication and access-denial security audit logging without passwords, tokens, or session IDs.
+- A dedicated access-denied page instead of silently treating an authenticated but unauthorized user as logged out.
+
+### Architecture
+`Spring Security (enforcement) + Zero Trust principles (architecture) + RBAC/scope checks (P.U.L.S.E. authorization) + OWASP ASVS (verification baseline)`
+
+For HTTPS deployments, set `PULSE_SESSION_COOKIE_SECURE=true`. Local HTTP/LAN mode intentionally leaves this false so the local node remains reachable over the existing LAN endpoint.

@@ -49,18 +49,38 @@ public class SearchController {
                          @RequestParam(name = "district", required = false, defaultValue = "") String district,
                          @RequestParam(name = "view", required = false, defaultValue = "") String view,
                          Model model) {
-        List<SearchResult> results = searchService.search(district, query);
+        // Backwards compatibility: the old /search?view=all URL now has a dedicated destination.
+        if (!hasText(query) && !hasText(district) && "all".equalsIgnoreCase(view)) {
+            return "redirect:/medicines";
+        }
+        populateSearchModel(query, district, false, model);
+        return "search";
+    }
+
+    @GetMapping("/medicines")
+    public String medicineDirectory(Model model) {
+        populateSearchModel("", "", true, model);
+        return "search";
+    }
+
+    private void populateSearchModel(String query, String district, boolean directoryFull, Model model) {
+        String safeQuery = query == null ? "" : query;
+        String safeDistrict = district == null ? "" : district;
+        List<SearchResult> results = searchService.search(safeDistrict, safeQuery);
         model.addAttribute("results", results);
-        model.addAttribute("query", query == null ? "" : query);
-        model.addAttribute("selectedDistrict", district == null ? "" : district);
-        model.addAttribute("district", district == null ? "" : district);
+        model.addAttribute("query", safeQuery);
+        model.addAttribute("selectedDistrict", safeDistrict);
+        model.addAttribute("district", safeDistrict);
         model.addAttribute("districts", districts());
         model.addAttribute("districtStatuses", districtStatuses(results));
         model.addAttribute("medicineCards", medicineCards(results));
-        boolean searched = (query != null && !query.isBlank()) || (district != null && !district.isBlank());
+        boolean searched = hasText(safeQuery) || hasText(safeDistrict);
         model.addAttribute("searched", searched);
-        model.addAttribute("directoryFull", !searched && "all".equalsIgnoreCase(view));
-        return "search";
+        model.addAttribute("directoryFull", directoryFull && !searched);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
 

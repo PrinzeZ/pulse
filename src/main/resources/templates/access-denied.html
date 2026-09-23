@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Access denied</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+</head>
+<body class="login-page">
+<div class="login-layout">
+    <section class="login-brand-panel">
+        <div class="brand"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Security boundary</div></div></div>
+        <div class="login-brand-copy"><div class="eyebrow">Zero-trust access control</div><h1>Access denied.</h1><p>Your account is authenticated, but it is not authorized for the requested resource.</p></div>
+    </section>
+    <section class="login-form-panel">
+        <h2>Permission required</h2>
+        <p>Return to your authorized dashboard or sign in with an account that has the required role.</p>
+        <a class="btn btn-primary" th:href="@{/menu}">Return to dashboard</a>
+        <div class="login-note"><a th:href="@{/logout}">Sign out →</a></div>
+    </section>
+</div>
+</body>
+</html>

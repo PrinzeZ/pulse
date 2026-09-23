@@ -9,7 +9,7 @@
 <div class="app-shell user-content">
 <header class="topbar">
 <a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Medicine Availability Network</div></div></a>
-<div class="topbar-right"><nav class="public-nav"><a th:href="@{/}" class="active">Availability</a><a th:href="@{/search}">Medicine directory</a><a th:href="@{/map}">Map</a><a th:href="@{/login}">Staff Login</a></nav></div>
+<div class="topbar-right"><nav class="public-nav"><a th:href="@{/}" class="active">Availability</a><a th:href="@{/medicines}">Medicine directory</a><a th:href="@{/map}">Map</a><a th:href="@{/login}">Staff Login</a></nav></div>
 </header>
 <main class="main-content"><div class="content-wrap">
 <section class="public-hero">
@@ -39,7 +39,7 @@
 <div class="medicine-card-body"><div class="medicine-card-top"><div><h3 th:text="${medicine.medicineName}">Medicine</h3><p th:text="${medicine.category}">Category</p></div><span th:class="${medicine.overallStatus == 'GREEN' ? 'badge badge-success' : (medicine.overallStatus == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${medicine.overallStatus == 'GREEN' ? 'Available' : (medicine.overallStatus == 'YELLOW' ? 'Limited' : 'Out of stock')}">Status</span></div><div class="medicine-card-meta"><span><strong th:text="${medicine.availableHospitalCount}">0</strong> hospitals available</span></div><div class="medicine-card-link">View details <span>→</span></div></div>
 </a>
 </div>
-<a class="catalog-view-all" th:href="@{/search}"><span>View all medicines</span><span>→</span></a>
+<a class="catalog-view-all" th:href="@{/medicines}"><span>View all medicines</span><span>→</span></a>
 </div>
 </section>
 

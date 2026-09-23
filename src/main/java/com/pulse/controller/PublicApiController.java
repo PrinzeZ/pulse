@@ -4,6 +4,7 @@ import com.pulse.model.Hospital;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.service.SearchService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Map;
@@ -16,8 +17,16 @@ public class PublicApiController {
     private static final AtomicReference<LanRegistration> LAN = new AtomicReference<>();
     private final SearchService search;
     private final HospitalRepository hospitals;
+    private final String lanRegistrationToken;
 
-    public PublicApiController(SearchService search, HospitalRepository hospitals) { this.search = search; this.hospitals = hospitals; }
+    public PublicApiController(
+            SearchService search,
+            HospitalRepository hospitals,
+            @Value("${PULSE_LAN_REGISTRATION_TOKEN:}") String lanRegistrationToken) {
+        this.search = search;
+        this.hospitals = hospitals;
+        this.lanRegistrationToken = lanRegistrationToken == null ? "" : lanRegistrationToken.trim();
+    }
 
     @GetMapping("/stock")
     public List<?> stock(@RequestParam(defaultValue = "") String query, @RequestParam(defaultValue = "") String district) {
@@ -43,8 +52,12 @@ public class PublicApiController {
     public Map<String, Object> registerLan(
             @RequestHeader(value = "X-Pulse-Lan-Token", required = false) String token,
             @RequestBody String lanUrl) {
-        String expected = System.getenv("PULSE_LAN_REGISTRATION_TOKEN");
-        if (expected != null && !expected.isBlank() && !expected.equals(token)) {
+        if (lanRegistrationToken.isBlank()) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,
+                    "LAN registration is not configured on this server");
+        }
+        if (token == null || !lanRegistrationToken.equals(token)) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid LAN registration token");
         }

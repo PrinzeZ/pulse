@@ -21,11 +21,6 @@ public class PulseApplication {
         SpringApplication.run(PulseApplication.class, args);
     }
 
-    @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
     @Profile("dev")
     @Bean
     @Order(1)
