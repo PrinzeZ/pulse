@@ -1,7 +1,0 @@
-.staff-content .stock-quantity { font-weight: 800; color: var(--pulse-navy-dark); }
-.staff-content .stock-table td:first-child { font-weight: 700; color: var(--pulse-navy-dark); }
-.staff-content .update-form { display: flex; align-items: center; gap: 7px; min-width: 180px; }
-.staff-content .update-form input { width: 92px; min-height: 34px; }
-.staff-content .hospital-banner { background: #eef5f8; border: 1px solid #d7e5eb; border-radius: 8px; padding: 12px 14px; color: #476174; }
-.staff-content .sync-explanation { display: grid; gap: 9px; padding: 14px 0 2px; color: #476174; font-size: 14px; }
-.staff-content .sync-explanation .badge { margin-right: 8px; }

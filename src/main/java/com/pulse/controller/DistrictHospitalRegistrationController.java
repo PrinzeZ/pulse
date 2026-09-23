@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
 @RequestMapping("/district-admin/hospital-registrations")
@@ -16,6 +17,7 @@ public class DistrictHospitalRegistrationController {
         this.provisioning = provisioning;
     }
 
+    @PreAuthorize("hasRole('DISTRICT_ADMIN')")
     @GetMapping
     public String list(HttpSession session, Model model) {
         if (!"DISTRICT_ADMIN".equals(session.getAttribute("role"))) {
@@ -32,6 +34,7 @@ public class DistrictHospitalRegistrationController {
         return "district-admin/hospital-registrations";
     }
 
+    @PreAuthorize("@pulseScope.canAccessRegistration(#id)")
     @PostMapping("/{id}/approve")
     public String approve(@PathVariable Long id, HttpSession session, Model model) {
         if (!"DISTRICT_ADMIN".equals(session.getAttribute("role"))) {
@@ -52,6 +55,7 @@ public class DistrictHospitalRegistrationController {
         }
     }
 
+    @PreAuthorize("@pulseScope.canAccessRegistration(#id)")
     @PostMapping("/{id}/reject")
     public String reject(@PathVariable Long id, HttpSession session) {
         if (!"DISTRICT_ADMIN".equals(session.getAttribute("role"))) {

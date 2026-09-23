@@ -2,7 +2,7 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title th:text="${medicine.name + ' — P.U.L.S.E'}">Medicine — P.U.L.S.E</title>
-<link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}"></head>
+<link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""></head>
 <body>
 <div class="app-shell user-content">
 <header class="topbar"><a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Medicine Availability Network</div></div></a>
@@ -13,7 +13,11 @@
 <div class="medicine-detail-visual"><img th:src="${medicineImage}" th:attr="data-fallback=${localMedicineImage}" th:alt="${medicine.name + ' packaging'}" onerror="if(this.dataset.fallback && this.src !== this.dataset.fallback){this.src=this.dataset.fallback;}"></div>
 <div class="medicine-detail-copy"><div class="eyebrow">MEDICINE PROFILE</div><h1 th:text="${medicine.name}">Paracetamol</h1><p class="medicine-detail-category" th:text="${medicine.category}">Analgesic</p>
 <p class="medicine-detail-description">Public stock information reported by participating P.U.L.S.E hospitals. Availability may change after a hospital updates its inventory.</p>
-<div class="medicine-facts"><div><span>Category</span><strong th:text="${medicine.category}">Analgesic</strong></div><div><span>Alert threshold</span><strong th:text="${medicine.threshold + ' units'}">50 units</strong></div></div></div>
+<div class="medicine-facts"><div><span>Category</span><strong th:text="${medicine.category}">Analgesic</strong></div><div><span>Alert threshold</span><strong th:text="${medicine.threshold + ' units'}">50 units</strong></div></div>
+<div class="medicine-detail-actions">
+  <a class="btn btn-secondary" href="#medicine-map">View availability map</a>
+  <a class="btn btn-primary" th:href="@{/map(medicineId=${medicine.medId})}">Show route →</a>
+</div></div>
 </section>
 
 <section class="availability-section"><div class="results-heading"><div><div class="eyebrow">CURRENT AVAILABILITY</div><h2 th:text="${#lists.size(availability)} + ' hospitals reporting'">3 hospitals reporting</h2></div><a class="btn btn-primary" th:href="@{/search(query=${medicine.name})}">Check all availability</a></div>
@@ -23,6 +27,23 @@
 <div class="availability-main"><strong th:text="${item.quantity}">200</strong><span>units reported</span></div><div class="availability-meta"><span th:text="${item.lastUpdated != null ? 'Updated ' + item.lastUpdated : 'Local stock'}">Updated today</span><span th:text="'Threshold ' + item.threshold">Threshold 50</span></div></article>
 </div>
 <div class="card empty-state" th:if="${availability == null or availability.size() == 0}"><strong>No availability reported</strong>This medicine has no current public stock records.</div></section>
+<section id="medicine-map" class="medicine-map-section">
+  <div class="results-heading">
+    <div>
+      <div class="eyebrow">MEDICINE AVAILABILITY MAP</div>
+      <h2 th:text="${medicine.name + ' near government hospitals'}">Medicine near government hospitals</h2>
+      <p class="section-subtitle">Connected hospitals reporting this medicine are shown on the map. Use <strong>Show route</strong> above to find the nearest reporting hospital from your location.</p>
+    </div>
+    <a class="clear-link" th:href="@{/map(medicineId=${medicine.medId})}">Open full map →</a>
+  </div>
+  <div class="medicine-map-wrap">
+    <div id="pulse-map-medicine" class="pulse-map pulse-map-medicine" data-map-mode="medicine"
+         th:attr="data-medicine-id=${medicine.medId}"></div>
+    <a class="map-view-all medicine-map-full-link" th:href="@{/map(medicineId=${medicine.medId})}">
+      <span>View full map &amp; route</span><span>→</span>
+    </a>
+  </div>
+</section>
 <section class="public-note"><strong>Public data only</strong><span>Staff identities, internal audit logs and operational records are never exposed on this page.</span></section>
 </div></main>
 <footer class="public-footer">
@@ -30,4 +51,4 @@
   <div class="public-footer-contact"><span>Contact us</span><a href="mailto:liminality2026@gmail.com">liminality2026@gmail.com</a><a href="tel:+918089004231">+91 80890 04231</a></div>
   <div class="public-footer-meta"><span>Reported inventory from participating hospitals</span><span>© 2026 P.U.L.S.E</span></div>
 </footer></div>
-<script th:src="@{/js/pulse-routing.js}"></script></body></html>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script th:src="@{/js/pulse-map.js}"></script><script th:src="@{/js/pulse-routing.js}"></script></body></html>

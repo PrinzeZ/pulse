@@ -1,5 +1,0 @@
-.admin-content .critical-count { color: var(--pulse-danger); }
-.admin-content .warning-count { color: var(--pulse-warning); }
-.admin-content .inventory-table td:first-child { font-weight: 700; color: var(--pulse-navy-dark); }
-.admin-content .alert-message { max-width: 420px; }
-.admin-content .expiry-date { color: var(--pulse-warning); font-weight: 700; }

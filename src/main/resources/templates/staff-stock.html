@@ -7,7 +7,7 @@
 </head>
 <body>
 <div class="app-shell staff-content">
-    <header class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="Toggle navigation" title="Toggle navigation">☰</button><a class="brand" th:href="@{/staff/dashboard}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Pharmacy Inventory Operations</div></div></a></div><div class="topbar-right"><span class="system-status"><span class="status-dot"></span>Inventory system online</span><span class="user-chip">Pharmacy Staff</span></div></header>
+    <header class="topbar"><div class="topbar-left"><button class="sidebar-toggle" type="button" aria-label="Toggle navigation" title="Toggle navigation">☰</button><a class="brand" th:href="@{/}"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Pharmacy Inventory Operations</div></div></a></div><div class="topbar-right"><span class="system-status"><span class="status-dot"></span>Inventory system online</span><span class="user-chip">Pharmacy Staff</span></div></header>
     <div class="dashboard-layout">
         <aside class="sidebar">
 <div class="sidebar-label">WORKSPACE</div>
@@ -32,19 +32,44 @@
 
             <section class="card" style="margin-top:18px;" th:if="${inventory.thresholdAlerts != null and inventory.thresholdAlerts.size() > 0}"><div class="card-header"><div><h2>Threshold alerts</h2><p>Review these medicines before updating the inventory.</p></div></div><div class="table-wrap"><table><thead><tr><th>Medicine</th><th>Available</th><th>Threshold</th><th>Status</th></tr></thead><tbody><tr th:each="row : ${inventory.thresholdAlerts}"><td class="result-name" th:text="${row.medicine.name}">Medicine</td><td th:text="${row.stock.quantity} + ' units'">0 units</td><td th:text="${row.medicine.threshold} + ' units'">0 units</td><td><span th:class="${row.status.name() == 'RED' ? 'badge badge-danger' : 'badge badge-warning'}" th:text="${row.status.name() == 'RED' ? 'CRITICAL' : 'LOW STOCK'}">LOW STOCK</span></td></tr></tbody></table></div></section>
 
-            <section class="card" style="margin-top:18px;"><div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:16px;"><div><h2>Inventory</h2><p>Update one medicine at a time. Quantities cannot be negative.</p></div><form method="post" th:action="@{/staff/sync}" style="margin:0;"><button type="submit" class="btn btn-primary" style="white-space:nowrap;">↻ Sync Local Stock</button></form></div>
+            <section class="card" style="margin-top:18px;"><div class="card-header" style="display:flex;align-items:center;justify-content:space-between;gap:16px;"><div><h2>Inventory</h2><p>Search your hospital's medicines and update quantities directly.</p></div><form method="post" th:action="@{/staff/sync}" style="margin:0;"><button type="submit" class="btn btn-primary" style="white-space:nowrap;">↻ Sync Local Stock</button></form></div>
+                <div class="card-body" style="padding-bottom:0;">
+                    <label for="inventorySearch" class="eyebrow" style="display:block;margin-bottom:8px;">SEARCH INVENTORY</label>
+                    <input id="inventorySearch" type="search" class="form-control" placeholder="Search medicine name or category..." autocomplete="off" aria-label="Search your inventory">
+                </div>
                 <div class="table-wrap" th:if="${inventory.inventory != null and inventory.inventory.size() > 0}"><table class="stock-table"><thead><tr><th>Medicine</th><th>Category</th><th>Current</th><th>Threshold</th><th>Status</th><th>Update quantity</th></tr></thead><tbody>
-                    <tr th:each="row : ${inventory.inventory}">
+                    <tr th:each="row : ${inventory.inventory}" class="inventory-row" th:attr="data-medicine-name=${row.medicine.name},data-medicine-category=${row.medicine.cat}">
                         <td class="result-name" th:text="${row.medicine.name}">Medicine</td><td th:text="${row.medicine.cat}">Category</td><td class="stock-quantity" th:text="${row.stock.quantity} + ' units'">0 units</td><td th:text="${row.medicine.threshold} + ' units'">0 units</td>
                         <td><span th:class="${row.status.name() == 'GREEN' ? 'badge badge-success' : (row.status.name() == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${row.status.name() == 'GREEN' ? 'AVAILABLE' : (row.status.name() == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span></td>
                         <td><form th:action="@{/staff/stock/update}" method="post" class="update-form"><input type="hidden" name="medicineId" th:value="${row.medicine.medId}"><input type="number" name="quantity" th:id="'quantity-' + ${row.medicine.medId}" th:value="${row.stock.quantity}" min="0" required aria-label="New quantity"><button type="submit" class="btn btn-primary btn-small">Save</button></form></td>
                     </tr>
                 </tbody></table></div>
+                <div id="inventorySearchEmpty" class="empty-state" style="display:none;"><strong>No matching medicines</strong>Try a different medicine name or category.</div>
                 <div class="empty-state" th:if="${inventory.inventory == null or inventory.inventory.size() == 0}"><strong>No medicines configured</strong>There are no medicine records available for this hospital.</div>
             </section>
         </div></main>
     </div>
 </div>
+<script>
+(() => {
+    const input = document.getElementById('inventorySearch');
+    const rows = [...document.querySelectorAll('.inventory-row')];
+    const empty = document.getElementById('inventorySearchEmpty');
+    if (!input || !rows.length) return;
+    const filter = () => {
+        const term = input.value.trim().toLowerCase();
+        let visible = 0;
+        rows.forEach(row => {
+            const haystack = ((row.dataset.medicineName || '') + ' ' + (row.dataset.medicineCategory || '')).toLowerCase();
+            const match = !term || haystack.includes(term);
+            row.hidden = !match;
+            if (match) visible++;
+        });
+        if (empty) empty.style.display = visible ? 'none' : '';
+    };
+    input.addEventListener('input', filter);
+})();
+</script>
 <script th:src="@{/js/pulse-routing.js}"></script>
 <script th:src="@{/js/pulse-shell.js}"></script></body>
 </html>

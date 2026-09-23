@@ -342,6 +342,9 @@
 .pulse-map-preview { height:100%; }
 .map-view-all { position:absolute; z-index:900; left:50%; bottom:0; transform:translateX(-50%); display:flex; align-items:center; justify-content:center; gap:18px; min-width:190px; height:58px; padding:0 22px; background:rgba(255,255,255,.97); border:1px solid var(--pulse-border); border-bottom:0; border-radius:3px 3px 0 0; box-shadow:0 -16px 32px rgba(225,232,236,.95); color:var(--pulse-navy-dark); font-size:12px; font-weight:800; }
 .map-view-all span:last-child { color:var(--pulse-teal); font-size:17px; }
+.map-preview-wrap .map-view-all { left:0; right:0; transform:none; width:100%; min-width:0; border-right:0; border-radius:0; opacity:.94; }
+.map-preview-wrap .map-view-all:hover { opacity:1; }
+.map-view-all.medicine-map-full-link { left:0; right:0; transform:none; width:100%; min-width:0; border-right:0; border-radius:0; }
 
 /* Crisp centered catalog overlay, intentionally covering the second row. */
 .catalog-view-all { left:0; right:0; bottom:0; transform:none; min-width:0; width:100%; justify-content:center; border-right:0; border-radius:0; opacity:.94; }\n.catalog-view-all:hover { opacity:1; }
@@ -413,3 +416,14 @@
 
 .map-register-link { display:block; padding:12px 14px; background:#123a57; color:#fff; border-radius:3px; font-size:10px; font-weight:800; text-align:center; box-shadow:0 8px 18px rgba(18,58,87,.12); }
 .map-register-link:hover { color:#fff; background:#0f3149; }
+
+/* Medicine page map */
+.medicine-detail-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+.medicine-map-section { margin-top:34px; }
+.medicine-map-wrap {
+    position:relative; height:430px; overflow:hidden; background:#fff;
+    border:1px solid var(--pulse-border); border-radius:4px;
+    box-shadow:0 14px 32px rgba(15,39,58,.055);
+}
+.pulse-map-medicine { height:100%; }
+.medicine-map-full-link { left:0; right:0; bottom:0; transform:none; width:100%; min-width:0; border-right:0; border-radius:0; }

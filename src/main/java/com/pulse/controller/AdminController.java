@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
 @RequestMapping("/admin")
@@ -26,6 +27,7 @@ public class AdminController {
         this.ledgerService = ledgerService;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/staff")
     public String staff(HttpSession session, Model model) {
         if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
@@ -35,6 +37,7 @@ public class AdminController {
         return "admin_staff";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/staff/create")
     public String createStaff(HttpSession session,
                               @RequestParam String name,
@@ -59,6 +62,7 @@ public class AdminController {
         return "redirect:/admin/staff";
     }
 
+    @PreAuthorize("@pulseScope.canManageStaff(#id)")
     @PostMapping("/staff/{id}/authorization")
     public String setStaffAuthorization(@PathVariable Long id,
                                          @RequestParam boolean authorize,
@@ -78,6 +82,7 @@ public class AdminController {
         return "redirect:/admin/staff";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/audit")
     public String audit(HttpSession session, Model model) {
         if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
@@ -89,6 +94,7 @@ public class AdminController {
         return "admin-audit";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
         if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";

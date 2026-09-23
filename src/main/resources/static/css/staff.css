@@ -5,3 +5,30 @@
 .staff-content .hospital-banner { background: #eef5f8; border: 1px solid #d7e5eb; border-radius: 8px; padding: 12px 14px; color: #476174; }
 .staff-content .sync-explanation { display: grid; gap: 9px; padding: 14px 0 2px; color: #476174; font-size: 14px; }
 .staff-content .sync-explanation .badge { margin-right: 8px; }
+
+/* Staff medicine finder */
+.staff-medicine-finder { margin-top:18px; }
+.staff-medicine-search {
+    display:flex; align-items:center; gap:10px; min-height:48px;
+    border:1px solid var(--pulse-border); background:#fff; padding:0 14px;
+}
+.staff-search-icon { color:var(--pulse-muted); font-size:20px; line-height:1; }
+.staff-medicine-search input {
+    width:100%; border:0; outline:0; background:transparent;
+    color:var(--pulse-navy-dark); font:inherit; min-height:44px;
+}
+.staff-medicine-results { display:grid; gap:8px; margin-top:12px; }
+.staff-medicine-result {
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:13px 14px; border:1px solid var(--pulse-border); background:#fff;
+}
+.staff-medicine-result[hidden] { display:none; }
+.staff-medicine-result-main { display:flex; flex-direction:column; gap:3px; min-width:0; text-decoration:none; }
+.staff-medicine-result-main strong { color:var(--pulse-navy-dark); }
+.staff-medicine-result-main span { color:var(--pulse-muted); font-size:12px; }
+.staff-medicine-result-actions { display:flex; gap:7px; flex-shrink:0; }
+@media (max-width:700px) {
+    .staff-medicine-result { align-items:flex-start; flex-direction:column; }
+    .staff-medicine-result-actions { width:100%; }
+    .staff-medicine-result-actions .btn { flex:1; text-align:center; }
+}

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -211,6 +212,7 @@ public class StaffController {
         return "staff-transfers";
     }
 
+    @PreAuthorize("@pulseScope.canDispatchTransfer(#id)")
     @PostMapping("/staff/transfers/{id}/dispatch")
     public String dispatchTransfer(@org.springframework.web.bind.annotation.PathVariable Long id,
                                    HttpSession session,
@@ -228,6 +230,7 @@ public class StaffController {
         return "redirect:/staff/transfers";
     }
 
+    @PreAuthorize("@pulseScope.canReceiveTransfer(#id)")
     @PostMapping("/staff/transfers/{id}/receive")
     public String receiveTransfer(@org.springframework.web.bind.annotation.PathVariable Long id,
                                   HttpSession session,

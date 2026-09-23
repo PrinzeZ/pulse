@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @Controller
 public class OperationsController {
@@ -103,6 +104,7 @@ public class OperationsController {
         return "operations/requests";
     }
 
+    @PreAuthorize("@pulseScope.canAccessRequest(#id)")
     @PostMapping("/district-admin/requests/{id}/action")
     public String districtAction(@PathVariable Long id,
                                  @RequestParam String action,
@@ -136,6 +138,7 @@ public class OperationsController {
         return "operations/requests";
     }
 
+    @PreAuthorize("@pulseScope.canAccessRequest(#id)")
     @PostMapping("/state-admin/requests/{id}/action")
     public String stateAction(@PathVariable Long id,
                               @RequestParam String action,
@@ -173,6 +176,7 @@ public class OperationsController {
         return "operations/transfers";
     }
 
+    @PreAuthorize("@pulseScope.canAccessRequest(#requestId) && @pulseScope.canAccessHospital(#sourceHospitalId)")
     @PostMapping("/district-admin/transfers/create")
     public String createDistrictTransfer(HttpSession session,
                                          @RequestParam Long requestId,
@@ -221,6 +225,7 @@ public class OperationsController {
         return "operations/transfers";
     }
 
+    @PreAuthorize("@pulseScope.canAccessRequest(#requestId) && @pulseScope.canAccessHospital(#sourceHospitalId)")
     @PostMapping("/state-admin/transfers/create")
     public String createStateTransfer(HttpSession session,
                                       @RequestParam Long requestId,

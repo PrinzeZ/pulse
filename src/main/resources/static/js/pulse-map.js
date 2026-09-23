@@ -7,6 +7,7 @@
   let userLocation = null;
   let routeLayer = null;
   let userMarker = null;
+  const pageMedicineId = new URLSearchParams(window.location.search).get('medicineId');
 
   function markerIcon(item) {
     const color = COLORS[item.stockStatus] || COLORS.UNKNOWN;
@@ -80,7 +81,7 @@
     map.setView(KERALA, mode === 'full' ? 7.2 : 7.4);
     maps[mode] = map;
     map.markerLayer = L.layerGroup().addTo(map);
-    if (mode === 'preview') {
+    if (mode === 'preview' || mode === 'medicine') {
       map.scrollWheelZoom.disable();
       map.dragging.disable();
       map.doubleClickZoom.disable();
@@ -93,12 +94,22 @@
   async function init() {
     const preview = document.getElementById('pulse-map-preview');
     const full = document.getElementById('pulse-map-full');
-    if (!preview && !full) return;
+    const medicine = document.getElementById('pulse-map-medicine');
+    if (!preview && !full && !medicine) return;
     if (!window.L) return;
     if (preview) await createMap(preview, 'preview');
     if (full) await createMap(full, 'full');
-    try { await loadData(); } catch (e) { console.warn(e); }
-    if (full) await setupFullControls();
+    if (medicine) {
+      await createMap(medicine, 'medicine');
+      const id = medicine.dataset.medicineId || '';
+      try { await loadData(id); } catch (e) { console.warn(e); }
+      return;
+    }
+    if (full) {
+      await setupFullControls();
+    } else {
+      try { await loadData(); } catch (e) { console.warn(e); }
+    }
   }
 
   async function setupFullControls() {
@@ -114,6 +125,20 @@
         const option = document.createElement('option'); option.value = m.name; option.dataset.id = m.medicineId; list.appendChild(option);
       });
       input._pulseMedicines = meds;
+      if (pageMedicineId) {
+        const medicine = meds.find(m => String(m.medicineId) === String(pageMedicineId));
+        if (medicine) {
+          input.value = medicine.name;
+          status.textContent = `Loading ${medicine.name} availability…`;
+          try {
+            const payload = await loadData(medicine.medicineId);
+            status.textContent = `${medicine.name}: ${payload.hospitals.filter(h => h.registered && !h.closed && h.hasMedicineStock && h.quantity > 0).length} connected hospitals reporting stock.`;
+            await locateUser();
+          } catch (e) {
+            status.textContent = 'Could not load medicine availability.';
+          }
+        }
+      }
     } catch (e) { status.textContent = 'Medicine list could not be loaded.'; }
 
     searchButton.addEventListener('click', () => searchMedicine());
