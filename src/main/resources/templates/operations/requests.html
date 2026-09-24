@@ -66,29 +66,15 @@
 
     <section th:if="${tier == 'HOSPITAL'}" class="card section-gap">
         <div class="card-header">
-            <div><h2>Create medicine request</h2><p>Requests are saved locally first and submitted to the district when cloud connectivity is available.</p></div>
-            <div class="request-header-actions">
-                <span class="badge badge-info">LOCAL-FIRST</span>
-                <form method="post" th:action="@{/admin/requests/sync}">
-                    <button class="btn" type="submit">↻ Sync requests</button>
-                </form>
-            </div>
+            <div><h2>Create medicine request</h2><p>Requests are saved locally first and submitted to the district when cloud connectivity is available. The selected medicine audit evidence is attached automatically.</p></div>
+            <div class="request-header-actions"><span class="badge badge-info">LOCAL-FIRST</span><form method="post" th:action="@{/admin/requests/sync}"><button class="btn" type="submit">↻ Sync requests</button></form></div>
         </div>
         <div class="card-body">
             <form class="request-form" method="post" th:action="@{/admin/requests/create}">
                 <div class="request-form-grid">
-                    <label>Medicine
-                        <select name="medicineId" required>
-                            <option value="">Select medicine</option>
-                            <option th:each="medicine : ${medicines}" th:value="${medicine.medId}" th:text="${medicine.name + ' · threshold ' + medicine.threshold}">Medicine</option>
-                        </select>
-                    </label>
-                    <label>Quantity
-                        <input type="number" name="quantity" min="1" required placeholder="e.g. 100">
-                    </label>
-                    <label class="request-note">Reason / note
-                        <input type="text" name="note" maxlength="500" placeholder="Optional context for the district">
-                    </label>
+                    <label>Medicine<select name="medicineId" required><option value="">Select medicine</option><option th:each="medicine : ${medicines}" th:value="${medicine.medId}" th:text="${medicine.name + ' · threshold ' + medicine.threshold}">Medicine</option></select></label>
+                    <label>Quantity<input type="number" name="quantity" min="1" required placeholder="e.g. 100"></label>
+                    <label class="request-note">Reason / note<input type="text" name="note" maxlength="500" placeholder="Optional context for the district"></label>
                     <div class="request-submit"><button class="btn btn-primary" type="submit">↗ Submit request</button></div>
                 </div>
             </form>
@@ -96,89 +82,75 @@
     </section>
 
     <section class="card section-gap">
-        <div class="card-header">
-            <div><h2 th:text="${tier == 'HOSPITAL' ? 'My requests' : (tier == 'DISTRICT' ? 'Hospital requests' : 'Escalated requests')}">Requests</h2>
-                <p th:text="${tier == 'HOSPITAL' ? 'Track submission, review and fulfillment status.' : (tier == 'DISTRICT' ? 'Review requests scoped to your district.' : 'Review requests explicitly escalated by districts.')}">Request visibility.</p>
-            </div>
-            <span class="badge badge-info" th:text="${#lists.size(requests) + ' REQUEST(S)'}">0 REQUEST(S)</span>
+        <div class="card-header"><div><h2 th:text="${tier == 'HOSPITAL' ? 'Pending requests' : (tier == 'DISTRICT' ? 'Pending hospital requests' : 'Pending state escalations')}">Pending requests</h2><p>Only items still awaiting a decision are shown here.</p></div><span class="badge badge-info" th:text="${#lists.size(pendingRequests) + ' PENDING'}">0 PENDING</span></div>
+        <div class="request-scroll pending-scroll" th:if="${!#lists.isEmpty(pendingRequests)}">
+            <article class="request-card" th:each="request : ${pendingRequests}">
+                <div class="request-card-main">
+                    <div class="request-card-title"><strong th:text="${request.medicineName}">Medicine</strong><span class="badge request-status" th:classappend="${request.status}" th:text="${request.status}">PENDING</span></div>
+                    <div class="request-card-meta"><span th:text="${request.hospitalName}">Hospital</span><span th:text="${request.requestedQuantity + ' requested · ' + request.fulfilledQuantity + ' fulfilled'}">0 requested</span><span th:text="${request.createdAt != null ? #temporals.format(request.createdAt,'dd MMM yyyy HH:mm') : '—'}">Date</span></div>
+                    <div class="request-card-note" th:if="${request.note != null}" th:text="${request.note}">Note</div>
+                </div>
+                <div class="request-card-actions">
+                    <div th:if="${tier == 'DISTRICT' or tier == 'STATE'}" class="request-evidence"><a class="btn btn-secondary" th:href="${tier == 'DISTRICT' ? '/district-admin/requests/' + request.id + '/audit' : '/state-admin/requests/' + request.id + '/audit'}">📎 View medicine log</a><span>Automatically attached · selected medicine only</span></div>
+                    <div th:if="${tier == 'HOSPITAL'}" class="request-note-cell" th:text="${request.note != null ? request.note : 'Awaiting district review.'}">Awaiting district review.</div>
+                    <form th:if="${tier == 'DISTRICT'}" class="request-action-form" method="post" th:action="@{'/district-admin/requests/' + ${request.id} + '/action'}"><select name="action"><option value="REVIEW">Review</option><option value="APPROVE">Approve</option><option value="PARTIAL">Partial fulfill</option><option value="FULFILL">Fulfill</option><option value="REJECT">Reject</option><option value="ESCALATE">Escalate to state</option></select><input type="number" name="fulfilledQuantity" min="0" th:max="${request.requestedQuantity}" placeholder="Qty"><input type="text" name="note" maxlength="500" placeholder="Note"><button class="btn btn-primary" type="submit">Apply</button></form>
+                    <form th:if="${tier == 'STATE'}" class="request-action-form" method="post" th:action="@{'/state-admin/requests/' + ${request.id} + '/action'}"><select name="action"><option value="APPROVE">Approve</option><option value="PARTIAL">Partial fulfill</option><option value="FULFILL">Fulfill</option><option value="REJECT">Reject</option></select><input type="number" name="fulfilledQuantity" min="0" th:max="${request.requestedQuantity}" placeholder="Qty"><input type="text" name="note" maxlength="500" placeholder="Note"><button class="btn btn-primary" type="submit">Apply</button></form>
+                </div>
+            </article>
         </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(pendingRequests)}"><strong>No pending requests</strong><span>New requests awaiting this tier will appear here.</span></div>
+    </section>
 
-        <div class="table-wrap" th:if="${!#lists.isEmpty(requests)}">
-            <table class="inventory-table request-table">
-                <thead>
-                <tr>
-                    <th>Hospital</th><th>Medicine</th><th>Requested</th><th>Fulfilled</th><th>Status</th><th>Submitted</th><th>Action</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="request : ${requests}">
-                    <td><strong th:text="${request.hospitalName}">Hospital</strong></td>
-                    <td th:text="${request.medicineName}">Medicine</td>
-                    <td th:text="${request.requestedQuantity}">0</td>
-                    <td th:text="${request.fulfilledQuantity}">0</td>
-                    <td><span class="badge request-status" th:classappend="${request.status}" th:text="${request.status}">PENDING</span>
-                        <div th:if="${request.localPending}" class="small muted">Pending cloud sync</div>
-                    </td>
-                    <td class="muted" th:text="${request.createdAt != null ? #temporals.format(request.createdAt,'dd MMM yyyy HH:mm') : '—'}">Date</td>
-                    <td>
-                        <div th:if="${tier == 'DISTRICT' or tier == 'STATE'}" class="request-note-cell">
-                            <a class="btn btn-secondary" th:href="${tier == 'DISTRICT' ? '/district-admin/requests/' + request.id + '/audit' : '/state-admin/requests/' + request.id + '/audit'}">📎 View medicine log</a>
-                            <span class="small muted">Automatically attached · selected medicine only</span>
-                        </div>
-                        <div th:if="${tier == 'HOSPITAL'}" class="request-note-cell" th:text="${request.note != null ? request.note : '—'}">Note</div>
-                        <a th:if="${tier == 'HOSPITAL'}" class="btn" th:href="@{'/admin/audit/medicine/' + ${request.medicineId}}">View resupply audit</a>
-
-                        <form th:if="${tier == 'DISTRICT' and (request.status == 'PENDING_DISTRICT' or request.status == 'UNDER_REVIEW' or request.status == 'APPROVED' or request.status == 'PARTIALLY_FULFILLED')}"
-                              class="request-action-form" method="post" th:action="@{'/district-admin/requests/' + ${request.id} + '/action'}">
-                            <select name="action">
-                                <option value="REVIEW">Review</option>
-                                <option value="APPROVE">Approve</option>
-                                <option value="PARTIAL">Partial fulfill</option>
-                                <option value="FULFILL">Fulfill</option>
-                                <option value="REJECT">Reject</option>
-                                <option value="ESCALATE">Escalate to state</option>
-                            </select>
-                            <input type="number" name="fulfilledQuantity" min="0" th:max="${request.requestedQuantity}" placeholder="Qty">
-                            <input type="text" name="note" maxlength="500" placeholder="Note">
-                            <button class="btn btn-primary" type="submit">Apply</button>
-                        </form>
-
-                        <form th:if="${tier == 'STATE' and (request.status == 'ESCALATED_TO_STATE' or request.status == 'STATE_APPROVED' or request.status == 'STATE_PARTIALLY_FULFILLED')}"
-                              class="request-action-form" method="post" th:action="@{'/state-admin/requests/' + ${request.id} + '/action'}">
-                            <select name="action">
-                                <option value="APPROVE">Approve</option>
-                                <option value="PARTIAL">Partial fulfill</option>
-                                <option value="FULFILL">Fulfill</option>
-                                <option value="REJECT">Reject</option>
-                            </select>
-                            <input type="number" name="fulfilledQuantity" min="0" th:max="${request.requestedQuantity}" placeholder="Qty">
-                            <input type="text" name="note" maxlength="500" placeholder="Note">
-                            <button class="btn btn-primary" type="submit">Apply</button>
-                        </form>
-
-                        <span th:if="${tier != 'HOSPITAL' and
-                              !((tier == 'DISTRICT' and (request.status == 'PENDING_DISTRICT' or request.status == 'UNDER_REVIEW' or request.status == 'APPROVED' or request.status == 'PARTIALLY_FULFILLED')) or
-                                (tier == 'STATE' and (request.status == 'ESCALATED_TO_STATE' or request.status == 'STATE_APPROVED' or request.status == 'STATE_PARTIALLY_FULFILLED')))}"
-                              class="muted small">No action available</span>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+    <section class="card section-gap">
+        <div class="card-header"><div><h2 th:text="${tier == 'HOSPITAL' ? 'Request history' : 'Approved, completed & escalated'}">Request history</h2><p>Older decisions remain available without making the whole page grow indefinitely.</p></div><span class="badge badge-info" th:text="${#lists.size(historyRequests) + ' RECORD(S)'}">0 RECORDS</span></div>
+        <div class="request-scroll history-scroll" th:if="${!#lists.isEmpty(historyRequests)}">
+            <article class="request-card" th:each="request : ${historyRequests}">
+                <div class="request-card-main">
+                    <div class="request-card-title"><strong th:text="${request.medicineName}">Medicine</strong><span class="badge request-status" th:classappend="${request.status}" th:text="${request.status}">APPROVED</span></div>
+                    <div class="request-card-meta"><span th:text="${request.hospitalName}">Hospital</span><span th:text="${request.requestedQuantity + ' requested · ' + request.fulfilledQuantity + ' fulfilled'}">0 requested</span><span th:text="${request.createdAt != null ? #temporals.format(request.createdAt,'dd MMM yyyy HH:mm') : '—'}">Date</span></div>
+                    <div class="request-card-note" th:if="${request.note != null}" th:text="${request.note}">Note</div>
+                </div>
+                <div class="request-card-actions">
+                    <div th:if="${tier == 'DISTRICT' or tier == 'STATE'}" class="request-evidence"><a class="btn btn-secondary" th:href="${tier == 'DISTRICT' ? '/district-admin/requests/' + request.id + '/audit' : '/state-admin/requests/' + request.id + '/audit'}">📎 View medicine log</a><span>Automatically attached · selected medicine only</span></div>
+                    <a th:if="${tier == 'HOSPITAL'}" class="btn btn-secondary" th:href="@{'/admin/audit/medicine/' + ${request.medicineId}}">View resupply audit</a>
+                    <div th:if="${tier != 'HOSPITAL'}" class="request-history-readonly">
+                        <span class="history-readonly-label">Decision recorded in the approval ledger</span>
+                    </div>
+                    <div th:if="${tier == 'HOSPITAL'}" class="request-history-readonly">
+                        <span class="history-readonly-label">Read-only request history</span>
+                    </div>
+                </div>
+            </article>
         </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(historyRequests)}"><strong>No history yet</strong><span>Approved, rejected, fulfilled and escalated requests will appear here.</span></div>
+    </section>
 
-        <div class="empty-state" th:if="${#lists.isEmpty(requests)}">
-            <strong>No active requests</strong>
-            <span th:text="${tier == 'HOSPITAL' ? 'Create a request above when your hospital needs additional medicine.' : (tier == 'DISTRICT' ? 'Hospital requests will appear here after they are submitted.' : 'District escalations will appear here when state intervention is required.')}">No requests.</span>
+    <section class="card section-gap">
+        <div class="card-header"><div><h2 th:text="${tier == 'HOSPITAL' ? 'Request activity ledger' : 'Approval & decision ledger'}">Approval & decision ledger</h2><p th:text="${tier == 'HOSPITAL' ? 'Immutable request events for this hospital.' : 'Immutable record of who acted, when, on which medicine, for which hospital and what quantity was approved or rejected.'}">Decision history.</p></div><span class="badge badge-info" th:text="${#lists.size(activityLogs) + ' LOG EVENT(S)'}">0 LOG EVENTS</span></div>
+        <div class="request-log-scroll" th:if="${!#lists.isEmpty(activityLogs)}">
+            <table class="inventory-table request-log-table"><thead><tr><th>Date</th><th>Action</th><th>Medicine</th><th>Hospital</th><th>Requested</th><th>Fulfilled</th><th>Result</th><th>Actor</th><th>Note</th></tr></thead><tbody>
+                <tr th:each="log : ${activityLogs}"><td th:text="${#temporals.format(log.occurredAt,'dd MMM yyyy HH:mm:ss')}">Date</td><td><span class="badge request-action-badge" th:text="${log.action}">APPROVE</span></td><td th:text="${log.medicineName}">Medicine</td><td th:text="${log.hospitalName}">Hospital</td><td th:text="${log.requestedQuantity}">0</td><td th:text="${log.fulfilledQuantity}">0</td><td th:text="${log.toStatus != null ? log.toStatus : '—'}">APPROVED</td><td><strong th:text="${log.actorUsername}">admin</strong><span class="small muted" th:text="${' · ' + log.actorRole}"> · DISTRICT_ADMIN</span></td><td class="request-log-note" th:text="${log.note != null ? log.note : '—'}">—</td></tr>
+            </tbody></table>
         </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(activityLogs)}"><strong>No request decisions recorded yet</strong><span>New request creation and every review, approval, partial approval, rejection, fulfillment and escalation will be recorded here.</span></div>
+    </section>
+
+    <section class="card section-gap">
+        <div class="card-header"><div><h2>Archived decision logs</h2><p>After the configured cold window, older approval history is sealed as compressed encrypted log files. Selecting a period explicitly unlocks it server-side for this authorized administrator scope; the encrypted archive itself is never exposed to the browser.</p></div><span class="badge badge-info" th:text="${decisionArchiveColdDays + ' days → encrypted'}">90 days → encrypted</span></div>
+        <div class="archive-policy-strip"><span>Cold archive after <strong th:text="${decisionArchiveColdDays + ' days'}">90 days</strong></span><span>Retention <strong th:text="${decisionArchiveRetentionDays + ' days'}">365 days</strong></span><span>Encrypted + compressed</span><span>Admin view only</span></div>
+        <div class="request-scroll decision-archive-period-scroll" th:if="${!#lists.isEmpty(decisionArchivePeriods)}">
+            <a class="decision-archive-period" th:each="period : ${decisionArchivePeriods}"
+               th:href="${tier == 'HOSPITAL' ? '/admin/requests/archive?start=' + period.periodStart + '&end=' + period.periodEnd : (tier == 'DISTRICT' ? '/district-admin/requests/archive?start=' + period.periodStart + '&end=' + period.periodEnd : '/state-admin/requests/archive?start=' + period.periodStart + '&end=' + period.periodEnd)}">
+                <strong th:text="${#temporals.format(period.periodStart,'dd MMM yyyy') + ' — ' + #temporals.format(period.periodEnd,'dd MMM yyyy')}">01 Sep 2026 — 30 Sep 2026</strong>
+                <span>Open encrypted log</span>
+            </a>
+        </div>
+        <div class="empty-state" th:if="${#lists.isEmpty(decisionArchivePeriods)}"><strong>No archived decision periods yet</strong><span>The monthly archive is created automatically after each month closes.</span></div>
     </section>
 
     <section class="card section-gap">
         <div class="card-header"><div><h2>Workflow</h2><p>Every transition is explicit and scoped to the responsible tier.</p></div></div>
-        <div class="workflow-strip">
-            <div><strong>Hospital</strong><span>Create request</span></div><div>→</div>
-            <div><strong>District</strong><span>Review · approve · fulfill · escalate</span></div><div>→</div>
-            <div><strong>State</strong><span>Acts on escalations</span></div>
-        </div>
+        <div class="workflow-strip"><div><strong>Hospital</strong><span>Create request</span></div><div>→</div><div><strong>District</strong><span>Review · approve · fulfill · escalate</span></div><div>→</div><div><strong>State</strong><span>Acts on escalations</span></div></div>
     </section>
 </div></main></div></div>
 <script th:src="@{/js/pulse-routing.js}"></script>

@@ -138,7 +138,8 @@ public class AuditArchiveService {
         }
 
         return merged.values().stream()
-                .sorted(Comparator.comparing(AuditRow::occurredAt).thenComparing(AuditRow::eventId))
+                .sorted(Comparator.comparing(AuditRow::occurredAt).reversed()
+                        .thenComparing(AuditRow::eventId, Comparator.reverseOrder()))
                 .toList();
     }
 
@@ -250,7 +251,8 @@ public class AuditArchiveService {
         if (unlockArchived) {
             for (AuditRow row : archivedHistory(hospitalId, start, end)) merged.putIfAbsent(row.eventId(), row);
         }
-        return merged.values().stream().sorted(Comparator.comparing(AuditRow::occurredAt)).toList();
+        return merged.values().stream().sorted(Comparator.comparing(AuditRow::occurredAt).reversed()
+                .thenComparing(AuditRow::eventId, Comparator.reverseOrder())).toList();
     }
 
     public List<AuditRow> archivedHistory(Long hospitalId, LocalDate start, LocalDate end) {
@@ -260,7 +262,8 @@ public class AuditArchiveService {
             try { all.addAll(readArchive(summary, hospitalId)); } catch (RuntimeException ignored) { }
         }
         return all.stream().filter(r -> !r.occurredAt().toLocalDate().isBefore(start) && !r.occurredAt().toLocalDate().isAfter(end))
-                .sorted(Comparator.comparing(AuditRow::occurredAt)).toList();
+                .sorted(Comparator.comparing(AuditRow::occurredAt).reversed()
+                        .thenComparing(AuditRow::eventId, Comparator.reverseOrder())).toList();
     }
 
     public long requestArchiveAccess(Long hospitalId, String username, LocalDate start, LocalDate end, String reason) {
@@ -453,6 +456,53 @@ public class AuditArchiveService {
         } catch (Exception ex) { throw new IllegalStateException("Unable to encrypt medicine audit evidence.", ex); }
     }
 
+    /** Shared archive crypto for other P.U.L.S.E audit domains. The bytes remain server-side. */
+    byte[] encryptArchiveBytes(byte[] plain) {
+        try {
+            return encryptCompressedBytes(plain, "PULSE-AUDIT-V1");
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to encrypt audit archive.", ex);
+        }
+    }
+
+    byte[] decryptArchiveBytes(byte[] payload) {
+        try {
+            return decryptCompressedBytes(payload, "PULSE-AUDIT-V1");
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to decrypt audit archive.", ex);
+        }
+    }
+
+    private byte[] encryptCompressedBytes(byte[] plain, String magicText) throws Exception {
+        ByteArrayOutputStream compressed = new ByteArrayOutputStream();
+        try (java.util.zip.GZIPOutputStream gzip = new java.util.zip.GZIPOutputStream(compressed)) {
+            gzip.write(plain);
+        }
+        byte[] iv = new byte[12]; random.nextBytes(iv);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey(), new GCMParameterSpec(GCM_TAG_BITS, iv));
+        byte[] ciphertext = cipher.doFinal(compressed.toByteArray());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        out.write(magicText.getBytes(StandardCharsets.US_ASCII)); out.write(0); out.write(iv); out.write(ciphertext);
+        return out.toByteArray();
+    }
+
+    private byte[] decryptCompressedBytes(byte[] payload, String magicText) throws Exception {
+        byte[] magic = magicText.getBytes(StandardCharsets.US_ASCII);
+        if (payload == null || payload.length < magic.length + 1 + 12 || !Arrays.equals(Arrays.copyOf(payload, magic.length), magic)) {
+            throw new IllegalArgumentException("Invalid P.U.L.S.E archive.");
+        }
+        int offset = magic.length + 1;
+        byte[] iv = Arrays.copyOfRange(payload, offset, offset + 12);
+        byte[] ciphertext = Arrays.copyOfRange(payload, offset + 12, payload.length);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey(), new GCMParameterSpec(GCM_TAG_BITS, iv));
+        byte[] compressed = cipher.doFinal(ciphertext);
+        try (java.util.zip.GZIPInputStream gzip = new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(compressed))) {
+            return gzip.readAllBytes();
+        }
+    }
+
     private byte[] decryptFile(byte[] payload) {
         try {
             byte[] magic = "PULSE-AUDIT-FILE-V1".getBytes(StandardCharsets.US_ASCII);
@@ -563,9 +613,30 @@ public class AuditArchiveService {
     }
 
     private void purgeOldHotRows(LocalDate cutoff) {
+        // Retention must be fail-safe: only purge a hot row after its month has
+        // an encrypted archive. A missed scheduler/cloud outage must not erase
+        // the only readable copy.
         LocalStockMovementRepository local = localLedgerProvider.getIfAvailable();
-        if (local != null) { local.deleteByOccurredAtBeforeAndPendingSyncFalse(cutoff.atStartOfDay()); }
-        try { cloudLedger.deleteByOccurredAtBefore(cutoff.atStartOfDay()); } catch (RuntimeException ignored) { }
+        if (local != null) {
+            try {
+                List<LocalStockMovement> candidates = local.findAll().stream()
+                        .filter(m -> !m.isPendingSync() && m.getOccurredAt() != null && m.getOccurredAt().isBefore(cutoff.atStartOfDay()))
+                        .toList();
+                List<Long> safeIds = candidates.stream()
+                        .filter(m -> archiveExists(m.getHospitalId(), "MONTHLY", YearMonth.from(m.getOccurredAt().toLocalDate()).atDay(1)))
+                        .map(LocalStockMovement::getLocalMovementId).toList();
+                if (!safeIds.isEmpty()) local.deleteAllByIdInBatch(safeIds);
+            } catch (RuntimeException ignored) { }
+        }
+        try {
+            List<StockMovement> candidates = cloudLedger.findAll().stream()
+                    .filter(m -> m.getOccurredAt() != null && m.getOccurredAt().isBefore(cutoff.atStartOfDay()))
+                    .toList();
+            List<Long> safeIds = candidates.stream()
+                    .filter(m -> archiveExists(m.getHospitalId(), "MONTHLY", YearMonth.from(m.getOccurredAt().toLocalDate()).atDay(1)))
+                    .map(StockMovement::getMovementId).toList();
+            if (!safeIds.isEmpty()) cloudLedger.deleteAllByIdInBatch(safeIds);
+        } catch (RuntimeException ignored) { }
     }
 
     private void purgeExpiredArchives(LocalDate cutoff) {

@@ -63,7 +63,7 @@
         <div class="card-header"><div><h2>Create transfer</h2><p>Choose an approved request and a source hospital. The destination is taken from the request.</p></div><span class="badge badge-info">STOCK LEDGER</span></div>
         <div class="card-body">
             <form class="request-form" method="post" th:action="${tier == 'STATE' ? '/state-admin/transfers/create' : '/district-admin/transfers/create'}">
-                <div class="request-form-grid">
+                <div class="transfer-form-grid">
                     <label>Approved request
                         <select name="requestId" required>
                             <option value="">Select request</option>

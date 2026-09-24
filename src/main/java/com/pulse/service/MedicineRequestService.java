@@ -26,6 +26,7 @@ public class MedicineRequestService {
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
     private final MedicineRequestSchemaService schema;
     private final AuditArchiveService auditArchiveService;
+    private final MedicineRequestActionLogService actionLogs;
 
     public MedicineRequestService(MedicineRequestRepository cloudRequests,
                                   HospitalRepository cloudHospitals,
@@ -33,7 +34,8 @@ public class MedicineRequestService {
                                   ObjectProvider<LocalMedicineRequestRepository> localRequestsProvider,
                                   ObjectProvider<LocalOfflineStore> localStoreProvider,
                                   MedicineRequestSchemaService schema,
-                                  AuditArchiveService auditArchiveService) {
+                                  AuditArchiveService auditArchiveService,
+                                  MedicineRequestActionLogService actionLogs) {
         this.cloudRequests = cloudRequests;
         this.cloudHospitals = cloudHospitals;
         this.cloudMedicines = cloudMedicines;
@@ -41,6 +43,7 @@ public class MedicineRequestService {
         this.localStoreProvider = localStoreProvider;
         this.schema = schema;
         this.auditArchiveService = auditArchiveService;
+        this.actionLogs = actionLogs;
     }
 
     public CreateResult createHospitalRequest(Long hospitalId, Long districtId, Long stateId,
@@ -65,6 +68,7 @@ public class MedicineRequestService {
         if (districtId == null) throw new IllegalArgumentException("Hospital district is not configured.");
 
         LocalMedicineRequest localRequest = null;
+        com.pulse.local.model.LocalMedicineRequestActionLog localCreateLog = null;
         if (local != null) {
             localRequest = new LocalMedicineRequest();
             localRequest.setHospitalId(hospitalId);
@@ -84,6 +88,9 @@ public class MedicineRequestService {
             try {
                 attachMedicineAudit(localRequest, hospitalId, medicineId, LocalDateTime.now().toLocalDate());
                 local.saveAndFlush(localRequest);
+                localCreateLog = actionLogs.recordLocal(null, localRequest.getLocalRequestId(), hospitalId, districtId, stateId, medicineId,
+                        "ADMIN", requestedByUsername, "HOSPITAL", "CREATE", null, MedicineRequestStatus.PENDING_DISTRICT.name(),
+                        quantity, 0, note, localRequest.getCreatedAt());
             } catch (RuntimeException ex) {
                 throw new IllegalStateException("The medicine audit log could not be generated automatically. Configure the shared audit encryption secret before creating requests.", ex);
             }
@@ -114,6 +121,15 @@ public class MedicineRequestService {
                 attachMedicineAudit(cloud, hospitalId, medicineId, LocalDateTime.now().toLocalDate());
             }
             cloud = cloudRequests.saveAndFlush(cloud);
+            try {
+                actionLogs.recordCloudWithEventId(localCreateLog == null ? null : localCreateLog.getEventId(),
+                        cloud.getRequestId(), hospitalId, districtId, stateId, medicineId,
+                        "ADMIN", requestedByUsername, "HOSPITAL", "CREATE", null, cloud.getStatus().name(),
+                        quantity, 0, note, cloud.getCreatedAt());
+            } catch (RuntimeException auditFailure) {
+                if (cloud.getRequestId() != null) cloudRequests.deleteById(cloud.getRequestId());
+                throw auditFailure;
+            }
 
             if (localRequest != null) {
                 localRequest.setCloudRequestId(cloud.getRequestId());
@@ -195,32 +211,26 @@ public class MedicineRequestService {
             throw new IllegalArgumentException("This request is already closed.");
         }
 
+        String fromStatus = request.getStatus().name();
         String normalized = normalizeAction(action);
         switch (normalized) {
             case "REVIEW" -> request.setStatus(MedicineRequestStatus.UNDER_REVIEW);
-            case "APPROVE" -> {
-                request.setStatus(MedicineRequestStatus.APPROVED);
-                request.setFulfilledQuantity(0);
-            }
-            case "PARTIAL" -> {
-                int qty = validateFulfilled(fulfilledQuantity, request.getRequestedQuantity());
-                request.setFulfilledQuantity(qty);
-                request.setStatus(qty >= request.getRequestedQuantity()
-                        ? MedicineRequestStatus.FULFILLED
-                        : MedicineRequestStatus.PARTIALLY_FULFILLED);
-            }
-            case "FULFILL" -> {
-                request.setFulfilledQuantity(request.getRequestedQuantity());
-                request.setStatus(MedicineRequestStatus.FULFILLED);
-            }
+            case "APPROVE" -> { request.setStatus(MedicineRequestStatus.APPROVED); request.setFulfilledQuantity(0); }
+            case "PARTIAL" -> { int qty = validateFulfilled(fulfilledQuantity, request.getRequestedQuantity()); request.setFulfilledQuantity(qty); request.setStatus(qty >= request.getRequestedQuantity() ? MedicineRequestStatus.FULFILLED : MedicineRequestStatus.PARTIALLY_FULFILLED); }
+            case "FULFILL" -> { request.setFulfilledQuantity(request.getRequestedQuantity()); request.setStatus(MedicineRequestStatus.FULFILLED); }
             case "REJECT" -> request.setStatus(MedicineRequestStatus.REJECTED);
             case "ESCALATE" -> request.setStatus(MedicineRequestStatus.ESCALATED_TO_STATE);
             default -> throw new IllegalArgumentException("Unsupported district action.");
         }
 
-        request.setDistrictNote(blankToNull(note));
+        String cleanNote = blankToNull(note);
+        LocalDateTime now = LocalDateTime.now();
+        actionLogs.recordCloud(request.getRequestId(), request.getHospitalId(), request.getDistrictId(), request.getStateId(), request.getMedicineId(),
+                "DISTRICT_ADMIN", actor, "DISTRICT", normalized, fromStatus, request.getStatus().name(), request.getRequestedQuantity(),
+                request.getFulfilledQuantity(), cleanNote, now);
+        request.setDistrictNote(cleanNote);
         request.setLastUpdatedByUsername(actor);
-        request.setUpdatedAt(LocalDateTime.now());
+        request.setUpdatedAt(now);
         return cloudRequests.saveAndFlush(request);
     }
 
@@ -238,27 +248,24 @@ public class MedicineRequestService {
             throw new IllegalArgumentException("This request is not awaiting state action.");
         }
 
+        String fromStatus = request.getStatus().name();
         String normalized = normalizeAction(action);
         switch (normalized) {
             case "REVIEW", "APPROVE" -> request.setStatus(MedicineRequestStatus.STATE_APPROVED);
-            case "PARTIAL" -> {
-                int qty = validateFulfilled(fulfilledQuantity, request.getRequestedQuantity());
-                request.setFulfilledQuantity(qty);
-                request.setStatus(qty >= request.getRequestedQuantity()
-                        ? MedicineRequestStatus.FULFILLED
-                        : MedicineRequestStatus.STATE_PARTIALLY_FULFILLED);
-            }
-            case "FULFILL" -> {
-                request.setFulfilledQuantity(request.getRequestedQuantity());
-                request.setStatus(MedicineRequestStatus.FULFILLED);
-            }
+            case "PARTIAL" -> { int qty = validateFulfilled(fulfilledQuantity, request.getRequestedQuantity()); request.setFulfilledQuantity(qty); request.setStatus(qty >= request.getRequestedQuantity() ? MedicineRequestStatus.FULFILLED : MedicineRequestStatus.STATE_PARTIALLY_FULFILLED); }
+            case "FULFILL" -> { request.setFulfilledQuantity(request.getRequestedQuantity()); request.setStatus(MedicineRequestStatus.FULFILLED); }
             case "REJECT" -> request.setStatus(MedicineRequestStatus.REJECTED);
             default -> throw new IllegalArgumentException("Unsupported state action.");
         }
 
-        request.setStateNote(blankToNull(note));
+        String cleanNote = blankToNull(note);
+        LocalDateTime now = LocalDateTime.now();
+        actionLogs.recordCloud(request.getRequestId(), request.getHospitalId(), request.getDistrictId(), request.getStateId(), request.getMedicineId(),
+                "STATE_ADMIN", actor, "STATE", normalized, fromStatus, request.getStatus().name(), request.getRequestedQuantity(),
+                request.getFulfilledQuantity(), cleanNote, now);
+        request.setStateNote(cleanNote);
         request.setLastUpdatedByUsername(actor);
-        request.setUpdatedAt(LocalDateTime.now());
+        request.setUpdatedAt(now);
         return cloudRequests.saveAndFlush(request);
     }
 
@@ -390,6 +397,7 @@ public class MedicineRequestService {
                 copyFromCloud(cloud, item);
                 item.setPendingSync(false);
                 local.save(item);
+                actionLogs.syncLocalRequestLogs(item.getLocalRequestId(), cloud.getRequestId());
                 pushed++;
             }
 
@@ -529,6 +537,42 @@ public class MedicineRequestService {
 
     public List<RequestView> stateViews(Long stateId) {
         return stateRequests(stateId).stream().map(this::view).toList();
+    }
+
+    public List<RequestView> districtPendingViews(Long districtId) {
+        return districtRequests(districtId).stream()
+                .filter(r -> r.getStatus() == MedicineRequestStatus.PENDING_DISTRICT || r.getStatus() == MedicineRequestStatus.UNDER_REVIEW)
+                .map(this::view).toList();
+    }
+
+    public List<RequestView> districtHistoryViews(Long districtId) {
+        return districtRequests(districtId).stream()
+                .filter(r -> r.getStatus() != MedicineRequestStatus.PENDING_DISTRICT && r.getStatus() != MedicineRequestStatus.UNDER_REVIEW)
+                .map(this::view).toList();
+    }
+
+    public List<RequestView> statePendingViews(Long stateId) {
+        return stateRequests(stateId).stream()
+                .filter(r -> r.getStatus() == MedicineRequestStatus.ESCALATED_TO_STATE)
+                .map(this::view).toList();
+    }
+
+    public List<RequestView> stateHistoryViews(Long stateId) {
+        return stateRequests(stateId).stream()
+                .filter(r -> r.getStatus() != MedicineRequestStatus.ESCALATED_TO_STATE)
+                .map(this::view).toList();
+    }
+
+    public List<RequestView> hospitalPendingViews(Long hospitalId) {
+        return hospitalViews(hospitalId).stream()
+                .filter(r -> r.status().equals(MedicineRequestStatus.PENDING_DISTRICT.name()) || r.status().equals(MedicineRequestStatus.UNDER_REVIEW.name()))
+                .toList();
+    }
+
+    public List<RequestView> hospitalHistoryViews(Long hospitalId) {
+        return hospitalViews(hospitalId).stream()
+                .filter(r -> !r.status().equals(MedicineRequestStatus.PENDING_DISTRICT.name()) && !r.status().equals(MedicineRequestStatus.UNDER_REVIEW.name()))
+                .toList();
     }
 
     private RequestView view(MedicineRequest request) {

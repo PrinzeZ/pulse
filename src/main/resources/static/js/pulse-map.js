@@ -32,7 +32,7 @@
     const payload = await response.json();
     mapData = payload.hospitals || [];
     selectedMedicineId = payload.medicineId ?? null;
-    renderMarkers();
+    if (window.L) renderMarkers();
     return payload;
   }
 
@@ -91,12 +91,38 @@
     return map;
   }
 
+  function renderOfflineMapFallback(element, mode) {
+    if (!element) return;
+    element.classList.add('pulse-map-offline');
+    element.innerHTML = `<div class="pulse-map-offline-card">
+      <div class="pulse-map-offline-icon">✚</div>
+      <strong>Offline map mode</strong>
+      <span>The local P.U.L.S.E service is still running. Map tiles are unavailable without Internet access, so hospitals are shown as a local list instead.</span>
+      <div class="pulse-map-offline-list" data-offline-list></div>
+    </div>`;
+    const medicineId = element.dataset.medicineId || '';
+    loadData(medicineId)
+      .then(payload => {
+        const list = element.querySelector('[data-offline-list]');
+        if (!list) return;
+        const rows = (payload.hospitals || []).slice(0, mode === 'full' ? 30 : 8);
+        list.innerHTML = rows.map(h => `<div class="pulse-map-offline-row"><span><strong>${escapeHtml(h.name)}</strong><small>${escapeHtml(h.district)} · ${escapeHtml(h.stockStatus || 'UNKNOWN')}</small></span><a href="${h.googleMapsUrl}" target="_blank" rel="noopener">Maps ↗</a></div>`).join('')
+          || '<small>No cached hospital records are available on this device.</small>';
+      })
+      .catch(() => {});
+  }
+
   async function init() {
     const preview = document.getElementById('pulse-map-preview');
     const full = document.getElementById('pulse-map-full');
     const medicine = document.getElementById('pulse-map-medicine');
     if (!preview && !full && !medicine) return;
-    if (!window.L) return;
+    if (!window.L) {
+      renderOfflineMapFallback(preview, 'preview');
+      renderOfflineMapFallback(full, 'full');
+      renderOfflineMapFallback(medicine, 'medicine');
+      return;
+    }
     if (preview) await createMap(preview, 'preview');
     if (full) await createMap(full, 'full');
     if (medicine) {

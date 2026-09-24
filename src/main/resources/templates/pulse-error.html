@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P.U.L.S.E — Route error</title>
+    <link rel="stylesheet" th:href="@{/css/pulse.css}">
+    <style>
+        .pulse-error-page{min-height:100vh;background:#f4f8fb;color:#17324d;display:grid;place-items:center;padding:28px}
+        .pulse-error-card{width:min(920px,100%);background:#fff;border:1px solid #d9e3ea;border-radius:18px;box-shadow:0 18px 55px rgba(18,51,77,.10);padding:42px;display:grid;grid-template-columns:minmax(260px,.8fr) minmax(0,1.2fr);gap:38px;align-items:center}
+        .pulse-error-art{min-height:300px;display:grid;place-items:center;position:relative;overflow:hidden;border-radius:14px;background:#f7fafc;border:1px solid #e2eaf0}
+        .robot{width:220px;height:220px;position:relative;animation:pulseBot 3.2s ease-in-out infinite}
+        .robot *{box-sizing:border-box}
+        .robot-head{position:absolute;left:48px;top:30px;width:124px;height:92px;border:5px solid #123e60;border-radius:22px;background:#fff}
+        .robot-eye{position:absolute;top:31px;width:16px;height:16px;border:3px solid #123e60;border-radius:50%;background:#d9f4f1}
+        .robot-eye.left{left:28px}.robot-eye.right{right:28px}
+        .robot-mouth{position:absolute;left:39px;right:39px;bottom:19px;height:11px;border-bottom:4px solid #16a6a0;border-radius:50%}
+        .robot-ear{position:absolute;top:28px;width:15px;height:48px;border:4px solid #123e60;border-radius:8px;background:#eef5f8}
+        .robot-ear.left{left:-15px}.robot-ear.right{right:-15px}
+        .robot-body{position:absolute;left:62px;top:130px;width:96px;height:68px;border:5px solid #123e60;border-radius:18px;background:#fff}
+        .robot-panel{position:absolute;left:25px;top:21px;width:45px;height:19px;border:3px solid #16a6a0;border-radius:5px}
+        .robot-arm{position:absolute;width:18px;height:60px;border:5px solid #123e60;border-radius:12px;background:#fff;top:137px}
+        .robot-arm.left{left:42px;transform:rotate(25deg)}.robot-arm.right{right:42px;transform:rotate(-32deg)}
+        .robot-leg{position:absolute;width:20px;height:48px;border:5px solid #123e60;border-radius:10px;background:#fff;top:188px}
+        .robot-leg.left{left:73px;transform:rotate(17deg)}.robot-leg.right{right:73px;transform:rotate(-17deg)}
+        .broken-part{position:absolute;width:25px;height:12px;border:4px solid #16a6a0;border-radius:8px;right:26px;bottom:46px;transform:rotate(24deg);animation:partFloat 2.8s ease-in-out infinite}
+        .spark{position:absolute;width:7px;height:7px;background:#16a6a0;border-radius:50%;opacity:.7;animation:spark 1.9s ease-in-out infinite}
+        .spark.one{left:34px;top:48px}.spark.two{right:35px;top:112px;animation-delay:.5s}.spark.three{left:42px;bottom:39px;animation-delay:1s}
+        .pulse-error-copy .eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#16a6a0}
+        .pulse-error-copy h1{margin:8px 0 10px;font-size:48px;line-height:1;color:#123e60}
+        .pulse-error-copy h2{margin:0 0 12px;font-size:21px;color:#17324d}
+        .pulse-error-copy p{color:#6c7d8d;line-height:1.65;max-width:570px}
+        .pulse-error-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+        .pulse-error-code{display:inline-block;margin-top:14px;padding:7px 10px;border-radius:7px;background:#edf4f8;color:#557087;font:700 11px ui-monospace,SFMono-Regular,Consolas,monospace}
+        @keyframes pulseBot{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-1deg)}}
+        @keyframes partFloat{0%,100%{transform:translate(0,0) rotate(24deg)}50%{transform:translate(7px,-9px) rotate(31deg)}}
+        @keyframes spark{0%,100%{transform:scale(.7);opacity:.25}50%{transform:scale(1.25);opacity:.9}}
+        @media(max-width:700px){.pulse-error-page{padding:16px}.pulse-error-card{grid-template-columns:1fr;padding:24px;gap:22px}.pulse-error-art{min-height:250px}.pulse-error-copy h1{font-size:38px}}
+    </style>
+</head>
+<body>
+<main class="pulse-error-page">
+    <section class="pulse-error-card">
+        <div class="pulse-error-art" aria-hidden="true">
+            <div class="robot">
+                <div class="robot-head"><span class="robot-ear left"></span><span class="robot-ear right"></span><span class="robot-eye left"></span><span class="robot-eye right"></span><span class="robot-mouth"></span></div>
+                <div class="robot-body"><span class="robot-panel"></span></div>
+                <div class="robot-arm left"></div><div class="robot-arm right"></div>
+                <div class="robot-leg left"></div><div class="robot-leg right"></div>
+                <div class="broken-part"></div><span class="spark one"></span><span class="spark two"></span><span class="spark three"></span>
+            </div>
+        </div>
+        <div class="pulse-error-copy">
+            <div class="eyebrow">P.U.L.S.E route protection</div>
+            <h1>505</h1>
+            <h2>Looks like this route fell apart.</h2>
+            <p>The address is not available in this P.U.L.S.E workspace, or the HTTP method is not supported here. The security boundary is still intact.</p>
+            <span class="pulse-error-code">HTTP <span th:text="${errorStatus ?: 404}">404</span></span>
+            <div class="pulse-error-actions">
+                <a class="btn btn-primary" th:href="@{/menu}">Return to dashboard</a>
+                <a class="btn" th:href="@{/}">P.U.L.S.E home</a>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

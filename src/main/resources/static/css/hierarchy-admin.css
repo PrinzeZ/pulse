@@ -29,3 +29,86 @@
 @media(max-width:700px){.request-form-grid{grid-template-columns:1fr}.request-note,.request-submit{grid-column:auto}.request-action-form{min-width:300px;grid-template-columns:1fr 90px}.request-action-form input[type="text"],.request-action-form button{grid-column:1/-1}}
 .request-header-actions{display:flex;align-items:center;gap:8px}.request-header-actions form{margin:0}
 @media(max-width:600px){.request-header-actions{align-items:flex-end;flex-direction:column}.request-header-actions .btn{width:100%}}
+
+/* Request workspace: bounded vertical logs keep long workflows usable. */
+.request-scroll{width:100%;max-height:380px;overflow-y:auto;overflow-x:hidden;padding:0 16px;scrollbar-gutter:stable}.request-scroll::-webkit-scrollbar,.request-log-scroll::-webkit-scrollbar{width:10px}.request-scroll::-webkit-scrollbar-track,.request-log-scroll::-webkit-scrollbar-track{background:#f1f5f8;border-radius:8px}.request-scroll::-webkit-scrollbar-thumb,.request-log-scroll::-webkit-scrollbar-thumb{background:#aebdca;border-radius:8px;border:2px solid #f1f5f8}.request-card{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,1.15fr);gap:18px;padding:18px 4px;border-bottom:1px solid var(--pulse-border);min-width:0}.request-card:last-child{border-bottom:0}.request-card-main,.request-card-actions{min-width:0}.request-card-title{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.request-card-title strong{color:var(--pulse-navy-dark);font-size:14px}.request-card-meta{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:8px;color:var(--pulse-muted);font-size:11px}.request-card-note{margin-top:8px;padding:8px 10px;background:#f8fafc;border:1px solid var(--pulse-border);border-radius:6px;font-size:11px;color:#536273;overflow-wrap:anywhere}.request-card-actions{display:grid;gap:9px;align-content:start}.request-evidence{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.request-evidence span{font-size:10px;color:var(--pulse-muted)}.request-action-form{display:grid;grid-template-columns:minmax(120px,150px) 90px minmax(120px,1fr) auto;gap:7px;min-width:0}.request-action-form input,.request-action-form select{min-width:0;width:100%}.request-log-scroll{width:100%;max-height:430px;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable}.request-log-table{table-layout:fixed;width:100%}.request-log-table th,.request-log-table td{white-space:normal;overflow-wrap:anywhere}.request-log-table th:nth-child(1){width:125px}.request-log-table th:nth-child(2){width:90px}.request-log-table th:nth-child(3){width:110px}.request-log-table th:nth-child(4){width:145px}.request-log-table th:nth-child(5),.request-log-table th:nth-child(6){width:75px}.request-log-table th:nth-child(7){width:135px}.request-log-table th:nth-child(8){width:130px}.request-action-badge{background:#eef4f8;color:var(--pulse-navy);font-size:9px}.request-log-note{max-width:180px}.sidebar{position:sticky;top:68px;height:calc(100vh - 68px);max-height:calc(100vh - 68px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin}.sidebar .sidebar-nav:last-of-type{margin-top:auto}.sidebar-spacer{min-height:16px}.main-content{min-width:0}.content-wrap{min-width:0}.request-table{min-width:0}.request-table td{overflow-wrap:anywhere}
+@media(max-width:900px){.request-card{grid-template-columns:1fr}.request-action-form{grid-template-columns:1fr 100px}.request-action-form input[type="text"],.request-action-form button{grid-column:1/-1}.request-log-scroll{max-height:360px}}
+@media(max-width:700px){.sidebar{position:static;height:auto;max-height:none;overflow:visible}.request-scroll{max-height:330px;padding:0 10px}.request-log-scroll{max-height:340px}.request-action-form{grid-template-columns:1fr}.request-action-form input,.request-action-form select,.request-action-form button{grid-column:1/-1}.request-evidence{align-items:flex-start;flex-direction:column}.request-card{padding:15px 0}}
+
+/* Transfer form: keep every field in its own bounded grid track so long hospital names,
+   quantities and notes can never paint over neighbouring controls. */
+.transfer-form-grid{display:grid;grid-template-columns:minmax(280px,1.35fr) minmax(220px,1fr) minmax(120px,.5fr) minmax(220px,1fr);gap:14px;align-items:end;min-width:0}
+.transfer-form-grid label{min-width:0}
+.transfer-form-grid input,.transfer-form-grid select{min-width:0;width:100%;max-width:100%}
+.transfer-form-grid select{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.transfer-form-grid .request-submit{grid-column:1/-1;justify-content:flex-start}
+.transfer-form-grid .request-submit .btn{min-width:150px}
+@media(max-width:1100px){.transfer-form-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.transfer-form-grid .request-submit{grid-column:1/-1}}
+@media(max-width:700px){.transfer-form-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Decision ledger: give the hospital column enough room and keep every cell clipped
+   within its own column rather than visually colliding with the next value. */
+.request-log-table th:nth-child(4){width:190px}
+.request-log-table td{vertical-align:middle;min-width:0}
+.request-log-table td:nth-child(4),.request-log-table td:nth-child(8),.request-log-table td:nth-child(9){overflow-wrap:anywhere;word-break:break-word}
+
+/* Decision archive UI: intentionally vertical. Archive periods and archive rows never create horizontal scroll. */
+.archive-policy-strip{display:flex;flex-wrap:wrap;gap:8px;padding:14px 18px;border-bottom:1px solid var(--pulse-border);background:#fbfdfe}.archive-policy-strip span{padding:8px 10px;border:1px solid var(--pulse-border);border-radius:7px;background:#fff;color:var(--pulse-muted);font-size:10px}.archive-policy-strip strong{color:var(--pulse-navy-dark)}
+.decision-archive-period-scroll{max-height:300px;padding:8px 16px}.decision-archive-period{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:13px 12px;border-bottom:1px solid var(--pulse-border);text-decoration:none;color:var(--pulse-navy-dark);min-width:0}.decision-archive-period:hover{background:#f7fafc}.decision-archive-period strong{font-size:12px;min-width:0}.decision-archive-period span{font-size:10px;color:var(--pulse-teal);font-weight:700;white-space:nowrap}.archive-security-note{margin:14px 18px 0;padding:10px 12px;border:1px solid var(--pulse-border);background:#f8fafc;color:var(--pulse-muted);font-size:9px;font-weight:800;letter-spacing:.06em}.archive-log-scroll{max-height:calc(100vh - 310px);min-height:260px;margin-top:12px}.archive-log-scroll .request-log-table{min-width:0}.archive-log-scroll .request-log-table th:nth-child(4){width:210px}.archive-log-scroll .request-log-table td:nth-child(4){max-width:260px}
+@media(max-width:700px){.decision-archive-period{align-items:flex-start;flex-direction:column;gap:5px}.archive-log-scroll{max-height:55vh;min-height:220px}.archive-policy-strip{display:grid;grid-template-columns:1fr 1fr}}
+
+/* Final request-workspace polish:
+   - history is read-only: only pending requests carry decision controls
+   - all ledgers are compact, spreadsheet-like and bounded vertically
+   - long text stays inside its cell instead of painting over adjacent columns */
+.request-history-readonly{display:flex;align-items:center;justify-content:flex-end;min-height:34px}
+.history-readonly-label{font-size:10px;color:var(--pulse-muted);font-weight:700;letter-spacing:.02em}
+.history-scroll{max-height:300px}
+.pending-scroll{max-height:330px}
+.request-log-scroll{max-height:360px;border-top:1px solid var(--pulse-border)}
+.request-log-table{border-collapse:separate;border-spacing:0;table-layout:fixed}
+.request-log-table th,.request-log-table td{border-right:1px solid var(--pulse-border);border-bottom:1px solid var(--pulse-border);padding:9px 10px;line-height:1.35}
+.request-log-table th:first-child,.request-log-table td:first-child{border-left:1px solid var(--pulse-border)}
+.request-log-table th{position:sticky;top:0;z-index:2;background:#edf2f6;box-shadow:0 1px 0 var(--pulse-border)}
+.request-log-table tbody tr:nth-child(even){background:#fbfcfd}
+.request-log-table tbody tr:hover{background:#f4f8fa}
+.request-log-table th:nth-child(1){width:11%}
+.request-log-table th:nth-child(2){width:8%}
+.request-log-table th:nth-child(3){width:11%}
+.request-log-table th:nth-child(4){width:16%}
+.request-log-table th:nth-child(5){width:7%}
+.request-log-table th:nth-child(6){width:7%}
+.request-log-table th:nth-child(7){width:12%}
+.request-log-table th:nth-child(8){width:14%}
+.request-log-table th:nth-child(9){width:14%}
+.request-log-table td:nth-child(4),.request-log-table td:nth-child(8),.request-log-table td:nth-child(9){white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.request-log-table td:nth-child(1),.request-log-table td:nth-child(2),.request-log-table td:nth-child(5),.request-log-table td:nth-child(6),.request-log-table td:nth-child(7){white-space:nowrap}
+.request-log-table .small{display:inline;overflow-wrap:anywhere;word-break:break-word}
+.request-log-note{white-space:normal;overflow-wrap:anywhere;word-break:break-word}
+.archive-log-scroll .request-log-table th:nth-child(1){width:11%}
+.archive-log-scroll .request-log-table th:nth-child(2){width:8%}
+.archive-log-scroll .request-log-table th:nth-child(3){width:11%}
+.archive-log-scroll .request-log-table th:nth-child(4){width:16%}
+.archive-log-scroll .request-log-table th:nth-child(5){width:7%}
+.archive-log-scroll .request-log-table th:nth-child(6){width:7%}
+.archive-log-scroll .request-log-table th:nth-child(7){width:12%}
+.archive-log-scroll .request-log-table th:nth-child(8){width:14%}
+.archive-log-scroll .request-log-table th:nth-child(9){width:14%}
+
+@media (min-width:801px){
+  .dashboard-layout > .sidebar{
+    position:sticky;
+    top:68px;
+    align-self:flex-start;
+    height:calc(100vh - 68px);
+    max-height:calc(100vh - 68px);
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    z-index:10;
+  }
+}
+@media (max-width:800px){
+  .request-log-scroll{max-height:330px}
+  .request-history-readonly{justify-content:flex-start}
+}

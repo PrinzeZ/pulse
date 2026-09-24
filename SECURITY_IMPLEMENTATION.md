@@ -96,3 +96,12 @@ Then test:
 ## Important limitation
 
 The local hospital endpoint remains HTTP because the current LAN architecture intentionally uses `http://<LAN-IP>:8080`. Zero Trust does not make an unencrypted HTTP connection confidential. For a hostile/untrusted network, local HTTPS with a trusted certificate is still required. The current phase protects identity, authorization, session handling, CSRF, and application-level access, but it does not turn HTTP into HTTPS.
+
+## Additional Phase 20 hardening
+
+- Administrative request-decision archive routes are role-protected and scope-derived from the authenticated principal; hospital, district and state archive access cannot be widened by URL parameters.
+- Archived decision pages send `Cache-Control: no-store, private` and `X-Robots-Tag: noindex, noarchive` because they contain sensitive operational history.
+- A `Permissions-Policy` response header disables camera, microphone, payment and USB access and permits geolocation only for the application origin used by the map feature.
+- Request decision archives are encrypted server-side and are never exposed as downloadable ciphertext to the browser.
+- Retention purging is fail-safe: a hot request/stock row is deleted only when its corresponding encrypted archive exists. A missed scheduler run or cloud outage therefore does not turn into silent data loss.
+- Monthly request-archive creation catches up the previous 12 closed months to tolerate temporary application downtime.

@@ -3,6 +3,8 @@ package com.pulse.controller;
 import com.pulse.service.HierarchyDashboardService;
 import com.pulse.service.StaffManagementService;
 import com.pulse.service.StockLedgerService;
+import com.pulse.service.MedicineRequestActionLogService;
+import com.pulse.service.MedicineRequestAuditArchiveService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,12 +27,19 @@ public class AdminController {
     private final StaffManagementService staffManagement;
     private final StockLedgerService ledgerService;
     private final com.pulse.service.AuditArchiveService auditArchiveService;
+    private final MedicineRequestActionLogService requestActionLogService;
+    private final MedicineRequestAuditArchiveService requestDecisionArchives;
 
-    public AdminController(HierarchyDashboardService dashboard, StaffManagementService staffManagement, StockLedgerService ledgerService, com.pulse.service.AuditArchiveService auditArchiveService) {
+    public AdminController(HierarchyDashboardService dashboard, StaffManagementService staffManagement,
+                           StockLedgerService ledgerService, com.pulse.service.AuditArchiveService auditArchiveService,
+                           MedicineRequestActionLogService requestActionLogService,
+                           MedicineRequestAuditArchiveService requestDecisionArchives) {
         this.dashboard = dashboard;
         this.staffManagement = staffManagement;
         this.ledgerService = ledgerService;
         this.auditArchiveService = auditArchiveService;
+        this.requestActionLogService = requestActionLogService;
+        this.requestDecisionArchives = requestDecisionArchives;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -90,19 +99,29 @@ public class AdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/audit")
-    public String audit(HttpSession session, Model model) {
+    public String audit(HttpSession session, Model model, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, private");
         if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
         Long hospitalId = (Long) session.getAttribute("hospitalId");
         if (hospitalId == null) return "redirect:/login";
         model.addAttribute("hospitalId", hospitalId);
         model.addAttribute("movements", auditArchiveService.history(hospitalId, LocalDate.now().minusDays(auditArchiveService.getHotDays() - 1L), LocalDate.now()));
-        model.addAttribute("verification", ledgerService.verifyCloud(hospitalId));
+        var localVerification = ledgerService.verifyLocal(hospitalId);
+        model.addAttribute("verification", "LOCAL_LEDGER_DISABLED".equals(localVerification.message())
+                ? ledgerService.verifyCloud(hospitalId) : localVerification);
         model.addAttribute("archives", auditArchiveService.archives(hospitalId));
         model.addAttribute("archiveRequests", auditArchiveService.pendingRequests(hospitalId));
         model.addAttribute("archiveEncryptionReady", auditArchiveService.archiveEncryptionReady());
         model.addAttribute("hotDays", auditArchiveService.getHotDays());
         model.addAttribute("coldAfterDays", auditArchiveService.getColdAfterDays());
         model.addAttribute("retentionDays", auditArchiveService.getRetentionDays());
+        // The stock ledger and the administrative request-decision ledger are separate
+        // tamper-evident trails, but both are shown here so a hospital administrator
+        // has one read-only audit workspace for stock changes and request decisions.
+        model.addAttribute("decisionLogs", requestActionLogService.hospitalViews(hospitalId));
+        model.addAttribute("decisionArchivePeriods", requestDecisionArchives.periodsForHospitals(java.util.List.of(hospitalId)));
+        model.addAttribute("requestDecisionColdAfterDays", requestDecisionArchives.getColdAfterDays());
+        model.addAttribute("requestDecisionRetentionDays", requestDecisionArchives.getRetentionDays());
         model.addAttribute("quickDates", java.util.stream.IntStream.range(0, 30)
                 .mapToObj(i -> LocalDate.now().minusDays(i)).toList());
         return "admin-audit";
@@ -112,7 +131,8 @@ public class AdminController {
     @GetMapping("/audit/view")
     public String viewAudit(@RequestParam LocalDate start, @RequestParam LocalDate end,
                             @RequestParam(required = false) Long medicineId,
-                            HttpSession session, Model model) {
+                            HttpSession session, Model model, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, private");
         if (!"ADMIN".equals(session.getAttribute("role"))) return "redirect:/login";
         Long hospitalId = (Long) session.getAttribute("hospitalId");
         if (hospitalId == null) return "redirect:/login";
@@ -145,6 +165,20 @@ public class AdminController {
         byte[] excel = auditArchiveService.exportExcel(hospitalId, start, end, true, medicineId);
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"pulse-audit-" + start + "-to-" + end + ".xlsx\"");
+        response.getOutputStream().write(excel);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/requests/audit/export")
+    public void exportRequestDecisionAudit(@RequestParam LocalDate start, @RequestParam LocalDate end,
+                                           HttpSession session, HttpServletResponse response) throws java.io.IOException {
+        if (!"ADMIN".equals(session.getAttribute("role"))) { response.sendRedirect("/login"); return; }
+        Long hospitalId = (Long) session.getAttribute("hospitalId");
+        if (hospitalId == null) { response.sendRedirect("/login"); return; }
+        byte[] excel = requestDecisionArchives.exportExcelForHospital(hospitalId, start, end);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"pulse-request-decisions-" + start + "-to-" + end + ".xlsx\"");
         response.getOutputStream().write(excel);
     }
 

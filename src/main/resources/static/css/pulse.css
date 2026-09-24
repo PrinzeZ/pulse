@@ -518,3 +518,32 @@ input:focus, select:focus { border-color: var(--pulse-teal); box-shadow: 0 0 0 3
     .nav-collapsed .staff-content .sidebar-nav a span:not(.nav-icon) { display:inline; }
     .nav-collapsed .staff-content .sidebar-nav a { justify-content:flex-start; }
 }
+
+/* Persistent desktop navigation: every authenticated workspace keeps its sidebar
+   visible while the main content scrolls. Mobile remains the horizontal workspace nav. */
+@media (min-width:801px){
+    .dashboard-layout > .sidebar{
+        position:sticky;
+        top:68px;
+        align-self:flex-start;
+        height:calc(100vh - 68px);
+        max-height:calc(100vh - 68px);
+        overflow-y:auto;
+        overflow-x:hidden;
+        scrollbar-width:thin;
+        z-index:10;
+    }
+}
+
+.pulse-map-offline{display:flex;align-items:center;justify-content:center;min-height:280px;background:#f7fafc;border:1px solid var(--pulse-border);padding:20px;box-sizing:border-box}
+.pulse-map-offline-card{width:min(620px,100%);display:grid;gap:9px;padding:22px;background:#fff;border:1px solid var(--pulse-border);border-radius:10px;box-shadow:var(--pulse-shadow);text-align:left}
+.pulse-map-offline-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;background:#eef6f8;color:var(--pulse-teal);font-weight:800}
+.pulse-map-offline-card strong{color:var(--pulse-navy-dark)}
+.pulse-map-offline-card>span{color:var(--pulse-muted);font-size:12px;line-height:1.5}
+.pulse-map-offline-list{display:grid;gap:0;max-height:210px;overflow:auto;border:1px solid var(--pulse-border);border-radius:7px}
+.pulse-map-offline-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--pulse-border);font-size:11px}
+.pulse-map-offline-row:last-child{border-bottom:0}
+.pulse-map-offline-row span{min-width:0}
+.pulse-map-offline-row strong{display:block;overflow-wrap:anywhere}
+.pulse-map-offline-row small{display:block;color:var(--pulse-muted);margin-top:2px}
+.pulse-map-offline-row a{white-space:nowrap;color:var(--pulse-navy);font-weight:700;text-decoration:none}

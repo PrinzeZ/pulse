@@ -11,6 +11,8 @@ import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.DistrictRepository;
 import com.pulse.service.StockTransferService;
 import com.pulse.service.MedicineRequestService;
+import com.pulse.service.MedicineRequestActionLogService;
+import com.pulse.service.MedicineRequestAuditArchiveService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +22,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import jakarta.servlet.http.HttpServletResponse;
+import java.time.LocalDate;
 
 @Controller
 public class OperationsController {
@@ -29,19 +32,26 @@ public class OperationsController {
     private final StockTransferService transfers;
     private final HospitalRepository hospitals;
     private final DistrictRepository districts;
+    private final MedicineRequestActionLogService actionLogs;
+    private final MedicineRequestAuditArchiveService decisionArchives;
 
     public OperationsController(MedicineRequestService requests,
                                  SessionSecurity security,
                                  StockTransferService transfers,
                                  HospitalRepository hospitals,
-                                 DistrictRepository districts) {
+                                 DistrictRepository districts,
+                                 MedicineRequestActionLogService actionLogs,
+                                 MedicineRequestAuditArchiveService decisionArchives) {
         this.requests = requests;
         this.security = security;
         this.transfers = transfers;
         this.hospitals = hospitals;
         this.districts = districts;
+        this.actionLogs = actionLogs;
+        this.decisionArchives = decisionArchives;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/requests")
     public String hospitalRequests(HttpSession session, Model model) {
         Admin admin = security.getUser(session) instanceof Admin a ? a : null;
@@ -50,11 +60,19 @@ public class OperationsController {
         model.addAttribute("tier", "HOSPITAL");
         model.addAttribute("pageTitle", "Medicine requests");
         model.addAttribute("pageSubtitle", "Create and track medicine requests for your hospital.");
+        model.addAttribute("pendingRequests", requests.hospitalPendingViews(admin.getHospitalId()));
+        model.addAttribute("historyRequests", requests.hospitalHistoryViews(admin.getHospitalId()));
         model.addAttribute("requests", requests.hospitalViews(admin.getHospitalId()));
+        model.addAttribute("activityLogs", actionLogs.hospitalViews(admin.getHospitalId()));
+        model.addAttribute("decisionArchives", decisionArchives.archivesForHospitals(java.util.List.of(admin.getHospitalId())));
+        model.addAttribute("decisionArchivePeriods", decisionArchives.periodsForHospitals(java.util.List.of(admin.getHospitalId())));
+        model.addAttribute("decisionArchiveColdDays", decisionArchives.getColdAfterDays());
+        model.addAttribute("decisionArchiveRetentionDays", decisionArchives.getRetentionDays());
         model.addAttribute("medicines", requests.availableMedicines());
         return "operations/requests";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/requests/sync")
     public String syncHospitalRequests(HttpSession session, RedirectAttributes redirectAttributes) {
         Admin admin = security.getUser(session) instanceof Admin a ? a : null;
@@ -70,6 +88,7 @@ public class OperationsController {
         return "redirect:/admin/requests";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/requests/create")
     public String createHospitalRequest(HttpSession session,
                                         @RequestParam Long medicineId,
@@ -97,6 +116,7 @@ public class OperationsController {
         return "redirect:/admin/requests";
     }
 
+    @PreAuthorize("hasRole('DISTRICT_ADMIN')")
     @GetMapping("/district-admin/requests")
     public String districtRequests(HttpSession session, Model model) {
         DistrictAdmin admin = security.getUser(session) instanceof DistrictAdmin a ? a : null;
@@ -105,13 +125,23 @@ public class OperationsController {
         model.addAttribute("tier", "DISTRICT");
         model.addAttribute("pageTitle", "District requests");
         model.addAttribute("pageSubtitle", "Review hospital requests within your district.");
+        model.addAttribute("pendingRequests", requests.districtPendingViews(admin.getDistrictId()));
+        model.addAttribute("historyRequests", requests.districtHistoryViews(admin.getDistrictId()));
         model.addAttribute("requests", requests.districtViews(admin.getDistrictId()));
+        model.addAttribute("activityLogs", actionLogs.districtViews(admin.getDistrictId()));
+        java.util.List<Long> districtHospitalIds = hospitals.findAll().stream().filter(h -> admin.getDistrictId().equals(h.getDistrictId())).map(Hospital::getHospitalId).toList();
+        model.addAttribute("decisionArchives", decisionArchives.archivesForHospitals(districtHospitalIds));
+        model.addAttribute("decisionArchivePeriods", decisionArchives.periodsForHospitals(districtHospitalIds));
+        model.addAttribute("decisionArchiveColdDays", decisionArchives.getColdAfterDays());
+        model.addAttribute("decisionArchiveRetentionDays", decisionArchives.getRetentionDays());
         return "operations/requests";
     }
 
     @PreAuthorize("@pulseScope.canAccessRequest(#id)")
     @GetMapping("/district-admin/requests/{id}/audit")
-    public String districtRequestAudit(@PathVariable Long id, HttpSession session, Model model) {
+    public String districtRequestAudit(@PathVariable Long id, HttpSession session, Model model, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, private");
+        response.setHeader("X-Robots-Tag", "noindex, noarchive");
         DistrictAdmin admin = security.getUser(session) instanceof DistrictAdmin a ? a : null;
         if (admin == null || admin.getDistrictId() == null) return "redirect:/login";
 
@@ -151,6 +181,7 @@ public class OperationsController {
         return "redirect:/district-admin/requests";
     }
 
+    @PreAuthorize("hasRole('STATE_ADMIN')")
     @GetMapping("/state-admin/requests")
     public String stateRequests(HttpSession session, Model model) {
         StateAdmin admin = security.getUser(session) instanceof StateAdmin a ? a : null;
@@ -159,13 +190,24 @@ public class OperationsController {
         model.addAttribute("tier", "STATE");
         model.addAttribute("pageTitle", "State requests");
         model.addAttribute("pageSubtitle", "Review requests escalated by district administrators.");
+        model.addAttribute("pendingRequests", requests.statePendingViews(admin.getStateId()));
+        model.addAttribute("historyRequests", requests.stateHistoryViews(admin.getStateId()));
         model.addAttribute("requests", requests.stateViews(admin.getStateId()));
+        model.addAttribute("activityLogs", actionLogs.stateViews(admin.getStateId()));
+        java.util.Set<Long> stateDistrictIds = districts.findByStateIdOrderByName(admin.getStateId()).stream().map(com.pulse.model.District::getDistrictId).collect(java.util.stream.Collectors.toSet());
+        java.util.List<Long> stateHospitalIds = hospitals.findAll().stream().filter(h -> stateDistrictIds.contains(h.getDistrictId())).map(Hospital::getHospitalId).toList();
+        model.addAttribute("decisionArchives", decisionArchives.archivesForHospitals(stateHospitalIds));
+        model.addAttribute("decisionArchivePeriods", decisionArchives.periodsForHospitals(stateHospitalIds));
+        model.addAttribute("decisionArchiveColdDays", decisionArchives.getColdAfterDays());
+        model.addAttribute("decisionArchiveRetentionDays", decisionArchives.getRetentionDays());
         return "operations/requests";
     }
 
     @PreAuthorize("@pulseScope.canAccessRequest(#id)")
     @GetMapping("/state-admin/requests/{id}/audit")
-    public String stateRequestAudit(@PathVariable Long id, HttpSession session, Model model) {
+    public String stateRequestAudit(@PathVariable Long id, HttpSession session, Model model, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, private");
+        response.setHeader("X-Robots-Tag", "noindex, noarchive");
         StateAdmin admin = security.getUser(session) instanceof StateAdmin a ? a : null;
         if (admin == null || admin.getStateId() == null) return "redirect:/login";
 
@@ -213,6 +255,52 @@ public class OperationsController {
         }
         return "redirect:/state-admin/requests";
     }
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/requests/archive")
+    public String hospitalDecisionArchive(@RequestParam LocalDate start, @RequestParam LocalDate end, HttpSession session, Model model, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, private");
+        response.setHeader("X-Robots-Tag", "noindex, noarchive");
+        Admin admin = security.getUser(session) instanceof Admin a ? a : null;
+        if (admin == null || admin.getHospitalId() == null) return "redirect:/login";
+        model.addAttribute("tier", "HOSPITAL");
+        model.addAttribute("pageTitle", "Archived decision log");
+        model.addAttribute("pageSubtitle", "Explicitly opened encrypted administrative request history.");
+        model.addAttribute("archiveStart", start); model.addAttribute("archiveEnd", end);
+        model.addAttribute("archiveRows", decisionArchives.openArchiveForHospital(admin.getHospitalId(), start, end));
+        return "request-decision-archive";
+    }
+
+    @PreAuthorize("hasRole('DISTRICT_ADMIN')")
+    @GetMapping("/district-admin/requests/archive")
+    public String districtDecisionArchive(@RequestParam LocalDate start, @RequestParam LocalDate end, HttpSession session, Model model, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, private");
+        response.setHeader("X-Robots-Tag", "noindex, noarchive");
+        DistrictAdmin admin = security.getUser(session) instanceof DistrictAdmin a ? a : null;
+        if (admin == null || admin.getDistrictId() == null) return "redirect:/login";
+        java.util.List<Long> ids = hospitals.findAll().stream().filter(h -> admin.getDistrictId().equals(h.getDistrictId())).map(Hospital::getHospitalId).toList();
+        model.addAttribute("tier", "DISTRICT"); model.addAttribute("pageTitle", "Archived decision log");
+        model.addAttribute("pageSubtitle", "Explicitly opened encrypted administrative request history for your district.");
+        model.addAttribute("archiveStart", start); model.addAttribute("archiveEnd", end);
+        model.addAttribute("archiveRows", decisionArchives.openArchiveForHospitals(ids, start, end));
+        return "request-decision-archive";
+    }
+
+    @PreAuthorize("hasRole('STATE_ADMIN')")
+    @GetMapping("/state-admin/requests/archive")
+    public String stateDecisionArchive(@RequestParam LocalDate start, @RequestParam LocalDate end, HttpSession session, Model model, HttpServletResponse response) {
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store, private");
+        response.setHeader("X-Robots-Tag", "noindex, noarchive");
+        StateAdmin admin = security.getUser(session) instanceof StateAdmin a ? a : null;
+        if (admin == null || admin.getStateId() == null) return "redirect:/login";
+        java.util.Set<Long> districtIds = districts.findByStateIdOrderByName(admin.getStateId()).stream().map(com.pulse.model.District::getDistrictId).collect(java.util.stream.Collectors.toSet());
+        java.util.List<Long> ids = hospitals.findAll().stream().filter(h -> districtIds.contains(h.getDistrictId())).map(Hospital::getHospitalId).toList();
+        model.addAttribute("tier", "STATE"); model.addAttribute("pageTitle", "Archived decision log");
+        model.addAttribute("pageSubtitle", "Explicitly opened encrypted administrative request history for your state.");
+        model.addAttribute("archiveStart", start); model.addAttribute("archiveEnd", end);
+        model.addAttribute("archiveRows", decisionArchives.openArchiveForHospitals(ids, start, end));
+        return "request-decision-archive";
+    }
+
     @GetMapping("/district-admin/transfers")
     public String districtTransfers(HttpSession session, Model model) {
         DistrictAdmin admin = security.getUser(session) instanceof DistrictAdmin a ? a : null;

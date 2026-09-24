@@ -108,58 +108,89 @@ public class HierarchyDashboardService {
                 units, medicineTypes.size(), scopeHospitals.size(), activeAlerts.size(), low, out);
     }
 
-    private List<ScopeSignal> buildScopeSignals(Collection<Hospital> scopeHospitals, List<Row> rows, ScopeLevel scopeLevel) {
-        if (rows.isEmpty()) return List.of();
+    private List<ScopeSignal> buildScopeSignals(Collection<Hospital> scopeHospitals,
+                                                     List<Row> rows,
+                                                     ScopeLevel scopeLevel) {
+        if (rows.isEmpty() || scopeHospitals.isEmpty()) return List.of();
+
+        Map<Long, List<Row>> byHospital = rows.stream()
+                .collect(Collectors.groupingBy(Row::hospitalId));
+
+        // The hierarchy dashboards are exception dashboards, not inventory tables.
+        // A hospital becomes "hospital-wide critical" only when every medicine line
+        // represented for that hospital is at or below its critical threshold.
+        Set<String> trackedMedicines = rows.stream()
+                .map(Row::medicineName)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Set<Long> criticalHospitalIds = new HashSet<>();
+        for (Hospital hospital : scopeHospitals) {
+            List<Row> hospitalRows = byHospital.getOrDefault(
+                    hospital.getHospitalId(), List.of());
+
+            if (!trackedMedicines.isEmpty()
+                    && hospitalRows.size() == trackedMedicines.size()
+                    && hospitalRows.stream().allMatch(r -> "RED".equals(r.status()))) {
+                criticalHospitalIds.add(hospital.getHospitalId());
+            }
+        }
 
         List<ScopeSignal> signals = new ArrayList<>();
 
-        // District administrators can see a hospital-wide condition, but state administrators
-        // only receive district-wide conditions. Hospital administrators use raw local alerts.
-        if (scopeLevel == ScopeLevel.DISTRICT) for (Hospital hospital : scopeHospitals) {
-            List<Row> hospitalRows = rows.stream()
-                    .filter(r -> Objects.equals(r.hospitalId(), hospital.getHospitalId()))
-                    .toList();
-            if (!hospitalRows.isEmpty() && hospitalRows.stream().allMatch(r -> "RED".equals(r.status()))) {
+        if (scopeLevel == ScopeLevel.DISTRICT) {
+            // District admins only need exceptions: a hospital whose entire
+            // tracked medicine position is critical.
+            for (Hospital hospital : scopeHospitals) {
+                if (!criticalHospitalIds.contains(hospital.getHospitalId())) continue;
+
+                List<Row> hospitalRows = byHospital.getOrDefault(
+                        hospital.getHospitalId(), List.of());
+
                 signals.add(new ScopeSignal(
                         "RED",
                         "Hospital-wide critical stock",
-                        hospital.getName() + " has no medicine line above its critical threshold."
+                        hospital.getName() + " is at or below the critical threshold for all "
+                                + hospitalRows.size() + " tracked medicine lines."
                 ));
             }
         }
 
-        // A medicine-wide signal means every visible hospital has that medicine at/below threshold.
-        Map<String, List<Row>> byMedicine = rows.stream().collect(Collectors.groupingBy(Row::medicineName));
-        for (Map.Entry<String, List<Row>> entry : byMedicine.entrySet()) {
-            Set<Long> hospitalsWithMedicine = entry.getValue().stream()
-                    .map(Row::hospitalId).collect(Collectors.toSet());
-            Set<Long> scopedIds = scopeHospitals.stream()
-                    .map(Hospital::getHospitalId).filter(Objects::nonNull).collect(Collectors.toSet());
-            if (!scopedIds.isEmpty() && hospitalsWithMedicine.containsAll(scopedIds)
-                    && entry.getValue().stream().allMatch(r -> "RED".equals(r.status()))) {
-                signals.add(new ScopeSignal(
-                        "RED",
-                        "Medicine shortage",
-                        entry.getKey() + " is critically low across every hospital in this view."
-                ));
-            }
-        }
-
-        // At state level, a district signal is emitted only when every stock line in that district is red.
-        Map<String, List<Row>> byDistrict = rows.stream().collect(Collectors.groupingBy(Row::district));
         if (scopeLevel == ScopeLevel.STATE) {
-            for (Map.Entry<String, List<Row>> entry : byDistrict.entrySet()) {
-                if (!entry.getValue().isEmpty() && entry.getValue().stream().allMatch(r -> "RED".equals(r.status()))) {
+            // State admins receive district exceptions, not individual medicine
+            // rows. A district is RED when at least half of its hospitals (and
+            // at least one hospital) are hospital-wide critical.
+            Map<String, List<Hospital>> hospitalsByDistrict = scopeHospitals.stream()
+                    .filter(h -> h.getDistrict() != null)
+                    .collect(Collectors.groupingBy(Hospital::getDistrict));
+
+            for (Map.Entry<String, List<Hospital>> entry : hospitalsByDistrict.entrySet()) {
+                List<Hospital> districtHospitals = entry.getValue();
+                long criticalCount = districtHospitals.stream()
+                        .filter(h -> criticalHospitalIds.contains(h.getHospitalId()))
+                        .count();
+
+                int requiredCriticalHospitals = Math.max(
+                        1,
+                        (int) Math.ceil(districtHospitals.size() * 0.50)
+                );
+
+                if (criticalCount >= requiredCriticalHospitals) {
                     signals.add(new ScopeSignal(
                             "RED",
-                            "District-wide critical stock",
-                            entry.getKey() + " has every visible medicine line at critical stock."
+                            "District requires attention",
+                            entry.getKey() + " has " + criticalCount + " of "
+                                    + districtHospitals.size()
+                                    + " hospitals with hospital-wide critical stock."
                     ));
                 }
             }
         }
 
-        return signals.stream().limit(8).toList();
+        return signals.stream()
+                .sorted(Comparator.comparing(ScopeSignal::title))
+                .limit(8)
+                .toList();
     }
 
     public List<Hospital> allHospitals() {
@@ -212,9 +243,15 @@ public class HierarchyDashboardService {
         recent.sort(Comparator.comparing(StockEntry::getLastUpdated, Comparator.nullsLast(Comparator.reverseOrder())));
         if (recent.size() > 8) recent = new ArrayList<>(recent.subList(0, 8));
         List<User> scopedUsers = ids.stream().flatMap(id -> local.staffForHospital(id).stream()).toList();
-        List<Alert> activeAlerts = alertService.getActiveAlerts().stream().filter(a -> ids.contains(a.getHospitalId())).toList();
-        List<Medicine> nearExpiry = local.medicines().stream().filter(m -> m.getExpiryDate() != null && m.getExpiryDate().isBefore(LocalDate.now().plusMonths(3))).toList();
-        return new Snapshot(rows, activeAlerts, List.of(), recent, nearExpiry, scopedUsers, units, medicineTypes.size(), ids.size(), activeAlerts.size(), low, out);
+        List<Alert> activeAlerts = alertService.getActiveAlerts().stream()
+                .filter(a -> ids.contains(a.getHospitalId())).toList();
+        List<Medicine> nearExpiry = local.medicines().stream()
+                .filter(m -> m.getExpiryDate() != null
+                        && m.getExpiryDate().isBefore(LocalDate.now().plusMonths(3)))
+                .toList();
+        List<ScopeSignal> scopeSignals = buildScopeSignals(requestedScope, rows, scopeLevel);
+        return new Snapshot(rows, activeAlerts, scopeSignals, recent, nearExpiry, scopedUsers,
+                units, medicineTypes.size(), ids.size(), activeAlerts.size(), low, out);
     }
 
     public enum ScopeLevel { HOSPITAL, DISTRICT, STATE }
