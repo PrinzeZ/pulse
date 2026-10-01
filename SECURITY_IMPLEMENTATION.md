@@ -105,3 +105,17 @@ The local hospital endpoint remains HTTP because the current LAN architecture in
 - Request decision archives are encrypted server-side and are never exposed as downloadable ciphertext to the browser.
 - Retention purging is fail-safe: a hot request/stock row is deleted only when its corresponding encrypted archive exists. A missed scheduler run or cloud outage therefore does not turn into silent data loss.
 - Monthly request-archive creation catches up the previous 12 closed months to tolerate temporary application downtime.
+
+## Security hardening update — 2026-10-01
+
+- `UserPrincipal` no longer retains or reconstructs the password hash. `getPassword()` returns `null` after authentication.
+- Login requires an explicit acknowledgement of the current Terms & Conditions and Privacy Policy.
+- The accepted policy version is recorded on the user account and mirrored locally when the hospital node is offline.
+- Logout is POST-only and CSRF protected; GET `/logout` is no longer a state-changing endpoint.
+- Hospital-local offline credentials are restricted to `ADMIN` and `STAFF` accounts belonging to the configured `PULSE_LOCAL_HOSPITAL_ID`.
+- Local cached credentials are usable only from loopback/private-network source addresses. This network check is defense-in-depth, not an authorization substitute.
+- State and district administrator credentials are not cached on a hospital-local node.
+- Resource-scope authorization explicitly checks both role and scope in `PulseScopeAuthorizationService`.
+- P.U.L.S.E displays branded 404/405 routing errors with a local CSS/SVG robot; invalid routes are reported as HTTP 404, not 505.
+- The application includes essential-cookie disclosure, Privacy Policy, Terms & Conditions and Cookie Notice pages.
+- A P.U.L.S.E loading animation uses a CSS/SVG ECG pulse in the mascot's chest for navigation, redirects and form submissions.

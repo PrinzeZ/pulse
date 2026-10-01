@@ -1,7 +1,6 @@
 package com.pulse.config;
 
 import com.pulse.local.service.LocalOfflineStore;
-import com.pulse.repository.AlertRepository;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.MedicineRepository;
 import com.pulse.repository.StockEntryRepository;
@@ -23,14 +22,13 @@ public class HierarchyDashboardConfig {
 
     @Bean
     public HierarchyDashboardService hierarchyDashboardService(
-            AlertRepository alerts,
-            HospitalRepository hospitals,
+                HospitalRepository hospitals,
             MedicineRepository medicines,
             StockEntryRepository stock,
             UserRepository users,
             ObjectProvider<LocalOfflineStore> localStoreProvider,
             AlertService alertService) {
         return new HierarchyDashboardService(
-                alerts, hospitals, medicines, stock, users, localStoreProvider, alertService);
+                hospitals, medicines, stock, users, localStoreProvider, alertService);
     }
 }

@@ -87,4 +87,5 @@
     <div class="card-body"><div class="list"><div class="list-item" th:each="entry : ${districtStatuses.entrySet()}"><div class="list-main"><div class="list-title" th:text="${entry.key}">District</div></div><span th:class="${entry.value == 'GREEN' ? 'badge badge-success' : (entry.value == 'YELLOW' ? 'badge badge-warning' : 'badge badge-danger')}" th:text="${entry.value == 'GREEN' ? 'AVAILABLE' : (entry.value == 'YELLOW' ? 'LIMITED' : 'OUT OF STOCK')}">STATUS</span></div></div></div>
   </div>
 </section>
-</div></body></html>
+</div><script th:src="@{/js/pulse-ui.js}"></script>
+</body></html>

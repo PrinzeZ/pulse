@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P.U.L.S.E — Secure Access</title>
@@ -8,28 +9,8 @@
 </head>
 <body class="login-page">
 <div class="login-layout">
-    <section class="login-brand-panel">
-        <div>
-            <div class="brand">
-                <div class="brand-mark">P</div>
-                <div>
-                    <div class="brand-name">P.U.L.S.E</div>
-                    <div class="brand-subtitle">Medicine Availability &amp; Inventory</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="login-brand-copy">
-            <div class="eyebrow">Clinical inventory platform</div>
-            <h1>Essential medicine, visible when it matters.</h1>
-            <p>Secure access for hospital administrators and pharmacy staff managing medicine availability and stock.</p>
-        </div>
-
-        <div class="login-feature-list">
-            <div class="login-feature">Hospital-level inventory visibility</div>
-            <div class="login-feature">Threshold-based stock monitoring</div>
-            <div class="login-feature">Public medicine availability search</div>
-        </div>
+    <section class="login-brand-panel login-brand-panel-image" aria-label="P.U.L.S.E clinical inventory platform">
+        <img class="login-generated-panel" th:src="@{/images/branding/pulse-login-panel.png}" alt="P.U.L.S.E pharmacy inventory platform illustration">
     </section>
 
     <section class="login-form-panel">
@@ -37,7 +18,9 @@
         <p>Use your authorized account to access the management system.</p>
 
         <div th:if="${param.error}" class="alert alert-error">Invalid username or password.</div>
+        <div th:if="${param.policy}" class="alert alert-error">Please accept the Terms &amp; Conditions and Privacy Policy before signing in.</div>
         <div th:if="${param.logout}" class="alert alert-success" style="margin-top:10px;">You have been signed out securely.</div>
+        <div th:if="${param.activated}" class="alert alert-success" style="margin-top:10px;">Your hospital administrator account is activated. Please sign in.</div>
 
         <form th:action="@{/login}" method="post" class="login-form" style="margin-top:18px;">
             <div class="form-group">
@@ -48,16 +31,19 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" autocomplete="current-password" required>
             </div>
+            <label class="policy-check"><input type="checkbox" name="policyAccepted" value="true" required> <span>I agree to the <a th:href="@{/terms}" target="_blank" rel="noopener">Terms &amp; Conditions</a> and acknowledge the <a th:href="@{/privacy}" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
             <button type="submit" class="btn btn-primary">Sign in</button>
         </form>
 
         <div class="login-note">
             <a th:href="@{/hospital/register}">Register a hospital →</a><br><br>
+            <a th:href="@{/privacy}">Privacy</a> · <a th:href="@{/terms}">Terms</a> · <a th:href="@{/cookies}">Cookies</a><br><br>
             Public access does not require an account.<br>
             <a th:href="@{/search}">Search medicine availability →</a>
         </div>
     </section>
 </div>
 <script th:src="@{/js/pulse-routing.js}"></script>
+<script th:src="@{/js/pulse-ui.js}"></script>
 </body>
 </html>

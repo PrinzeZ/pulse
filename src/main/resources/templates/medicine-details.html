@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title th:text="${medicine.name + ' — P.U.L.S.E'}">Medicine — P.U.L.S.E</title>
 <link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""></head>
 <body>
@@ -51,4 +52,5 @@
   <div class="public-footer-contact"><span>Contact us</span><a href="mailto:liminality2026@gmail.com">liminality2026@gmail.com</a><a href="tel:+918089004231">+91 80890 04231</a></div>
   <div class="public-footer-meta"><span>Reported inventory from participating hospitals</span><span>© 2026 P.U.L.S.E</span></div>
 </footer></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script th:src="@{/js/pulse-map.js}"></script><script th:src="@{/js/pulse-routing.js}"></script></body></html>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script><script th:src="@{/js/pulse-map.js}"></script><script th:src="@{/js/pulse-routing.js}"></script><script th:src="@{/js/pulse-ui.js}"></script>
+</body></html>

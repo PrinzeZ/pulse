@@ -1,6 +1,8 @@
 package com.pulse.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
@@ -15,6 +17,7 @@ public abstract class User {
 
     protected String name;
     protected String username;
+    @JsonIgnore
     protected String password;
 
     @Column(name = "state_id")
@@ -29,6 +32,12 @@ public abstract class User {
     @Column(name = "enabled")
     protected Boolean enabled = true;
 
+    @Column(name = "policy_version", length = 30)
+    protected String policyVersion;
+
+    @Column(name = "policy_accepted_at")
+    protected LocalDateTime policyAcceptedAt;
+
     public User() {}
 
     public User(Long userId, String name, String username, String password){
@@ -36,14 +45,6 @@ public abstract class User {
         this.name = name;
         this.username = username;
         this.password = password;
-    }
-
-    public boolean login(String inputPas) {
-        return this.password != null && this.password.equals(inputPas);
-    }
-
-    public void logout(){
-        System.out.println(name + " have been logged out.");
     }
 
     public Long getUserId() { return userId; }
@@ -65,4 +66,9 @@ public abstract class User {
     public Boolean getEnabled() { return enabled; }
     public void setEnabled(Boolean enabled) { this.enabled = enabled; }
     public boolean isEnabled() { return enabled == null || enabled; }
+
+    public String getPolicyVersion() { return policyVersion; }
+    public void setPolicyVersion(String policyVersion) { this.policyVersion = policyVersion; }
+    public LocalDateTime getPolicyAcceptedAt() { return policyAcceptedAt; }
+    public void setPolicyAcceptedAt(LocalDateTime policyAcceptedAt) { this.policyAcceptedAt = policyAcceptedAt; }
 }

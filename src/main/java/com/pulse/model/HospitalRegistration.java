@@ -51,6 +51,12 @@ public class HospitalRegistration {
 
     private LocalDateTime verifiedAt;
 
+    @Column(name = "policy_version", length = 30)
+    private String policyVersion;
+
+    @Column(name = "policy_accepted_at")
+    private LocalDateTime policyAcceptedAt;
+
     public HospitalRegistration() {}
 
     public Long getRegistrationId() { return registrationId; }
@@ -80,4 +86,8 @@ public class HospitalRegistration {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getVerifiedAt() { return verifiedAt; }
     public void setVerifiedAt(LocalDateTime verifiedAt) { this.verifiedAt = verifiedAt; }
+    public String getPolicyVersion() { return policyVersion; }
+    public void setPolicyVersion(String policyVersion) { this.policyVersion = policyVersion; }
+    public LocalDateTime getPolicyAcceptedAt() { return policyAcceptedAt; }
+    public void setPolicyAcceptedAt(LocalDateTime policyAcceptedAt) { this.policyAcceptedAt = policyAcceptedAt; }
 }

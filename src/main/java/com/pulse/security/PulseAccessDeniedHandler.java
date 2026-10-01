@@ -20,6 +20,7 @@ public class PulseAccessDeniedHandler implements AccessDeniedHandler {
                        AccessDeniedException accessDeniedException) throws IOException, ServletException {
         log.warn("ACCESS_DENIED method={} path={} remote={}",
                 request.getMethod(), request.getRequestURI(), request.getRemoteAddr());
-        response.sendRedirect(request.getContextPath() + "/access-denied");
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        request.getRequestDispatcher("/access-denied").forward(request, response);
     }
 }

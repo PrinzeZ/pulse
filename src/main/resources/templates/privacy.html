@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>P.U.L.S.E — Privacy Policy</title><link rel="stylesheet" th:href="@{/css/pulse.css}"></head>
+<body class="login-page">
+<div class="legal-page">
+  <div class="brand"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">District Health Inventory Network</div></div></div>
+  <div class="legal-card"><div class="eyebrow">PRIVACY POLICY · VERSION 2026-10-01</div><h1>Privacy Policy</h1><p class="legal-muted">Effective 1 October 2026. This policy describes how P.U.L.S.E handles account, inventory and security information. It is an application policy template and should be reviewed by the organization operating P.U.L.S.E before production deployment.</p>
+  <h2>1. Information we process</h2><p>P.U.L.S.E may process account names, usernames, roles, hospital/district/state scope, medicine inventory records, stock movements, request decisions, audit events and information required to operate the service securely.</p>
+  <h2>2. Passwords</h2><p>Passwords are not stored in plaintext. P.U.L.S.E uses password hashes for authentication. The authenticated Spring Security principal does not retain the password hash after authentication.</p>
+  <h2>3. Hospital-local offline data</h2><p>A hospital-local node may keep only the password hashes for authorized <strong>hospital administrators and hospital staff belonging to that configured hospital</strong>. State and district administrator credentials are not cached on the hospital node. Local credential authentication is additionally gated to loopback/private-network requests. Network location is a defense-in-depth control, not proof of identity.</p>
+  <h2>4. Network information</h2><p>P.U.L.S.E may process a client's network address transiently for brute-force protection and local-network security checks. The dynamic LAN routing feature can expose the currently registered private hospital LAN address to the P.U.L.S.E cloud endpoint so authorized clients can discover the local node. Private LAN addresses are not Internet-routable.</p>
+  <h2>5. Cookies and browser storage</h2><p>P.U.L.S.E uses essential session and CSRF cookies. It does not intentionally use advertising or analytics tracking cookies. A small browser preference may be stored to remember that the essential-cookie notice was seen.</p>
+  <h2>6. Audit and retention</h2><p>Stock movements and administrative decisions are retained in tamper-evident audit ledgers. Older records may be compressed and encrypted using the configured retention policy. The exact retention period must be aligned with the operating organization's legal and records-management requirements before production use.</p>
+  <h2>7. Security</h2><p>P.U.L.S.E applies authentication, role/resource authorization, CSRF protection, session hardening, security headers, brute-force controls, encrypted audit archives and Zero Trust principles. No security measure can guarantee absolute security.</p>
+  <h2>8. Contact</h2><p>For this project, contact <a href="mailto:liminality2026@gmail.com">liminality2026@gmail.com</a>.</p>
+  <div class="legal-actions"><a class="btn btn-primary" th:href="@{/login}">Back to sign in</a><a class="btn" th:href="@{/terms}">Terms &amp; Conditions</a><a class="btn" th:href="@{/cookies}">Cookie Notice</a></div>
+  </div>
+</div><script th:src="@{/js/pulse-ui.js}"></script></body></html>

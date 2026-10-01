@@ -61,7 +61,8 @@ public class HospitalProvisioningService {
             String governmentHospitalKey,
             String hospitalEmail,
             String adminName,
-            String adminUsername) {
+            String adminUsername,
+            boolean policyAccepted) {
 
         GovernmentHospitalCatalogService.GovernmentHospital catalog = hospitalCatalog.find(governmentHospitalKey)
                 .orElseThrow(() -> new IllegalArgumentException("Select a valid government hospital from the map"));
@@ -106,6 +107,10 @@ public class HospitalProvisioningService {
         registration.setVerificationCodeHash(passwordEncoder.encode(verificationCode));
         registration.setVerificationCodeExpiresAt(LocalDateTime.now().plusMinutes(15));
         registration.setCreatedAt(LocalDateTime.now());
+        if (policyAccepted) {
+            registration.setPolicyVersion(PolicyAcceptanceService.POLICY_VERSION);
+            registration.setPolicyAcceptedAt(LocalDateTime.now());
+        }
 
         HospitalRegistration saved = registrations.save(registration);
         emailService.sendVerificationEmail(saved, verificationCode);

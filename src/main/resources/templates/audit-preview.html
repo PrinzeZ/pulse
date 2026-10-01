@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title th:text="'P.U.L.S.E — ' + ${title}">P.U.L.S.E — Audit spreadsheet</title>
 <link rel="stylesheet" th:href="@{/css/pulse.css}">
 <style>
@@ -19,4 +20,5 @@
 <script>
 document.querySelectorAll('.sheet-tab').forEach(function(tab){tab.addEventListener('click',function(){document.querySelectorAll('.sheet-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('active'));tab.classList.add('active');document.getElementById(tab.dataset.sheet).classList.add('active');});});
 </script>
+<script th:src="@{/js/pulse-ui.js}"></script>
 </body></html>

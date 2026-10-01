@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>P.U.L.S.E — Cookie Notice</title><link rel="stylesheet" th:href="@{/css/pulse.css}"></head>
+<body class="login-page"><div class="legal-page"><div class="brand"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">Essential browser storage</div></div></div>
+<div class="legal-card"><div class="eyebrow">COOKIE NOTICE</div><h1>Essential cookies only.</h1><p>P.U.L.S.E uses browser storage that is necessary for the application to function securely.</p>
+<h2>Session cookie</h2><p><code>JSESSIONID</code> maintains your authenticated session. It is HTTP-only and configured with SameSite protection.</p>
+<h2>CSRF cookie</h2><p>The CSRF token cookie helps protect state-changing requests against cross-site request forgery.</p>
+<h2>UI preference</h2><p>P.U.L.S.E may use local browser storage for interface preferences such as the cookie-notice acknowledgement and sidebar state. This does not contain passwords.</p>
+<h2>No advertising trackers</h2><p>P.U.L.S.E does not intentionally place advertising or analytics tracking cookies.</p>
+<div class="legal-actions"><a class="btn btn-primary" th:href="@{/login}">Back to sign in</a><a class="btn" th:href="@{/privacy}">Privacy Policy</a><a class="btn" th:href="@{/terms}">Terms &amp; Conditions</a></div></div></div><script th:src="@{/js/pulse-ui.js}"></script></body></html>

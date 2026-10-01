@@ -9,32 +9,33 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-
 import java.util.Collection;
 import java.util.List;
 
 /**
- * Small serializable identity snapshot kept in the Spring Security session.
- * The JPA User entity itself is deliberately not stored in the security context.
+ * Small identity snapshot kept in the Spring Security session.
+ *
+ * SECURITY RULE: the password hash is deliberately NOT retained in the
+ * authenticated principal. Password verification happens only inside the
+ * authentication provider; the post-authentication security context carries
+ * identity, role and resource scope only.
  */
 public final class UserPrincipal implements UserDetails {
     private final Long userId;
     private final String name;
     private final String username;
-    private final String password;
     private final String role;
     private final Long stateId;
     private final Long districtId;
     private final Long hospitalId;
     private final boolean enabled;
 
-    private UserPrincipal(Long userId, String name, String username, String password,
+    private UserPrincipal(Long userId, String name, String username,
                           String role, Long stateId, Long districtId, Long hospitalId,
                           boolean enabled) {
         this.userId = userId;
         this.name = name;
         this.username = username;
-        this.password = password;
         this.role = role;
         this.stateId = stateId;
         this.districtId = districtId;
@@ -44,11 +45,15 @@ public final class UserPrincipal implements UserDetails {
 
     public static UserPrincipal from(User user) {
         return new UserPrincipal(
-                user.getUserId(), user.getName(), user.getUsername(), user.getPassword(),
+                user.getUserId(), user.getName(), user.getUsername(),
                 roleOf(user), user.getStateId(), user.getDistrictId(), user.getHospitalId(),
                 user.isEnabled());
     }
 
+    /**
+     * Compatibility projection for legacy controllers. Never reconstructs a
+     * password hash into the object graph; callers only need identity/scope.
+     */
     public User toUser() {
         User user = switch (role) {
             case "STATE_ADMIN" -> new StateAdmin();
@@ -60,7 +65,6 @@ public final class UserPrincipal implements UserDetails {
         user.setUserId(userId);
         user.setName(name);
         user.setUsername(username);
-        user.setPassword(password);
         user.setStateId(stateId);
         user.setDistrictId(districtId);
         user.setHospitalId(hospitalId);
@@ -80,7 +84,8 @@ public final class UserPrincipal implements UserDetails {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
-    @Override public String getPassword() { return password; }
+    /** No password or password hash is retained after authentication. */
+    @Override public String getPassword() { return null; }
     @Override public String getUsername() { return username; }
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }

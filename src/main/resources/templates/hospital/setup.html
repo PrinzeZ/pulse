@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P.U.L.S.E — Set Administrator Password</title>
@@ -23,9 +24,11 @@
             <label for="confirmation">Confirm password</label>
             <input id="confirmation" name="confirmation" type="password" minlength="8" required>
         </div>
+        <label class="policy-check"><input type="checkbox" name="policyAccepted" value="true" required> <span>I agree to the <a th:href="@{/terms}" target="_blank" rel="noopener">Terms &amp; Conditions</a> and acknowledge the <a th:href="@{/privacy}" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
         <button type="submit" class="btn btn-primary">Activate account</button>
     </form>
 </div>
 <script th:src="@{/js/pulse-routing.js}"></script>
+<script th:src="@{/js/pulse-ui.js}"></script>
 </body>
 </html>

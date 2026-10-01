@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}">
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>P.U.L.S.E — Stock Transfers</title>
     <link rel="stylesheet" th:href="@{/css/pulse.css}">
@@ -45,7 +46,7 @@
 
 </nav>
 <div class="sidebar-spacer"></div><div class="sidebar-label">SYSTEM</div>
-<nav class="sidebar-nav"><a th:href="@{/logout}"><span class="nav-icon">↪</span><span>Sign out</span></a></nav>
+<nav class="sidebar-nav"><form th:action="@{/logout}" method="post" class="logout-form"><input type="hidden" name="_csrf" th:value="${_csrf.token}"><button type="submit" class="nav-link-button"><span class="nav-icon">↪</span><span>Sign out</span></button></form></nav>
 <div class="sidebar-footer">P.U.L.S.E v1.0<br><span th:text="${tier + '-level operations'}">Operations</span></div>
 </aside>
 
@@ -113,4 +114,5 @@
 </div></main></div></div>
 <script th:src="@{/js/pulse-routing.js}"></script>
 <script th:src="@{/js/pulse-shell.js}"></script>
+<script th:src="@{/js/pulse-ui.js}"></script>
 </body></html>

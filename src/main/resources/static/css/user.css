@@ -402,7 +402,7 @@
 /* Hospital registration map */
 .registration-shell { min-height:100vh; display:grid; grid-template-columns:minmax(300px,.9fr) minmax(500px,1.4fr); background:#f3f6f8; }
 .registration-intro { padding:44px 48px; background:#123a57; color:#fff; display:flex; flex-direction:column; justify-content:space-between; gap:40px; }
-.registration-intro .brand-name,.registration-intro .brand-subtitle { color:#fff; }.registration-intro .brand-subtitle { opacity:.72; }.registration-intro .brand-mark { background:#fff; color:#123a57; }
+.registration-intro .brand-name,.registration-intro .brand-subtitle { color:#fff; }.registration-intro .brand-subtitle { opacity:.72; }.registration-intro .brand-mark { background-color:#fff; color:transparent; }
 .registration-intro .eyebrow { color:#9bd7d8; }.registration-intro h1 { margin:8px 0 12px; font-size:43px; line-height:1.05; max-width:560px; }.registration-intro p { max-width:550px; color:#c9d9e1; line-height:1.65; }
 .registration-rule { display:flex; flex-direction:column; gap:5px; padding:16px 18px; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.06); }.registration-rule span { color:#b7ccd6; font-size:11px; }
 .registration-form-panel { padding:34px 38px; background:#f8fafb; overflow:auto; }

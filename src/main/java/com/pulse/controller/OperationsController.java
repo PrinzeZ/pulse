@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import jakarta.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
 

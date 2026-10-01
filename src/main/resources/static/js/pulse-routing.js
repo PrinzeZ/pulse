@@ -89,6 +89,7 @@
         const normalized = normalize(origin);
         if (!normalized || normalized === currentOrigin) return;
         redirecting = true;
+        if (window.PulseLoading) window.PulseLoading.show();
         window.location.replace(withPath(normalized));
     };
 

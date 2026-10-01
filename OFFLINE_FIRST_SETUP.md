@@ -74,3 +74,17 @@ The intended production topology is:
 ```
 
 The local node must have completed at least one successful cloud/reference-data synchronization before it can provide a full real hospital snapshot after a first-time Internet outage. Development mode also contains a local demo bootstrap so a clean demo node can be started without the cloud database.
+
+## Hospital-local credential boundary
+
+Before production use of a hospital-local node, set:
+
+```properties
+PULSE_LOCAL_HOSPITAL_ID=<the exact hospital_id for this node>
+```
+
+The local H2 credential mirror is fail-closed without this binding. Only `ADMIN` and `STAFF` accounts whose `hospital_id` equals the configured value are retained locally. State and district administrator credentials are never cached on the hospital node.
+
+Offline authentication also requires the incoming connection to originate from loopback or a private/link-local network address. This is an additional network boundary; role and resource authorization remain mandatory.
+
+Passwords are stored only as password hashes. The local node never stores plaintext passwords.

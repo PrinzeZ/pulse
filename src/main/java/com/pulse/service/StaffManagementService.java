@@ -3,6 +3,8 @@ package com.pulse.service;
 import com.pulse.local.service.LocalOfflineStore;
 import com.pulse.model.Hospital;
 import com.pulse.model.PharmacyStaff;
+import com.pulse.model.District;
+import com.pulse.repository.DistrictRepository;
 import com.pulse.model.User;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.UserRepository;
@@ -18,15 +20,18 @@ public class StaffManagementService {
 
     private final UserRepository users;
     private final HospitalRepository hospitals;
+    private final DistrictRepository districts;
     private final BCryptPasswordEncoder passwordEncoder;
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
 
     public StaffManagementService(UserRepository users,
                                   HospitalRepository hospitals,
+                                  DistrictRepository districts,
                                   BCryptPasswordEncoder passwordEncoder,
                                   ObjectProvider<LocalOfflineStore> localStoreProvider) {
         this.users = users;
         this.hospitals = hospitals;
+        this.districts = districts;
         this.passwordEncoder = passwordEncoder;
         this.localStoreProvider = localStoreProvider;
     }
@@ -72,21 +77,34 @@ public class StaffManagementService {
         if (password == null || password.length() < 8) throw new IllegalArgumentException("Password must contain at least 8 characters");
         if (!password.equals(confirmation)) throw new IllegalArgumentException("Passwords do not match");
 
+        // Hospital identity is authoritative for a staff account. Never allow a
+        // missing/stale session scope to create a staff record with NULL scope.
+        Long resolvedDistrictId = hospital.getDistrictId();
+        if (resolvedDistrictId == null) {
+            throw new IllegalArgumentException("Hospital district is not configured");
+        }
+        District hospitalDistrict = districts.findById(resolvedDistrictId)
+                .orElseThrow(() -> new IllegalArgumentException("Hospital district could not be resolved"));
+        Long resolvedStateId = hospitalDistrict.getStateId();
+        if (resolvedStateId == null) {
+            throw new IllegalArgumentException("Hospital state is not configured");
+        }
+
         String encoded = passwordEncoder.encode(password);
         try {
             PharmacyStaff staff = new PharmacyStaff();
             staff.setName(name.trim());
             staff.setUsername(username);
             staff.setPassword(encoded);
-            staff.setStateId(stateId);
-            staff.setDistrictId(districtId != null ? districtId : hospital.getDistrictId());
+            staff.setStateId(resolvedStateId);
+            staff.setDistrictId(resolvedDistrictId);
             staff.setHospitalId(hospitalId);
             staff.setEnabled(authorize);
             User saved = users.saveAndFlush(staff);
             if (local != null) local.mirrorUser(saved);
         } catch (RuntimeException cloudFailure) {
             if (local == null) throw cloudFailure;
-            local.createPendingStaff(stateId, districtId != null ? districtId : hospital.getDistrictId(),
+            local.createPendingStaff(resolvedStateId, resolvedDistrictId,
                     hospitalId, name.trim(), username, encoded, authorize);
         }
     }

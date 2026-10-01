@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>P.U.L.S.E — Terms &amp; Conditions</title><link rel="stylesheet" th:href="@{/css/pulse.css}"></head>
+<body class="login-page">
+<div class="legal-page"><div class="brand"><div class="brand-mark">P</div><div><div class="brand-name">P.U.L.S.E</div><div class="brand-subtitle">District Health Inventory Network</div></div></div>
+<div class="legal-card"><div class="eyebrow">TERMS &amp; CONDITIONS · VERSION 2026-10-01</div><h1>Terms &amp; Conditions</h1><p class="legal-muted">Effective 1 October 2026. These terms govern use of the P.U.L.S.E application. They are a project template and should be reviewed by the organization operating the system before production use.</p>
+<h2>1. Authorized use</h2><p>Use P.U.L.S.E only when you are authorized by the hospital or health authority responsible for the account. Do not share credentials or use another person's account.</p>
+<h2>2. Inventory responsibility</h2><p>Users must enter stock movements accurately and must not intentionally falsify, delete or manipulate inventory records outside authorized workflows.</p>
+<h2>3. Scope and least privilege</h2><p>Access is restricted by role and organizational scope. Attempting to bypass those controls, access another hospital's records, or alter URLs/API requests to obtain unauthorized data is prohibited.</p>
+<h2>4. Audit records</h2><p>Inventory changes and administrative decisions may be recorded in tamper-evident audit logs. Administrators may access authorized audit reports according to the configured retention and approval rules.</p>
+<h2>5. Offline operation</h2><p>Hospital-local operation may continue without Internet access using the configured local data mirror. Local operation does not remove authorization requirements and does not imply that cloud synchronization has completed.</p>
+<h2>6. Availability and accuracy</h2><p>P.U.L.S.E reports information supplied by participating facilities. Users must verify critical clinical or operational information through the appropriate hospital process before acting on it.</p>
+<h2>7. Prohibited actions</h2><p>No credential theft, unauthorized scanning, deliberate denial-of-service activity, malicious code injection, or attempt to bypass security controls is permitted.</p>
+<h2>8. Changes</h2><p>The operating organization may update these terms. A policy version is recorded when an authenticated user acknowledges the current terms and privacy policy.</p>
+<div class="legal-actions"><a class="btn btn-primary" th:href="@{/login}">Back to sign in</a><a class="btn" th:href="@{/privacy}">Privacy Policy</a><a class="btn" th:href="@{/cookies}">Cookie Notice</a></div></div></div>
+<script th:src="@{/js/pulse-ui.js}"></script></body></html>

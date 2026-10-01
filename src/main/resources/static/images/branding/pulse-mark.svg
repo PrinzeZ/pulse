@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>P.U.L.S.E medical pulse mark</title>
+  <circle cx="64" cy="64" r="52" fill="none" stroke="#2f92df" stroke-width="7"/>
+  <path d="M49 25h30v24h24v30H79v24H49V79H25V49h24z" fill="#65aee8"/>
+  <path d="M18 64h24l8-1 6-12 8 28 8-20 7 5h31" fill="none" stroke="#123b5d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

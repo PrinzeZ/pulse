@@ -6,7 +6,6 @@ import com.pulse.model.Medicine;
 import com.pulse.model.StockEntry;
 import com.pulse.model.StockStatus;
 import com.pulse.model.User;
-import com.pulse.repository.AlertRepository;
 import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.MedicineRepository;
 import com.pulse.repository.StockEntryRepository;
@@ -21,7 +20,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class HierarchyDashboardService {
-    private final AlertRepository alerts;
     private final HospitalRepository hospitals;
     private final MedicineRepository medicines;
     private final StockEntryRepository stock;
@@ -29,10 +27,9 @@ public class HierarchyDashboardService {
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
     private final AlertService alertService;
 
-    public HierarchyDashboardService(AlertRepository alerts, HospitalRepository hospitals,
+    public HierarchyDashboardService(HospitalRepository hospitals,
                                      MedicineRepository medicines, StockEntryRepository stock,
                                      UserRepository users, ObjectProvider<LocalOfflineStore> localStoreProvider, AlertService alertService) {
-        this.alerts = alerts;
         this.hospitals = hospitals;
         this.medicines = medicines;
         this.stock = stock;

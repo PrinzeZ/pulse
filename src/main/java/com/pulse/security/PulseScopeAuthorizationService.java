@@ -55,7 +55,10 @@ public class PulseScopeAuthorizationService {
                     .map(h -> equals(h.getDistrictId(), principal.getDistrictId()))
                     .orElse(false);
         }
-        return equals(principal.getHospitalId(), hospitalId);
+        if (isRole(principal, "ADMIN") || isRole(principal, "STAFF")) {
+            return equals(principal.getHospitalId(), hospitalId);
+        }
+        return false;
     }
 
     public boolean canAccessDistrict(Long districtId) {
@@ -66,12 +69,16 @@ public class PulseScopeAuthorizationService {
                     .map(d -> equals(d.getStateId(), principal.getStateId()))
                     .orElse(false);
         }
-        return equals(principal.getDistrictId(), districtId);
+        if (isRole(principal, "DISTRICT_ADMIN")) {
+            return equals(principal.getDistrictId(), districtId);
+        }
+        return false;
     }
 
     public boolean canAccessState(Long stateId) {
         UserPrincipal principal = principal();
-        return principal != null && equals(principal.getStateId(), stateId);
+        return principal != null && isRole(principal, "STATE_ADMIN")
+                && equals(principal.getStateId(), stateId);
     }
 
     public boolean canAccessRegistration(Long registrationId) {

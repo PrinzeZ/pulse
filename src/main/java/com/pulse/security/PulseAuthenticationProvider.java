@@ -3,6 +3,7 @@ package com.pulse.security;
 import com.pulse.exception.InvalidLoginException;
 import com.pulse.model.User;
 import com.pulse.service.LoginService;
+import com.pulse.service.PolicyAcceptanceService;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
@@ -16,10 +17,13 @@ import org.springframework.stereotype.Component;
 public class PulseAuthenticationProvider implements AuthenticationProvider {
     private final LoginService loginService;
     private final LoginAttemptService attempts;
+    private final PolicyAcceptanceService policyAcceptanceService;
 
-    public PulseAuthenticationProvider(LoginService loginService, LoginAttemptService attempts) {
+    public PulseAuthenticationProvider(LoginService loginService, LoginAttemptService attempts,
+                                       PolicyAcceptanceService policyAcceptanceService) {
         this.loginService = loginService;
         this.attempts = attempts;
+        this.policyAcceptanceService = policyAcceptanceService;
     }
 
     @Override
@@ -28,15 +32,23 @@ public class PulseAuthenticationProvider implements AuthenticationProvider {
         String password = authentication.getCredentials() == null ? "" : authentication.getCredentials().toString();
         String key = username + "|" + clientKey(authentication);
 
+        if (authentication.getDetails() instanceof PulseWebAuthenticationDetails details
+                && !details.isPolicyAccepted()) {
+            throw new BadCredentialsException("You must accept the P.U.L.S.E. Terms and Conditions and Privacy Policy");
+        }
+
         if (attempts.isBlocked(key)) {
             throw new LockedException("Too many failed sign-in attempts. Try again later.");
         }
 
         try {
-            User user = loginService.authenticate(username, password);
+            String remoteAddress = clientKey(authentication);
+            User user = loginService.authenticate(username, password, remoteAddress);
+            policyAcceptanceService.recordForUsername(user.getUsername());
             attempts.recordSuccess(key);
+            UserPrincipal principal = UserPrincipal.from(user);
             return UsernamePasswordAuthenticationToken.authenticated(
-                    UserPrincipal.from(user), null, UserPrincipal.from(user).getAuthorities());
+                    principal, null, principal.getAuthorities());
         } catch (InvalidLoginException ex) {
             attempts.recordFailure(key);
             throw new BadCredentialsException("Invalid username or password");

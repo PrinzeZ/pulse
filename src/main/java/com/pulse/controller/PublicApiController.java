@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.security.MessageDigest;
 
 @RestController
 @RequestMapping("/api/public")
@@ -52,12 +53,14 @@ public class PublicApiController {
     public Map<String, Object> registerLan(
             @RequestHeader(value = "X-Pulse-Lan-Token", required = false) String token,
             @RequestBody String lanUrl) {
-        if (lanRegistrationToken.isBlank()) {
+        if (lanRegistrationToken.length() < 32) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE,
                     "LAN registration is not configured on this server");
         }
-        if (token == null || !lanRegistrationToken.equals(token)) {
+        if (token == null || !MessageDigest.isEqual(
+                lanRegistrationToken.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                token.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.UNAUTHORIZED, "Invalid LAN registration token");
         }

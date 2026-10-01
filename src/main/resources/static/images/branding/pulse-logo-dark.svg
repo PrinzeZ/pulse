@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 190" role="img" aria-labelledby="title desc">
+  <title id="title">P.U.L.S.E</title>
+  <desc id="desc">Original healthcare pulse logo with a medical cross and ECG line.</desc>
+  <g transform="translate(18 20)">
+    <circle cx="75" cy="75" r="59" fill="none" stroke="#2f92df" stroke-width="7"/>
+    <path d="M61 22h28v22h22v28H89v22H61V72H39V44h22z" fill="#65aee8"/>
+    <path d="M16 61h25l8-1 6-12 8 28 8-20 7 5h42" fill="none" stroke="#123b5d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="175" y="108" font-family="Arial, Helvetica, sans-serif" font-size="67" font-weight="800" letter-spacing="7" fill="#123b5d">P.U.L.S.E</text>
+</svg>

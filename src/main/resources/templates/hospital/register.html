@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}">
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P.U.L.S.E — Hospital Registration</title>
     <link rel="stylesheet" th:href="@{/css/pulse.css}"><link rel="stylesheet" th:href="@{/css/user.css}">
@@ -23,6 +24,7 @@
       <div class="form-group"><label for="hospitalEmail">Official hospital email</label><input id="hospitalEmail" name="hospitalEmail" type="email" required></div>
       <div class="form-group"><label for="adminName">Hospital administrator name</label><input id="adminName" name="adminName" type="text" required></div>
       <div class="form-group"><label for="adminUsername">Administrator username</label><input id="adminUsername" name="adminUsername" type="text" required></div>
+      <label class="policy-check"><input type="checkbox" name="policyAccepted" value="true" required> <span>I agree to the <a th:href="@{/terms}" target="_blank" rel="noopener">Terms &amp; Conditions</a> and acknowledge the <a th:href="@{/privacy}" target="_blank" rel="noopener">Privacy Policy</a>.</span></label>
       <button type="submit" class="btn btn-primary" id="registerButton" disabled>Continue with selected hospital</button>
     </form>
     <div class="login-note">Already have an account? <a th:href="@{/login}">Sign in →</a></div>
@@ -78,4 +80,5 @@
 })();
 </script>
 <script th:src="@{/js/pulse-routing.js}"></script>
+<script th:src="@{/js/pulse-ui.js}"></script>
 </body></html>

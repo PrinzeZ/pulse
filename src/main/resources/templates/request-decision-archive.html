@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
+<link rel="icon" type="image/svg+xml" th:href="@{/images/branding/pulse-mark.svg}">
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>P.U.L.S.E — Archived decision log</title>
     <link rel="stylesheet" th:href="@{/css/pulse.css}">
@@ -14,7 +15,7 @@
 <div class="dashboard-layout">
 <aside class="sidebar"><div class="sidebar-label" th:text="${tier + ' OPERATIONS'}">OPERATIONS</div><nav class="sidebar-nav">
 <a th:href="${tier == 'STATE' ? '/state-admin/requests' : (tier == 'DISTRICT' ? '/district-admin/requests' : '/admin/requests')}" class="active"><span class="nav-icon">↗</span><span>Requests</span></a>
-</nav><div class="sidebar-spacer"></div><div class="sidebar-label">SYSTEM</div><nav class="sidebar-nav"><a th:href="@{/logout}"><span class="nav-icon">↪</span><span>Sign out</span></a></nav></aside>
+</nav><div class="sidebar-spacer"></div><div class="sidebar-label">SYSTEM</div><nav class="sidebar-nav"><form th:action="@{/logout}" method="post" class="logout-form"><input type="hidden" name="_csrf" th:value="${_csrf.token}"><button type="submit" class="nav-link-button"><span class="nav-icon">↪</span><span>Sign out</span></button></form></nav></aside>
 <main class="main-content"><div class="content-wrap">
 <div class="page-heading"><div class="eyebrow">SECURED ARCHIVE</div><h1>Archived decision log</h1><p th:text="${pageSubtitle}">Explicitly opened encrypted administrative request history.</p></div>
 <section class="card section-gap"><div class="card-header"><div><h2 th:text="${#temporals.format(archiveStart,'dd MMM yyyy') + ' — ' + #temporals.format(archiveEnd,'dd MMM yyyy')}">Archive period</h2><p>Decrypted server-side for this authorized administrator scope. The encrypted archive file is never sent to the browser.</p></div><a class="btn btn-secondary" th:href="${tier == 'STATE' ? '/state-admin/requests' : (tier == 'DISTRICT' ? '/district-admin/requests' : '/admin/requests')}">Back to requests</a></div>
@@ -23,4 +24,5 @@
 <div class="empty-state" th:if="${#lists.isEmpty(archiveRows)}"><strong>No decision events in this archive period</strong><span>The archive may have been retained without events for this scope.</span></div>
 </section></div></main></div></div>
 <script th:src="@{/js/pulse-shell.js}"></script>
+<script th:src="@{/js/pulse-ui.js}"></script>
 </body></html>

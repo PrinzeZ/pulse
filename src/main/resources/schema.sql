@@ -1,7 +1,21 @@
+CREATE TABLE IF NOT EXISTS states (
+    state_id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS districts (
+    district_id BIGSERIAL PRIMARY KEY,
+    state_id BIGINT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    FOREIGN KEY (state_id) REFERENCES states(state_id)
+);
+
 CREATE TABLE IF NOT EXISTS hospitals (
     hospital_id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    district VARCHAR(50) NOT NULL
+    district VARCHAR(50) NOT NULL,
+    district_id BIGINT,
+    FOREIGN KEY (district_id) REFERENCES districts(district_id)
 );
 
 CREATE TABLE IF NOT EXISTS medicines (
@@ -18,7 +32,11 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(100) NOT NULL,
     role VARCHAR(20) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    state_id BIGINT,
+    district_id BIGINT,
     hospital_id BIGINT,
+    FOREIGN KEY (state_id) REFERENCES states(state_id),
+    FOREIGN KEY (district_id) REFERENCES districts(district_id),
     FOREIGN KEY (hospital_id) REFERENCES hospitals(hospital_id)
 );
 

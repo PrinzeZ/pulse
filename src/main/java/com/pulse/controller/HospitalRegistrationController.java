@@ -57,10 +57,12 @@ public class HospitalRegistrationController {
             @RequestParam String hospitalEmail,
             @RequestParam String adminName,
             @RequestParam String adminUsername,
+            @RequestParam(defaultValue = "false") boolean policyAccepted,
             Model model) {
         try {
+            if (!policyAccepted) throw new IllegalArgumentException("You must accept the Terms and Conditions and Privacy Policy");
             HospitalRegistration registration = provisioning.register(
-                    governmentHospitalKey, hospitalEmail, adminName, adminUsername);
+                    governmentHospitalKey, hospitalEmail, adminName, adminUsername, policyAccepted);
             model.addAttribute("registration", registration);
             return "hospital/registration-success";
         } catch (IllegalArgumentException e) {
@@ -108,8 +110,10 @@ public class HospitalRegistrationController {
 
     @PostMapping("/setup")
     public String setup(@RequestParam String token, @RequestParam String password,
-                        @RequestParam String confirmation, Model model) {
+                        @RequestParam String confirmation,
+                        @RequestParam(defaultValue = "false") boolean policyAccepted, Model model) {
         try {
+            if (!policyAccepted) throw new IllegalArgumentException("You must accept the Terms and Conditions and Privacy Policy");
             provisioning.setInitialPassword(token, password, confirmation);
             return "redirect:/login?activated=true";
         } catch (IllegalArgumentException e) {

@@ -13,12 +13,14 @@ import com.pulse.repository.HospitalRepository;
 import com.pulse.repository.MedicineRepository;
 import com.pulse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.sql.DataSource;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,17 +38,20 @@ public class LocalOfflineStore {
     private final MedicineRepository cloudMedicines;
     private final UserRepository cloudUsers;
     private final LocalStockEntryRepository localStock;
+    private final Long localHospitalId;
 
     public LocalOfflineStore(@Qualifier("localDataSource") DataSource localDataSource,
                              HospitalRepository cloudHospitals,
                              MedicineRepository cloudMedicines,
                              UserRepository cloudUsers,
-                             LocalStockEntryRepository localStock) {
+                             LocalStockEntryRepository localStock,
+                             @Value("${pulse.local.hospital-id:}") String configuredHospitalId) {
         this.jdbc = new JdbcTemplate(localDataSource);
         this.cloudHospitals = cloudHospitals;
         this.cloudMedicines = cloudMedicines;
         this.cloudUsers = cloudUsers;
         this.localStock = localStock;
+        this.localHospitalId = parseLong(configuredHospitalId);
         initializeSchema();
     }
 
@@ -86,14 +91,27 @@ public class LocalOfflineStore {
                 district_id BIGINT,
                 hospital_id BIGINT,
                 enabled BOOLEAN NOT NULL DEFAULT TRUE,
+                policy_version VARCHAR(30),
+                policy_accepted_at TIMESTAMP,
                 pending_sync BOOLEAN NOT NULL DEFAULT FALSE
             )
             """);
+        jdbc.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS policy_version VARCHAR(30)");
+        jdbc.execute("ALTER TABLE local_users ADD COLUMN IF NOT EXISTS policy_accepted_at TIMESTAMP");
         jdbc.execute("CREATE INDEX IF NOT EXISTS idx_local_users_hospital ON local_users(hospital_id)");
+        jdbc.execute("CREATE INDEX IF NOT EXISTS idx_local_users_hospital_role ON local_users(hospital_id, role)");
+        if (localHospitalId == null) {
+            jdbc.update("DELETE FROM local_users");
+        } else {
+            jdbc.update("DELETE FROM local_users WHERE hospital_id<>? OR role NOT IN ('ADMIN','STAFF')", localHospitalId);
+        }
     }
 
     public Optional<User> findLocalUserById(Long localUserId) {
-        List<Map<String, Object>> rows = jdbc.queryForList("SELECT * FROM local_users WHERE local_user_id=?", localUserId);
+        if (localHospitalId == null) return Optional.empty();
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT * FROM local_users WHERE local_user_id=? AND hospital_id=? AND role IN ('ADMIN','STAFF')",
+                localUserId, localHospitalId);
         return rows.isEmpty() ? Optional.empty() : Optional.of(toUser(rows.get(0)));
     }
 
@@ -103,8 +121,10 @@ public class LocalOfflineStore {
     }
 
     public Optional<User> findUser(String username) {
+        if (localHospitalId == null) return Optional.empty();
         List<Map<String, Object>> rows = jdbc.queryForList(
-                "SELECT * FROM local_users WHERE LOWER(username)=LOWER(?)", username);
+                "SELECT * FROM local_users WHERE LOWER(username)=LOWER(?) AND hospital_id=? AND role IN ('ADMIN','STAFF')",
+                username, localHospitalId);
         if (rows.isEmpty()) return Optional.empty();
         Map<String, Object> r = rows.get(0);
         return Optional.of(toUser(r));
@@ -221,14 +241,25 @@ public class LocalOfflineStore {
                     KEY(medicine_id) VALUES (?,?,?,?,?)
                     """, m.getMedId(), m.getName(), m.getCat(), m.getThreshold(), m.getExpiryDate());
             }
-            for (User u : cloudUsers.findAll()) {
-                if (u.getUsername() == null) continue;
-                jdbc.update("""
-                    MERGE INTO local_users
-                    (cloud_user_id,name,username,password,role,state_id,district_id,hospital_id,enabled,pending_sync)
-                    KEY(username) VALUES (?,?,?,?,?,?,?,?,?,FALSE)
-                    """, u.getUserId(), u.getName(), u.getUsername(), u.getPassword(), roleOf(u),
-                        u.getStateId(), u.getDistrictId(), u.getHospitalId(), u.isEnabled());
+            // Credential mirrors are deliberately limited to the configured hospital.
+            // District/state accounts are never cached on a hospital node.
+            if (localHospitalId != null) {
+                for (User u : cloudUsers.findAll()) {
+                    if (u.getUsername() == null || u.getHospitalId() == null
+                            || !localHospitalId.equals(u.getHospitalId())
+                            || !(u instanceof Admin || u instanceof PharmacyStaff)) continue;
+                    jdbc.update("""
+                        MERGE INTO local_users
+                        (cloud_user_id,name,username,password,role,state_id,district_id,hospital_id,enabled,policy_version,policy_accepted_at,pending_sync)
+                        KEY(username) VALUES (?,?,?,?,?,?,?,?,?,?,?,FALSE)
+                        """, u.getUserId(), u.getName(), u.getUsername(), u.getPassword(), roleOf(u),
+                            u.getStateId(), u.getDistrictId(), u.getHospitalId(), u.isEnabled(),
+                            u.getPolicyVersion(), u.getPolicyAcceptedAt());
+                }
+                jdbc.update("DELETE FROM local_users WHERE hospital_id<>? OR role NOT IN ('ADMIN','STAFF')", localHospitalId);
+            } else {
+                // Fail closed: without a configured hospital identity, no local credentials are retained.
+                jdbc.update("DELETE FROM local_users");
             }
             return true;
         } catch (RuntimeException ex) {
@@ -237,17 +268,36 @@ public class LocalOfflineStore {
     }
 
     public void mirrorUser(User user) {
+        if (!isHospitalCredentialUser(user)) return;
         jdbc.update("""
             MERGE INTO local_users
-            (cloud_user_id,name,username,password,role,state_id,district_id,hospital_id,enabled,pending_sync)
-            KEY(username) VALUES (?,?,?,?,?,?,?,?,?,FALSE)
+            (cloud_user_id,name,username,password,role,state_id,district_id,hospital_id,enabled,policy_version,policy_accepted_at,pending_sync)
+            KEY(username) VALUES (?,?,?,?,?,?,?,?,?,?,?,FALSE)
             """, user.getUserId(), user.getName(), user.getUsername(), user.getPassword(), roleOf(user),
-                user.getStateId(), user.getDistrictId(), user.getHospitalId(), user.isEnabled());
+                user.getStateId(), user.getDistrictId(), user.getHospitalId(), user.isEnabled(),
+                user.getPolicyVersion(), user.getPolicyAcceptedAt());
+    }
+
+    public int recordPolicyAcceptance(String username, String version, LocalDateTime acceptedAt) {
+        return jdbc.update("UPDATE local_users SET policy_version=?, policy_accepted_at=? WHERE LOWER(username)=LOWER(?) AND hospital_id=? AND role IN ('ADMIN','STAFF')",
+                version, acceptedAt, username, localHospitalId);
+    }
+
+    public Long getLocalHospitalId() { return localHospitalId; }
+
+    private boolean isHospitalCredentialUser(User user) {
+        return user != null && user.getHospitalId() != null
+                && localHospitalId != null && localHospitalId.equals(user.getHospitalId())
+                && (user instanceof Admin || user instanceof PharmacyStaff);
     }
 
     public User createPendingUser(Long stateId, Long districtId, Long hospitalId,
                                   String name, String username, String encodedPassword,
                                   String role, boolean enabled) {
+        if (localHospitalId == null || hospitalId == null || !localHospitalId.equals(hospitalId)
+                || !("ADMIN".equals(role) || "STAFF".equals(role))) {
+            throw new IllegalStateException("Local credential cache is restricted to the configured hospital");
+        }
         jdbc.update("""
             INSERT INTO local_users
             (name,username,password,role,state_id,district_id,hospital_id,enabled,pending_sync)
@@ -277,6 +327,9 @@ public class LocalOfflineStore {
                     cloud.setDistrictId(number(row.get("district_id")));
                     cloud.setHospitalId(number(row.get("hospital_id")));
                     cloud.setEnabled(Boolean.TRUE.equals(row.get("enabled")));
+                    cloud.setPolicyVersion((String) row.get("policy_version"));
+                    Object acceptedAt = row.get("policy_accepted_at");
+                    if (acceptedAt instanceof java.sql.Timestamp ts) cloud.setPolicyAcceptedAt(ts.toLocalDateTime());
                     cloud = cloudUsers.saveAndFlush(cloud);
                 } else {
                     cloud.setName((String) row.get("name"));
@@ -285,6 +338,9 @@ public class LocalOfflineStore {
                     cloud.setDistrictId(number(row.get("district_id")));
                     cloud.setHospitalId(number(row.get("hospital_id")));
                     cloud.setEnabled(Boolean.TRUE.equals(row.get("enabled")));
+                    cloud.setPolicyVersion((String) row.get("policy_version"));
+                    Object acceptedAt = row.get("policy_accepted_at");
+                    if (acceptedAt instanceof java.sql.Timestamp ts) cloud.setPolicyAcceptedAt(ts.toLocalDateTime());
                     cloud = cloudUsers.saveAndFlush(cloud);
                 }
                 jdbc.update("UPDATE local_users SET cloud_user_id=?, pending_sync=FALSE WHERE local_user_id=?",
@@ -299,6 +355,9 @@ public class LocalOfflineStore {
 
     public User createPendingStaff(Long stateId, Long districtId, Long hospitalId,
                                    String name, String username, String encodedPassword, boolean enabled) {
+        if (localHospitalId == null || hospitalId == null || !localHospitalId.equals(hospitalId)) {
+            throw new IllegalStateException("Local credential cache is restricted to the configured hospital");
+        }
         jdbc.update("""
             INSERT INTO local_users
             (name,username,password,role,state_id,district_id,hospital_id,enabled,pending_sync)
@@ -339,6 +398,10 @@ public class LocalOfflineStore {
         user.setDistrictId(number(r.get("district_id")));
         user.setHospitalId(number(r.get("hospital_id")));
         user.setEnabled(Boolean.TRUE.equals(r.get("enabled")));
+        user.setPolicyVersion((String) r.get("policy_version"));
+        Object acceptedAt = r.get("policy_accepted_at");
+        if (acceptedAt instanceof java.sql.Timestamp ts) user.setPolicyAcceptedAt(ts.toLocalDateTime());
+        else if (acceptedAt instanceof LocalDateTime ldt) user.setPolicyAcceptedAt(ldt);
         return user;
     }
 
@@ -347,6 +410,11 @@ public class LocalOfflineStore {
         if (user instanceof DistrictAdmin) return "DISTRICT_ADMIN";
         if (user instanceof Admin) return "ADMIN";
         return "STAFF";
+    }
+
+    private static Long parseLong(String value) {
+        if (value == null || value.isBlank()) return null;
+        try { return Long.valueOf(value.trim()); } catch (NumberFormatException ex) { return null; }
     }
 
     private static Long number(Object value) {

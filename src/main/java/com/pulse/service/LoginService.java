@@ -4,36 +4,41 @@ import com.pulse.exception.InvalidLoginException;
 import com.pulse.local.service.LocalOfflineStore;
 import com.pulse.model.User;
 import com.pulse.repository.UserRepository;
+import com.pulse.security.LocalNodeSecurityService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/** Authentication facade with an explicitly gated hospital-local offline path. */
 @Service
 public class LoginService {
 
     private final UserRepository userRepository;
     private final ObjectProvider<LocalOfflineStore> localStoreProvider;
     private final BCryptPasswordEncoder encoder;
+    private final LocalNodeSecurityService localNodeSecurity;
 
-    public LoginService(UserRepository userRepository, ObjectProvider<LocalOfflineStore> localStoreProvider,
-                        BCryptPasswordEncoder encoder) {
+    public LoginService(UserRepository userRepository,
+                        ObjectProvider<LocalOfflineStore> localStoreProvider,
+                        BCryptPasswordEncoder encoder,
+                        LocalNodeSecurityService localNodeSecurity) {
         this.userRepository = userRepository;
         this.localStoreProvider = localStoreProvider;
         this.encoder = encoder;
+        this.localNodeSecurity = localNodeSecurity;
     }
 
-    public User authenticate(String username, String password) {
+    public User authenticate(String username, String password, String remoteAddress) {
         LocalOfflineStore local = localStoreProvider.getIfAvailable();
+        boolean trustedLocalRequest = local != null && localNodeSecurity.isTrustedLocalAddress(remoteAddress);
 
-        // On a local hospital node, the local mirror is authoritative for login.
-        // This makes login independent of the Internet. Successful cloud sync keeps
-        // the mirror current when connectivity is available.
-        if (local != null) {
+        // The local credential mirror is usable only from the hospital LAN/loopback.
+        // Public/cloud requests never authenticate against cached local credentials.
+        if (trustedLocalRequest) {
             try {
                 return local.authenticateOffline(username, password, encoder);
             } catch (RuntimeException ignored) {
-                // Fall through to cloud so newly-created/updated accounts can work
-                // before the next local reference-data refresh.
+                // A newly-created cloud account may not have reached the mirror yet.
             }
         }
 
@@ -44,10 +49,11 @@ public class LoginService {
             if (!encoder.matches(password, user.getPassword())) {
                 throw new InvalidLoginException("Wrong password");
             }
-            if (local != null) local.mirrorUser(user);
+            if (trustedLocalRequest) local.mirrorUser(user);
             return user;
         } catch (RuntimeException ex) {
-            if (local != null) {
+            // Only a trusted hospital-local request may fall back to the offline mirror.
+            if (trustedLocalRequest) {
                 try {
                     return local.authenticateOffline(username, password, encoder);
                 } catch (RuntimeException ignored) {
@@ -55,7 +61,7 @@ public class LoginService {
                 }
             }
             if (ex instanceof InvalidLoginException ile) throw ile;
-            throw new InvalidLoginException("P.U.L.S.E is offline and this account is not cached locally");
+            throw new InvalidLoginException("P.U.L.S.E could not authenticate this account");
         }
     }
 }

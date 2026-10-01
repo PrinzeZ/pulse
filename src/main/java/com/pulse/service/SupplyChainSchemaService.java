@@ -50,6 +50,28 @@ public class SupplyChainSchemaService implements ApplicationRunner {
                 ADD COLUMN IF NOT EXISTS government_hospital_key VARCHAR(64)
                 """);
 
+            jdbc.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS policy_version VARCHAR(30)");
+            jdbc.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS policy_accepted_at TIMESTAMP");
+            jdbc.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS state_id BIGINT");
+            jdbc.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS district_id BIGINT");
+            jdbc.execute("ALTER TABLE hospitals ADD COLUMN IF NOT EXISTS district_id BIGINT");
+            jdbc.execute("ALTER TABLE hospital_registrations ADD COLUMN IF NOT EXISTS policy_version VARCHAR(30)");
+            jdbc.execute("ALTER TABLE hospital_registrations ADD COLUMN IF NOT EXISTS policy_accepted_at TIMESTAMP");
+
+            // Legacy hospital-scoped users were sometimes created before the
+            // state/district columns were introduced. Their scope is derived from
+            // the hospital hierarchy, never from a stale session value.
+            int scopeRepaired = jdbc.update("""
+                UPDATE users AS u
+                SET district_id = h.district_id,
+                    state_id = d.state_id
+                FROM hospitals AS h
+                JOIN districts AS d ON d.district_id = h.district_id
+                WHERE u.hospital_id = h.hospital_id
+                  AND u.role IN ('ADMIN', 'STAFF')
+                  AND (u.state_id IS NULL OR u.district_id IS NULL)
+                """);
+
             int backfilled = 0;
             for (GovernmentHospitalCatalogService.GovernmentHospital g : hospitalCatalog.all()) {
                 backfilled += jdbc.update("""
@@ -62,7 +84,8 @@ public class SupplyChainSchemaService implements ApplicationRunner {
             }
 
             System.out.println("P.U.L.S.E hospital identity schema ready"
-                    + " (government_hospital_key present; backfilled=" + backfilled + ")");
+                    + " (government_hospital_key present; backfilled=" + backfilled
+                    + ", userScopeRepaired=" + scopeRepaired + ")");
         } catch (RuntimeException ex) {
             System.err.println("P.U.L.S.E hospital identity schema migration failed: "
                     + ex.getMessage());
