@@ -1,5 +1,7 @@
 package com.pulse.controller;
 
+import com.pulse.model.District;
+import com.pulse.repository.DistrictRepository;
 import com.pulse.service.HierarchyDashboardService;
 import com.pulse.service.HospitalProvisioningService;
 import jakarta.servlet.http.HttpSession;
@@ -12,10 +14,14 @@ public class DistrictAdminController {
 
     private final HierarchyDashboardService dashboard;
     private final HospitalProvisioningService provisioning;
+    private final DistrictRepository districts;
 
-    public DistrictAdminController(HierarchyDashboardService dashboard, HospitalProvisioningService provisioning) {
+    public DistrictAdminController(HierarchyDashboardService dashboard,
+                                   HospitalProvisioningService provisioning,
+                                   DistrictRepository districts) {
         this.dashboard = dashboard;
         this.provisioning = provisioning;
+        this.districts = districts;
     }
 
     @GetMapping("/district-admin/dashboard")
@@ -33,7 +39,7 @@ public class DistrictAdminController {
 
         String district = districtName(districtId);
 
-        if ("Unknown".equals(district)) {
+        if (district == null || district.isBlank()) {
             return "redirect:/login";
         }
 
@@ -66,14 +72,17 @@ public class DistrictAdminController {
     }
 
     private String districtName(Long districtId) {
-        if (districtId == 1L) {
-            return "Ernakulam";
+        try {
+            return districts.findById(districtId)
+                    .map(District::getName)
+                    .orElse(null);
+        } catch (RuntimeException cloudUnavailable) {
+            return dashboard.allHospitals().stream()
+                    .filter(h -> districtId.equals(h.getDistrictId()))
+                    .map(com.pulse.model.Hospital::getDistrict)
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
         }
-
-        if (districtId == 2L) {
-            return "Kozhikode";
-        }
-
-        return "Unknown";
     }
 }
